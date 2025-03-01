@@ -1,0 +1,65 @@
+services:
+  frontend:
+    restart: always
+    build:
+      context: frontend
+      target: development
+    env_file:
+      - ./frontend/.env
+    ports:
+      - 3000:3000
+    stdin_open: true
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+    depends_on:
+      - backend
+    networks:
+      - react-express
+
+  backend:
+    restart: always
+    build:
+      context: backend
+      target: development
+    env_file:
+      - ./backend/.env
+    expose: 
+      - 3000
+    develop:
+      watch:
+        - action: sync+restart # Because node --watch may not work correctly
+          path: ./backend
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+    depends_on:
+      - mongo
+    networks:
+      - react-express
+      - express-mongo
+
+  mongo:
+    restart: always
+    image: mongo:8.0.5
+    volumes:
+      - mongo-data:/data/db
+    expose:
+      - 27017
+    networks:
+      - express-mongo
+      
+networks:
+  react-express:
+  express-mongo:
+
+volumes:
+  mongo-data:

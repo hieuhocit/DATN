@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 // Services
-import UserServices from '../services/UserServices.js';
+import UserService from '../services/UserService.js';
 
 // Bcrypt
 import bcrypt from 'bcryptjs';
@@ -18,7 +18,7 @@ const UserController = {
     const { email, name, password, avatarUrl, registerProvider } = req.body;
 
     try {
-      const existedUser = await UserServices.findByEmail(email);
+      const existedUser = await UserService.findByEmail(email);
 
       if (existedUser) {
         const providerMessages = {
@@ -47,7 +47,7 @@ const UserController = {
         passwordHash = bcrypt.hashSync(password, 10);
       }
 
-      const user = await UserServices.create({
+      const user = await UserService.create({
         email,
         name,
         passwordHash,

@@ -3,7 +3,7 @@ import User, { UserType } from '../models/User.js';
 type UserCreateType = Pick<UserType, 'email' | 'name' | 'registerProvider'> &
   Pick<Partial<UserType>, 'passwordHash' | 'avatarUrl'>;
 
-const UserServices = {
+const UserService = {
   create: async (user: UserCreateType) => {
     const newUser = new User(user);
     const result = await newUser.save();
@@ -15,4 +15,4 @@ const UserServices = {
   },
 };
 
-export default UserServices;
+export default UserService;

@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: {
       type: String,
-      required: true,
       default: '',
     },
     name: {
@@ -37,7 +36,7 @@ const userSchema = new mongoose.Schema(
     },
   },
   {
-    id: true,
+    id: false,
     timestamps: true,
   }
 );

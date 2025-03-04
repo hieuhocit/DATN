@@ -7,10 +7,13 @@ import cors from 'cors';
 import db from './db/index.js';
 
 // Import middlewares
-import ErrorHandler from './middlewares/ErrorHandler.js';
+import {
+  defaultError,
+  notFoundError,
+} from './middlewares/errorHandlingMiddleware.js';
 
 // Routes
-import UserRoutes from './routes/UserRoutes.js';
+import AuthRoutes from './routes/AuthRoutes.js';
 
 // Configuring dotenv
 dotenv.config();
@@ -27,13 +30,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api', UserRoutes);
+app.use('/api', AuthRoutes);
 
 // Not found handler
-app.use(ErrorHandler.notFoundError);
+app.use(notFoundError);
 
 // Error handler
-app.use(ErrorHandler.defaultError);
+app.use(defaultError);
 
 // Server
 const PORT = process.env.PORT || 3000;

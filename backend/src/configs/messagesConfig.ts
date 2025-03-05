@@ -11,9 +11,15 @@ type MessageKey =
   | 'TOO_MANY_REQUESTS'
   | 'CREATED'
   | 'UPDATED'
-  | 'DELETED';
+  | 'DELETED'
+  | 'OK';
 
 const messages: Record<MessageKey, MessageType> = {
+  OK: {
+    statusCode: 200,
+    statusText: 'success',
+    message: 'Success!',
+  },
   SERVER_ERROR: {
     statusCode: 500,
     statusText: 'error',

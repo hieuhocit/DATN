@@ -1,4 +1,4 @@
-export { UserCreateInput } from '../services/AuthService.js';
+export { UserCreateInput, UserLoginInput } from '../services/AuthService.js';
 export { UserType } from '../models/User.js';
 
 export type MessageType = {

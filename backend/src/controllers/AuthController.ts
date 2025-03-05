@@ -12,15 +12,14 @@ import messages from '../configs/messagesConfig.js';
 
 const AuthController = {
   register: async (req: Request, res: Response, next: NextFunction) => {
-    const { email, name, password, avatarUrl, registerProvider } = req.body;
+    const { email, name, password } = req.body;
 
     try {
       const user = await AuthService.register({
         email,
         name,
         password,
-        registerProvider,
-        avatarUrl,
+        provider: 'local',
       });
 
       res.status(messages.CREATED.statusCode).json(
@@ -28,6 +27,39 @@ const AuthController = {
           {
             ...messages.CREATED,
             message: 'Register successfully!',
+          },
+          user
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+  login: async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      email,
+      password,
+      provider,
+      googleAccessToken,
+      facebookAccessToken,
+    } = req.body;
+
+    try {
+      const user = await AuthService.login(res, {
+        email,
+        password,
+        provider,
+        googleAccessToken,
+        facebookAccessToken,
+      });
+
+      console.log(user);
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: 'Login successfully!',
           },
           user
         )

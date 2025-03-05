@@ -6,6 +6,7 @@ import {
   ErrorResponseType,
   MessageType,
   UserCreateInput,
+  UserLoginInput,
 } from '../types/types.js';
 
 // Message config
@@ -17,8 +18,6 @@ const PATTERNS = {
   PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,24}$/,
 };
 
-const VALID_PROVIDERS = ['local', 'google', 'facebook'];
-
 /**
  * Validates user registration data
  */
@@ -27,8 +26,7 @@ export const validateRegister = (
   res: Response,
   next: NextFunction
 ) => {
-  const data = req.body as Partial<UserCreateInput>;
-  const { email, name, registerProvider, password, avatarUrl } = data;
+  const data = req.body as UserCreateInput;
 
   // Initialize error response
   const errorResponse: MessageType & { errors: ErrorResponseType } = {
@@ -49,49 +47,108 @@ export const validateRegister = (
   };
 
   // Check required fields
-  ['email', 'name', 'registerProvider'].forEach((field) =>
+  ['email', 'name', 'password'].forEach((field) =>
     addErrorIfMissing(field, data[field as keyof typeof data] as string)
   );
 
   // Validate email format
-  if (email && !errorResponse.errors['email'] && !PATTERNS.EMAIL.test(email)) {
+  if (
+    data.email &&
+    !errorResponse.errors['email'] &&
+    !PATTERNS.EMAIL.test(data.email)
+  ) {
     errorResponse.errors['email'] = {
       field: 'email',
       message: 'Invalid email address.',
     };
   }
 
-  // Validate register provider
-  if (
-    registerProvider &&
-    !errorResponse.errors['registerProvider'] &&
-    !VALID_PROVIDERS.includes(registerProvider)
-  ) {
-    errorResponse.errors['registerProvider'] = {
-      field: 'registerProvider',
-      message: 'Register provider must be local, facebook or google.',
-    };
-  }
-
   // Password validation for local registration
-  if (registerProvider === 'local') {
-    if (addErrorIfMissing('password', password)) {
-      // Password field already marked as error, skip pattern check
-    } else if (!PATTERNS.PASSWORD.test(password!)) {
-      errorResponse.errors['password'] = {
-        field: 'password',
-        message:
-          'Password must be 6-24 characters and include at least 1 lowercase, 1 uppercase, and 1 special character.',
-      };
-    }
+  if (
+    data.password &&
+    !errorResponse.errors['password'] &&
+    !PATTERNS.PASSWORD.test(data.password!)
+  ) {
+    errorResponse.errors['password'] = {
+      field: 'password',
+      message:
+        'Password must be 6-24 characters and include at least 1 lowercase, 1 uppercase, and 1 special character.',
+    };
   }
 
-  // Validate avatar URL if provided
-  if (avatarUrl && !URL.canParse(avatarUrl)) {
-    errorResponse.errors['avatarUrl'] = {
-      field: 'avatarUrl',
-      message: 'Invalid url',
-    };
+  // Return error response if validation failed
+  if (Object.keys(errorResponse.errors).length > 0) {
+    res.status(errorResponse.statusCode).json(errorResponse);
+    return;
+  }
+
+  next();
+};
+
+/**
+ * Validates user login data
+ */
+export const validateLogin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const data = req.body as UserLoginInput;
+  const { email, password, facebookAccessToken, googleAccessToken, provider } =
+    data;
+
+  // Initialize error response
+  const errorResponse: MessageType & { errors: ErrorResponseType } = {
+    ...messages.VALIDATION_ERROR,
+    errors: {},
+  };
+
+  // Helper to add validation errors
+  const addError = (field: string, message: string) => {
+    errorResponse.errors[field] = { field, message };
+  };
+
+  // Validate provider
+  if (!provider || provider.trim() === '') {
+    addError('provider', 'The provider field is required.');
+  } else if (!['local', 'google', 'facebook'].includes(provider)) {
+    addError('provider', 'Login provider is not supported.');
+  } else {
+    // Provider-specific validations
+    switch (provider) {
+      case 'local': {
+        if (!email || email.trim() === '') {
+          addError('email', 'The email field is required.');
+        } else if (!PATTERNS.EMAIL.test(email)) {
+          addError('email', 'Invalid email address.');
+        }
+
+        if (!password || password.trim() === '') {
+          addError('password', 'The password field is required.');
+        }
+        break;
+      }
+
+      case 'facebook': {
+        if (!facebookAccessToken || facebookAccessToken.trim() === '') {
+          addError(
+            'facebookAccessToken',
+            'The facebookAccessToken field is required.'
+          );
+        }
+        break;
+      }
+
+      case 'google': {
+        if (!googleAccessToken || googleAccessToken.trim() === '') {
+          addError(
+            'googleAccessToken',
+            'The googleAccessToken field is required.'
+          );
+        }
+        break;
+      }
+    }
   }
 
   // Return error response if validation failed

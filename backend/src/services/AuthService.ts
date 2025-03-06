@@ -1,5 +1,6 @@
 // Models
 import User, { UserType } from '../models/User.js';
+import PasswordReset, { PasswordResetType } from '../models/PasswordReset.js';
 
 // Bcrypt
 import bcrypt from 'bcryptjs';
@@ -11,7 +12,7 @@ import serverResponse from '../utils/helpers/reponses.js';
 import messages from '../configs/messagesConfig.js';
 
 // Tokens
-import { generateToken } from '../utils/helpers/tokens.js';
+import { generateToken, verifyToken } from '../utils/helpers/tokens.js';
 
 // Types
 import { Response } from 'express';
@@ -19,6 +20,10 @@ import { Response } from 'express';
 // Services
 import GoogleService, { GoogleUserInfo } from './GoogleService.js';
 import FacebookService, { FacebookUserInfo } from './FacebookService.js';
+import EmailService from './EmailService.js';
+
+// Crypto
+import crypto from 'crypto';
 
 export type UserCreateInput = Pick<UserType, 'email' | 'name'> & {
   password: string;
@@ -91,26 +96,20 @@ const AuthService = {
         registerProvider: user.registerProvider,
       };
 
-      const accessToken = generateToken(
-        tokenPayload,
-        process.env.ACCESS_TOKEN_SECRET as string,
-        '15m'
-      );
+      const accessToken = generateToken(tokenPayload, 'ACCESS', '15m');
 
-      const refreshToken = generateToken(
-        tokenPayload,
-        process.env.REFRESH_TOKEN_SECRET as string,
-        '7d'
-      );
+      const refreshToken = generateToken(tokenPayload, 'REFRESH', '7d');
 
       res.cookie('acc_t', accessToken, {
         httpOnly: true,
         secure: true,
+        sameSite: 'none',
       });
       res.cookie('ref_t', refreshToken, {
         maxAge: 1000 * 60 * 60 * 24 * 7,
         httpOnly: true,
         secure: true,
+        sameSite: 'none',
       });
     };
 
@@ -211,6 +210,132 @@ const AuthService = {
     // Generate and set authentication tokens
     setAuthTokens(user);
 
+    return user;
+  },
+  sendResetCode: async function (email: string) {
+    if (!email || email.trim() === '') {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: 'Email is required',
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: 'Account not found!',
+      });
+    }
+
+    const resetCode = crypto.randomInt(100000, 999999);
+
+    // Send reset code to email
+    await EmailService.sendResetCode(user.name, email, resetCode);
+
+    // Save reset code to database
+    const passwordReset = new PasswordReset({
+      email,
+      code: resetCode,
+      expires: Date.now() + 1000 * 60 * 15, // 15 minutes
+    });
+    await passwordReset.save();
+
+    return resetCode;
+  },
+  verifyResetCode: async function (email: string, resetCode: number) {
+    if (!email || email.trim() === '') {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: 'Email is required',
+      });
+    }
+
+    if (!resetCode) {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: 'Reset code is required',
+      });
+    }
+
+    const passwordReset = await PasswordReset.findOne({
+      email,
+      code: resetCode,
+    });
+
+    if (!passwordReset) {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: 'Invalid reset code',
+      });
+    }
+
+    const hasExpired = passwordReset.expires.getTime() < Date.now();
+
+    // Delete reset code from database
+    await passwordReset.deleteOne();
+
+    if (hasExpired) {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: 'Reset code has expired',
+      });
+    }
+
+    const resetToken = generateToken({ email }, 'ACCESS', '15m');
+
+    return resetToken;
+  },
+  resetPassword: async function (token: string, password: string) {
+    try {
+      const { email } = verifyToken(token, 'ACCESS') as { email: string };
+
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        throw serverResponse.createError({
+          ...messages.BAD_REQUEST,
+          message: 'Invalid reset token',
+        });
+      }
+
+      const passwordHash = bcrypt.hashSync(password, 10);
+      user.passwordHash = passwordHash;
+      await user?.save();
+    } catch (error) {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: 'Invalid reset token',
+      });
+    }
+  },
+  changePassword: async function (
+    email: string,
+    oldPassword: string,
+    newPassword: string
+  ) {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: 'Account not found!',
+      });
+    }
+
+    const isPasswordMatch = bcrypt.compareSync(oldPassword, user.passwordHash);
+
+    if (!isPasswordMatch) {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: 'Old password is incorrect!',
+      });
+    }
+
+    const passwordHash = bcrypt.hashSync(newPassword, 10);
+    user.passwordHash = passwordHash;
+    await user.save();
     return user;
   },
 };

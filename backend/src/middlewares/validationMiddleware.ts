@@ -159,3 +159,107 @@ export const validateLogin = (
 
   next();
 };
+
+/**
+ * Validates user data for password reset
+ */
+export const validateResetPassword = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const data = req.body as { password?: string; resetToken?: string };
+
+  // Initialize error response
+  const errorResponse: MessageType & { errors: ErrorResponseType } = {
+    ...messages.VALIDATION_ERROR,
+    errors: {},
+  };
+
+  if (!data.password || data.password.trim() === '') {
+    errorResponse.errors['password'] = {
+      field: 'password',
+      message: 'The password field is required.',
+    };
+  }
+
+  if (!data.resetToken || data.resetToken.trim() === '') {
+    errorResponse.errors['resetToken'] = {
+      field: 'resetToken',
+      message: 'The resetToken field is required.',
+    };
+  }
+
+  // Password validation for local registration
+  if (
+    data.password &&
+    !errorResponse.errors['password'] &&
+    !PATTERNS.PASSWORD.test(data.password!)
+  ) {
+    errorResponse.errors['password'] = {
+      field: 'password',
+      message:
+        'Password must be 6-24 characters and include at least 1 lowercase, 1 uppercase, and 1 special character.',
+    };
+  }
+
+  // Return error response if validation failed
+  if (Object.keys(errorResponse.errors).length > 0) {
+    res.status(errorResponse.statusCode).json(errorResponse);
+    return;
+  }
+
+  next();
+};
+
+/**
+ * Validates user data for changing password
+ */
+export const validateChangePassword = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const data = req.body as { oldPassword?: string; newPassword?: string };
+
+  // Initialize error response
+  const errorResponse: MessageType & { errors: ErrorResponseType } = {
+    ...messages.VALIDATION_ERROR,
+    errors: {},
+  };
+
+  if (!data.oldPassword || data.oldPassword.trim() === '') {
+    errorResponse.errors['oldPassword'] = {
+      field: 'oldPassword',
+      message: 'The oldPassword field is required.',
+    };
+  }
+
+  if (!data.newPassword || data.newPassword.trim() === '') {
+    errorResponse.errors['newPassword'] = {
+      field: 'newPassword',
+      message: 'The newPassword field is required.',
+    };
+  }
+
+  // Password validation for local registration
+  if (
+    data.newPassword &&
+    !errorResponse.errors['newPassword'] &&
+    !PATTERNS.PASSWORD.test(data.newPassword!)
+  ) {
+    errorResponse.errors['newPassword'] = {
+      field: 'newPassword',
+      message:
+        'Password must be 6-24 characters and include at least 1 lowercase, 1 uppercase, and 1 special character.',
+    };
+  }
+
+  // Return error response if validation failed
+  if (Object.keys(errorResponse.errors).length > 0) {
+    res.status(errorResponse.statusCode).json(errorResponse);
+    return;
+  }
+
+  next();
+};

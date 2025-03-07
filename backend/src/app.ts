@@ -16,6 +16,7 @@ import {
 // Routes
 import AuthRoutes from './routes/AuthRoutes.js';
 import UserRoutes from './routes/UserRoutes.js';
+import CloudinaryRoutes from './routes/CloudinaryRoutes.js';
 
 // Configuring dotenv
 dotenv.config();
@@ -40,6 +41,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api', AuthRoutes);
 app.use('/api', UserRoutes);
+app.use('/api', CloudinaryRoutes);
 
 // Not found handler
 app.use(notFoundError);

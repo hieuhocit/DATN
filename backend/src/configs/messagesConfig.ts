@@ -12,8 +12,8 @@ type MessageKey =
   | 'CREATED'
   | 'UPDATED'
   | 'DELETED'
-  | 'OK';
-
+  | 'OK'
+  | 'UPLOAD_FAILED';
 const messages: Record<MessageKey, MessageType> = {
   OK: {
     statusCode: 200,
@@ -59,6 +59,11 @@ const messages: Record<MessageKey, MessageType> = {
     statusCode: 429,
     statusText: 'error',
     message: 'Too many requests, please try again later!',
+  },
+  UPLOAD_FAILED: {
+    statusCode: 500,
+    statusText: 'error',
+    message: 'Upload failed!',
   },
   // SUCCESS
   CREATED: {

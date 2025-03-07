@@ -1,4 +1,10 @@
+// Express
 import { Request, Response, NextFunction } from 'express';
+
+// multer
+import multer from 'multer';
+
+// Messages
 import messages from '../configs/messagesConfig.js';
 
 const notFoundError = (req: Request, res: Response) => {
@@ -12,7 +18,25 @@ const defaultError = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error(err.stack);
+  console.error(err);
+
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      res.status(400).json({
+        statusCode: 400,
+        statusText: 'error',
+        message: 'File size does not exceed 100MB',
+      });
+      return;
+    } else {
+      res.status(400).json({
+        statusCode: 400,
+        statusText: 'error',
+        message: err.message,
+      });
+      return;
+    }
+  }
 
   const statusCode = err.statusCode || 500;
   const statusText = err.statusText || 'error';

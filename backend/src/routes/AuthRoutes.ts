@@ -15,16 +15,19 @@ import {
 // Auth
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 
+// Rate limit
+import limiter from '../middlewares/rateLimiter.js';
+
 // Create router
 const AuthRoutes = Router();
 
 // Routes
 AuthRoutes.post('/register', validateRegister, AuthController.register);
-AuthRoutes.post('/login', validateLogin, AuthController.login);
+AuthRoutes.post('/login', limiter, validateLogin, AuthController.login);
 AuthRoutes.post('/logout', AuthController.logout);
 
 // Password
-AuthRoutes.post('/forgot-password', AuthController.forgotPassword);
+AuthRoutes.post('/forgot-password', limiter, AuthController.forgotPassword);
 AuthRoutes.post('/verify-reset-code', AuthController.verifyResetCode);
 AuthRoutes.post(
   '/reset-password',

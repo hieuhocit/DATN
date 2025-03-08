@@ -1,6 +1,7 @@
 // Models
 import User, { UserType } from '../models/User.js';
 import PasswordReset, { PasswordResetType } from '../models/PasswordReset.js';
+import RefreshToken from '../models/RefreshToken.js';
 
 // Bcrypt
 import bcrypt from 'bcryptjs';
@@ -89,7 +90,7 @@ const AuthService = {
     };
 
     // Helper function to generate and set tokens
-    const setAuthTokens = (user: UserType) => {
+    const setAuthTokens = async (user: UserType) => {
       const tokenPayload = {
         email: user.email,
         role: user.role,
@@ -100,13 +101,24 @@ const AuthService = {
 
       const refreshToken = generateToken(tokenPayload, 'REFRESH', '7d');
 
+      await RefreshToken.create({
+        token: refreshToken,
+        userEmail: user.email,
+        userRole: user.role,
+        userRegisterProvider: user.registerProvider,
+        expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+      });
+
+      // user.accessToken = accessToken;
+      // user.refreshToken = refreshToken;
+
       res.cookie('acc_t', accessToken, {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
       });
       res.cookie('ref_t', refreshToken, {
-        maxAge: 1000 * 60 * 60 * 24 * 7,
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         httpOnly: true,
         secure: true,
         sameSite: 'none',
@@ -208,7 +220,7 @@ const AuthService = {
     }
 
     // Generate and set authentication tokens
-    setAuthTokens(user);
+    await setAuthTokens(user);
 
     return user;
   },
@@ -337,6 +349,21 @@ const AuthService = {
     user.passwordHash = passwordHash;
     await user.save();
     return user;
+  },
+  logout: async function (refreshToken: string, res: Response) {
+    const storedToken = await RefreshToken.findOne({ token: refreshToken });
+
+    if (!storedToken) {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: 'Invalid refresh token',
+      });
+    }
+
+    await storedToken.deleteOne();
+
+    res.clearCookie('acc_t');
+    res.clearCookie('ref_t');
   },
 };
 

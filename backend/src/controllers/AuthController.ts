@@ -56,8 +56,6 @@ const AuthController = {
         facebookAccessToken,
       });
 
-      console.log(user);
-
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess(
           {
@@ -139,6 +137,22 @@ const AuthController = {
           },
           data
         )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+  logout: async (req: Request, res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies?.ref_t;
+
+    try {
+      await AuthService.logout(refreshToken, res);
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess({
+          ...messages.OK,
+          message: 'Logout successfully!',
+        })
       );
     } catch (error) {
       next(error);

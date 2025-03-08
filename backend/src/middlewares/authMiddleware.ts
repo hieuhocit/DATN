@@ -77,7 +77,7 @@ const handleRefreshToken = async (
       });
     }
 
-    if (storedToken.expiresAt.getTime() > Date.now()) {
+    if (storedToken.expiresAt.getTime() < Date.now()) {
       throw serverResponse.createError({
         ...messages.UNAUTHORIZED,
         message: 'Refresh token has expired',
@@ -95,29 +95,50 @@ const handleRefreshToken = async (
     const newAccessToken = generateToken(payload, 'ACCESS', '15m');
     const newRefreshToken = generateToken(payload, 'REFRESH', '7d');
 
-    await storedToken.deleteOne();
-    await RefreshToken.create({
-      token: newRefreshToken,
-      userEmail: payload.email,
-      userRole: payload.role,
-      userRegisterProvider: payload.registerProvider,
-      expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
-    });
+    const session = await RefreshToken.startSession();
 
-    res.cookie('acc_t', newAccessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-    });
+    session.startTransaction();
 
-    res.cookie('ref_t', newRefreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-    });
+    try {
+      await storedToken.deleteOne({ session });
+      await RefreshToken.create(
+        {
+          token: newRefreshToken,
+          userEmail: payload.email,
+          userRole: payload.role,
+          userRegisterProvider: payload.registerProvider,
+          expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+        },
+        {
+          session: session,
+        }
+      );
 
-    next();
+      session.commitTransaction();
+
+      res.cookie('acc_t', newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+      });
+
+      res.cookie('ref_t', newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      });
+
+      next();
+    } catch (error) {
+      await session.abortTransaction();
+      throw serverResponse.createError({
+        ...messages.SERVER_ERROR,
+        message: 'Failed to refresh token',
+      });
+    } finally {
+      session.endSession();
+    }
   } catch (error) {
     next(error);
   }

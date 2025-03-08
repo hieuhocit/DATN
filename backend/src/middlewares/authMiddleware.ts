@@ -13,9 +13,12 @@ import { verifyToken, generateToken } from '../utils/helpers/tokens.js';
 // JWT
 import jwt from 'jsonwebtoken';
 
+// Models
+import RefreshToken from '../models/RefreshToken.js';
+
 export type JwtPayLoadType = {
   email: string;
-  role: string;
+  role: 'user' | 'instructor' | 'admin';
   registerProvider: 'local' | 'google' | 'facebook';
   iat: number;
   exp: number;
@@ -48,12 +51,6 @@ export const authMiddleware = async (
       registerProvider: user.registerProvider,
     };
 
-    res.cookie('acc_t', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-    });
-
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
@@ -71,29 +68,53 @@ const handleRefreshToken = async (
   next: NextFunction
 ) => {
   try {
-    if (!refreshToken) {
+    const storedToken = await RefreshToken.findOne({ token: refreshToken });
+
+    if (!storedToken) {
       throw serverResponse.createError({
         ...messages.UNAUTHORIZED,
-        message: 'Refresh token is required',
+        message: 'Refresh token is invalid',
       });
     }
 
-    const user = verifyToken(refreshToken, 'REFRESH') as JwtPayLoadType;
+    if (storedToken.expiresAt.getTime() > Date.now()) {
+      throw serverResponse.createError({
+        ...messages.UNAUTHORIZED,
+        message: 'Refresh token has expired',
+      });
+    }
 
     const payload = {
-      email: user.email,
-      role: user.role,
-      registerProvider: user.registerProvider,
+      email: storedToken.userEmail,
+      role: storedToken.userRole,
+      registerProvider: storedToken.userRegisterProvider,
     };
 
     req.user = payload;
 
-    const accessToken = generateToken(payload, 'ACCESS', '15m');
+    const newAccessToken = generateToken(payload, 'ACCESS', '15m');
+    const newRefreshToken = generateToken(payload, 'REFRESH', '7d');
 
-    res.cookie('acc_t', accessToken, {
+    await storedToken.deleteOne();
+    await RefreshToken.create({
+      token: newRefreshToken,
+      userEmail: payload.email,
+      userRole: payload.role,
+      userRegisterProvider: payload.registerProvider,
+      expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+    });
+
+    res.cookie('acc_t', newAccessToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
+    });
+
+    res.cookie('ref_t', newRefreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 
     next();

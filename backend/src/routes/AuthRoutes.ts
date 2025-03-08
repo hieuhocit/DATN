@@ -21,6 +21,7 @@ const AuthRoutes = Router();
 // Routes
 AuthRoutes.post('/register', validateRegister, AuthController.register);
 AuthRoutes.post('/login', validateLogin, AuthController.login);
+AuthRoutes.post('/logout', AuthController.logout);
 
 // Password
 AuthRoutes.post('/forgot-password', AuthController.forgotPassword);

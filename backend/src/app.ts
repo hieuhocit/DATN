@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 
 // Importing db
 import db from './db/index.js';
+import redisClient from './db/redisClient.js';
 
 // Import middlewares
 import {
@@ -26,6 +27,7 @@ const app = express();
 
 // Connect to database
 db.connect(app);
+redisClient.connect(app);
 
 // Middlewares
 app.use(
@@ -54,7 +56,9 @@ const PORT = process.env.PORT || 3000;
 
 // Run if the database has connected
 app.on('ready', () => {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  app.on('redisReady', () => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
   });
 });

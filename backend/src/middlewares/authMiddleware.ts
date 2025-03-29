@@ -13,11 +13,15 @@ import { verifyToken, generateToken } from '../utils/helpers/tokens.js';
 // JWT
 import jwt from 'jsonwebtoken';
 
-// Redis
-import { getRedisClient } from '../db/redisClient.js';
-
 // UUID
 import { v4 as uuidv4 } from 'uuid';
+
+// Redis utils
+import {
+  checkTokenInRedis,
+  deleteAccessAndRefreshTokensFromRedis,
+  saveAccessAndRefreshTokensToRedis,
+} from '../utils/redis/redisUtils.js';
 
 export type JwtPayLoadType = {
   email: string;
@@ -49,15 +53,14 @@ export const authMiddleware = async (
 
     const user = verifyToken(accessToken, 'ACCESS') as JwtPayLoadType;
 
-    const redisClient = getRedisClient();
-
-    const isAccessTokenInList = await redisClient.hGet(
-      `TOKEN_LIST:${user.email}:${user.jit}`,
-      `${accessToken}:${user.jit}`
+    const isAccessTokenExists = await checkTokenInRedis(
+      user.email,
+      accessToken,
+      user.jit
     );
 
     // Check if the access token does not exist in the TOKEN_LIST (revoked)
-    if (!isAccessTokenInList) {
+    if (!isAccessTokenExists) {
       throw serverResponse.createError({
         ...messages.UNAUTHORIZED,
         message: 'Access token is revoked',
@@ -74,7 +77,13 @@ export const authMiddleware = async (
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      await handleRefreshToken(refreshToken, req as RequestWithUser, res, next);
+      await handleRefreshToken(
+        accessToken,
+        refreshToken,
+        req as RequestWithUser,
+        res,
+        next
+      );
     } else {
       next(error);
     }
@@ -82,6 +91,7 @@ export const authMiddleware = async (
 };
 
 const handleRefreshToken = async (
+  accessToken: string,
   refreshToken: string,
   req: RequestWithUser,
   res: Response,
@@ -90,15 +100,14 @@ const handleRefreshToken = async (
   try {
     const decoded = verifyToken(refreshToken, 'REFRESH') as JwtPayLoadType;
 
-    const redisClient = getRedisClient();
-
-    const isRefreshTokenInList = await redisClient.hGet(
-      `TOKEN_LIST:${decoded.email}:${decoded.jit}`,
-      `${refreshToken}:${decoded.jit}`
+    const isRefreshTokenExists = await checkTokenInRedis(
+      decoded.email,
+      refreshToken,
+      decoded.jit
     );
 
     // Check if the refresh token does not exist in the TOKEN_LIST (revoked)
-    if (!isRefreshTokenInList) {
+    if (!isRefreshTokenExists) {
       throw serverResponse.createError({
         ...messages.UNAUTHORIZED,
         message: 'Refresh token is revoked',
@@ -115,12 +124,21 @@ const handleRefreshToken = async (
     const newAccessToken = generateToken(payload, 'ACCESS', '15m');
     const newRefreshToken = generateToken(payload, 'REFRESH', '7d');
 
-    redisClient.del(`TOKEN_BLACK_LIST:${decoded.email}:${decoded.jit}`);
+    // Delete old tokens from Redis
+    await deleteAccessAndRefreshTokensFromRedis(
+      decoded.email,
+      accessToken,
+      refreshToken,
+      decoded.jit
+    );
 
-    redisClient.hSet(`TOKEN_LIST:${payload.email}:${payload.jit}`, {
-      [`${newAccessToken}:${payload.jit}`]: 0,
-      [`${newRefreshToken}:${payload.jit}`]: 0,
-    });
+    // Save new tokens to Redis
+    await saveAccessAndRefreshTokensToRedis(
+      payload.email,
+      newAccessToken,
+      newRefreshToken,
+      payload.jit
+    );
 
     (req as RequestWithUser).user = {
       email: payload.email,

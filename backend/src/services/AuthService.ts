@@ -31,6 +31,12 @@ import { v4 as uuidv4 } from 'uuid';
 // Redis
 import { getRedisClient } from '../db/redisClient.js';
 import { RequestWithUser } from '../middlewares/authMiddleware.js';
+import {
+  deleteAccessAndRefreshTokensFromRedis,
+  deleteAllTokensFromRedis,
+  deleteTokenFromRedis,
+  saveAccessAndRefreshTokensToRedis,
+} from '../utils/redis/redisUtils.js';
 
 export type UserCreateInput = Pick<UserType, 'email' | 'name'> & {
   password: string;
@@ -110,11 +116,12 @@ const AuthService = {
       const refreshToken = generateToken(tokenPayload, 'REFRESH', '7d');
 
       //
-      const redisClient = getRedisClient();
-      await redisClient.hSet(`TOKEN_LIST:${user.email}:${tokenPayload.jit}`, {
-        [`${accessToken}:${tokenPayload.jit}`]: 0,
-        [`${refreshToken}:${tokenPayload.jit}`]: 0,
-      });
+      await saveAccessAndRefreshTokensToRedis(
+        user.email,
+        accessToken,
+        refreshToken,
+        tokenPayload.jit
+      );
 
       user.accessToken = accessToken;
       user.refreshToken = refreshToken;
@@ -347,11 +354,27 @@ const AuthService = {
     const passwordHash = bcrypt.hashSync(newPassword, 10);
     user.passwordHash = passwordHash;
     await user.save();
+
+    // Delete all tokens from Redis
+    await deleteAllTokensFromRedis(user.email);
+
     return user;
   },
-  logout: async function (user: RequestWithUser['user'], res: Response) {
-    const redisClient = getRedisClient();
-    redisClient.del(`TOKEN_LIST:${user.email}:${user.jit}`);
+  logout: async function (
+    data: {
+      email: string;
+      accessToken: string;
+      refreshToken: string;
+      jit: string;
+    },
+    res: Response
+  ) {
+    await deleteAccessAndRefreshTokensFromRedis(
+      data.email,
+      data.accessToken,
+      data.refreshToken,
+      data.jit
+    );
 
     res.clearCookie('acc_t');
     res.clearCookie('ref_t');

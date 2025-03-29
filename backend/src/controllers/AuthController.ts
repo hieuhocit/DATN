@@ -143,8 +143,20 @@ const AuthController = {
     }
   },
   logout: async (req: Request, res: Response, next: NextFunction) => {
+    const { acc_t: accessToken, ref_t: refreshToken } = req.cookies;
+    const email = (req as RequestWithUser).user.email;
+    const jit = (req as RequestWithUser).user.jit;
+
     try {
-      await AuthService.logout((req as RequestWithUser).user, res);
+      await AuthService.logout(
+        {
+          email,
+          accessToken,
+          refreshToken,
+          jit,
+        },
+        res
+      );
 
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess({

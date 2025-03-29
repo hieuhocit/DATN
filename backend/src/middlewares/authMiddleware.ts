@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 // Server response
-import serverResponse from '../utils/helpers/reponses.js';
+import serverResponse from '../utils/helpers/responses.js';
 
 // Message config
 import messages from '../configs/messagesConfig.js';
@@ -13,19 +13,23 @@ import { verifyToken, generateToken } from '../utils/helpers/tokens.js';
 // JWT
 import jwt from 'jsonwebtoken';
 
-// Models
-import RefreshToken from '../models/RefreshToken.js';
+// Redis
+import { getRedisClient } from '../db/redisClient.js';
+
+// UUID
+import { v4 as uuidv4 } from 'uuid';
 
 export type JwtPayLoadType = {
   email: string;
   role: 'user' | 'instructor' | 'admin';
   registerProvider: 'local' | 'google' | 'facebook';
+  jit: string;
   iat: number;
   exp: number;
 };
 
 export type RequestWithUser = Request & {
-  user: Pick<JwtPayLoadType, 'email' | 'role' | 'registerProvider'>;
+  user: Pick<JwtPayLoadType, 'email' | 'role' | 'registerProvider' | 'jit'>;
 };
 
 export const authMiddleware = async (
@@ -45,10 +49,26 @@ export const authMiddleware = async (
 
     const user = verifyToken(accessToken, 'ACCESS') as JwtPayLoadType;
 
+    const redisClient = getRedisClient();
+
+    const isAccessTokenInList = await redisClient.hGet(
+      `TOKEN_LIST:${user.email}:${user.jit}`,
+      `${accessToken}:${user.jit}`
+    );
+
+    // Check if the access token does not exist in the TOKEN_LIST (revoked)
+    if (!isAccessTokenInList) {
+      throw serverResponse.createError({
+        ...messages.UNAUTHORIZED,
+        message: 'Access token is revoked',
+      });
+    }
+
     (req as RequestWithUser).user = {
       email: user.email,
       role: user.role,
       registerProvider: user.registerProvider,
+      jit: user.jit,
     };
 
     next();
@@ -68,77 +88,61 @@ const handleRefreshToken = async (
   next: NextFunction
 ) => {
   try {
-    const storedToken = await RefreshToken.findOne({ token: refreshToken });
+    const decoded = verifyToken(refreshToken, 'REFRESH') as JwtPayLoadType;
 
-    if (!storedToken) {
+    const redisClient = getRedisClient();
+
+    const isRefreshTokenInList = await redisClient.hGet(
+      `TOKEN_LIST:${decoded.email}:${decoded.jit}`,
+      `${refreshToken}:${decoded.jit}`
+    );
+
+    // Check if the refresh token does not exist in the TOKEN_LIST (revoked)
+    if (!isRefreshTokenInList) {
       throw serverResponse.createError({
         ...messages.UNAUTHORIZED,
-        message: 'Refresh token is invalid',
-      });
-    }
-
-    if (storedToken.expiresAt.getTime() < Date.now()) {
-      throw serverResponse.createError({
-        ...messages.UNAUTHORIZED,
-        message: 'Refresh token has expired',
+        message: 'Refresh token is revoked',
       });
     }
 
     const payload = {
-      email: storedToken.userEmail,
-      role: storedToken.userRole,
-      registerProvider: storedToken.userRegisterProvider,
+      email: decoded.email,
+      role: decoded.role,
+      jit: uuidv4(),
+      registerProvider: decoded.registerProvider,
     };
-
-    req.user = payload;
 
     const newAccessToken = generateToken(payload, 'ACCESS', '15m');
     const newRefreshToken = generateToken(payload, 'REFRESH', '7d');
 
-    const session = await RefreshToken.startSession();
+    redisClient.del(`TOKEN_BLACK_LIST:${decoded.email}:${decoded.jit}`);
 
-    session.startTransaction();
+    redisClient.hSet(`TOKEN_LIST:${payload.email}:${payload.jit}`, {
+      [`${newAccessToken}:${payload.jit}`]: 0,
+      [`${newRefreshToken}:${payload.jit}`]: 0,
+    });
 
-    try {
-      await storedToken.deleteOne({ session });
-      await RefreshToken.create(
-        {
-          token: newRefreshToken,
-          userEmail: payload.email,
-          userRole: payload.role,
-          userRegisterProvider: payload.registerProvider,
-          expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
-        },
-        {
-          session: session,
-        }
-      );
+    (req as RequestWithUser).user = {
+      email: payload.email,
+      role: payload.role,
+      registerProvider: payload.registerProvider,
+      jit: payload.jit,
+    };
 
-      session.commitTransaction();
+    res.cookie('acc_t', newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+    });
 
-      res.cookie('acc_t', newAccessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-      });
+    res.cookie('ref_t', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    });
 
-      res.cookie('ref_t', newRefreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-      });
-
-      next();
-    } catch (error) {
-      await session.abortTransaction();
-      throw serverResponse.createError({
-        ...messages.SERVER_ERROR,
-        message: 'Failed to refresh token',
-      });
-    } finally {
-      session.endSession();
-    }
+    next();
   } catch (error) {
     next(error);
   }

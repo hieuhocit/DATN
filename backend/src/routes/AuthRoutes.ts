@@ -24,7 +24,10 @@ const AuthRoutes = Router();
 // Routes
 AuthRoutes.post('/register', validateRegister, AuthController.register);
 AuthRoutes.post('/login', limiter, validateLogin, AuthController.login);
-AuthRoutes.post('/logout', AuthController.logout);
+AuthRoutes.post('/logout', authMiddleware, AuthController.logout);
+
+// Verify token
+AuthRoutes.post('/verify-token', authMiddleware, AuthController.verifyToken);
 
 // Password
 AuthRoutes.post('/forgot-password', limiter, AuthController.forgotPassword);

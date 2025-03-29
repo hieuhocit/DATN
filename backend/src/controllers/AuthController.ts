@@ -5,7 +5,7 @@ import { Request, Response, NextFunction } from 'express';
 import AuthService from '../services/AuthService.js';
 
 // Server response
-import serverResponse from '../utils/helpers/reponses.js';
+import serverResponse from '../utils/helpers/responses.js';
 
 // Messages
 import messages from '../configs/messagesConfig.js';
@@ -143,10 +143,8 @@ const AuthController = {
     }
   },
   logout: async (req: Request, res: Response, next: NextFunction) => {
-    const refreshToken = req.cookies?.ref_t;
-
     try {
-      await AuthService.logout(refreshToken, res);
+      await AuthService.logout((req as RequestWithUser).user, res);
 
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess({
@@ -157,6 +155,22 @@ const AuthController = {
     } catch (error) {
       next(error);
     }
+  },
+  verifyToken: async (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as RequestWithUser).user;
+    res.status(messages.OK.statusCode).json(
+      serverResponse.createSuccess(
+        {
+          ...messages.OK,
+          message: 'Token verified successfully!',
+        },
+        {
+          email: user.email,
+          role: user.role,
+          registerProvider: user.registerProvider,
+        }
+      )
+    );
   },
 };
 

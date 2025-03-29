@@ -1,13 +1,12 @@
 // Models
 import User, { UserType } from '../models/User.js';
-import PasswordReset, { PasswordResetType } from '../models/PasswordReset.js';
-import RefreshToken from '../models/RefreshToken.js';
+import PasswordReset from '../models/PasswordReset.js';
 
 // Bcrypt
 import bcrypt from 'bcryptjs';
 
 // Server response
-import serverResponse from '../utils/helpers/reponses.js';
+import serverResponse from '../utils/helpers/responses.js';
 
 // Messages
 import messages from '../configs/messagesConfig.js';
@@ -25,6 +24,13 @@ import EmailService from './EmailService.js';
 
 // Crypto
 import crypto from 'crypto';
+
+// UUID
+import { v4 as uuidv4 } from 'uuid';
+
+// Redis
+import { getRedisClient } from '../db/redisClient.js';
+import { RequestWithUser } from '../middlewares/authMiddleware.js';
 
 export type UserCreateInput = Pick<UserType, 'email' | 'name'> & {
   password: string;
@@ -90,33 +96,35 @@ const AuthService = {
     };
 
     // Helper function to generate and set tokens
-    const setAuthTokens = async (user: UserType) => {
+    const setAuthTokens = async (
+      user: UserType & { accessToken?: string; refreshToken?: string }
+    ) => {
       const tokenPayload = {
         email: user.email,
         role: user.role,
+        jit: uuidv4(),
         registerProvider: user.registerProvider,
       };
 
       const accessToken = generateToken(tokenPayload, 'ACCESS', '15m');
-
       const refreshToken = generateToken(tokenPayload, 'REFRESH', '7d');
 
-      await RefreshToken.create({
-        token: refreshToken,
-        userEmail: user.email,
-        userRole: user.role,
-        userRegisterProvider: user.registerProvider,
-        expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+      //
+      const redisClient = getRedisClient();
+      await redisClient.hSet(`TOKEN_LIST:${user.email}:${tokenPayload.jit}`, {
+        [`${accessToken}:${tokenPayload.jit}`]: 0,
+        [`${refreshToken}:${tokenPayload.jit}`]: 0,
       });
 
-      // user.accessToken = accessToken;
-      // user.refreshToken = refreshToken;
+      user.accessToken = accessToken;
+      user.refreshToken = refreshToken;
 
       res.cookie('acc_t', accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',
       });
+
       res.cookie('ref_t', refreshToken, {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         httpOnly: true,
@@ -221,7 +229,6 @@ const AuthService = {
 
     // Generate and set authentication tokens
     await setAuthTokens(user);
-
     return user;
   },
   sendResetCode: async function (email: string) {
@@ -274,26 +281,18 @@ const AuthService = {
     const passwordReset = await PasswordReset.findOne({
       email,
       code: resetCode,
+      expires: { $gt: Date.now() },
     });
 
     if (!passwordReset) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: 'Invalid reset code',
+        message: 'Invalid reset code or expired',
       });
     }
-
-    const hasExpired = passwordReset.expires.getTime() < Date.now();
 
     // Delete reset code from database
-    await passwordReset.deleteOne();
-
-    if (hasExpired) {
-      throw serverResponse.createError({
-        ...messages.BAD_REQUEST,
-        message: 'Reset code has expired',
-      });
-    }
+    await PasswordReset.deleteMany({ email: email });
 
     const resetToken = generateToken({ email }, 'ACCESS', '15m');
 
@@ -350,17 +349,9 @@ const AuthService = {
     await user.save();
     return user;
   },
-  logout: async function (refreshToken: string, res: Response) {
-    const storedToken = await RefreshToken.findOne({ token: refreshToken });
-
-    if (!storedToken) {
-      throw serverResponse.createError({
-        ...messages.BAD_REQUEST,
-        message: 'Invalid refresh token',
-      });
-    }
-
-    await storedToken.deleteOne();
+  logout: async function (user: RequestWithUser['user'], res: Response) {
+    const redisClient = getRedisClient();
+    redisClient.del(`TOKEN_LIST:${user.email}:${user.jit}`);
 
     res.clearCookie('acc_t');
     res.clearCookie('ref_t');

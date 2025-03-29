@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Server response
-import serverResponse from '../utils/helpers/reponses.js';
+import serverResponse from '../utils/helpers/responses.js';
 
 // Message config
 import messages from '../configs/messagesConfig.js';

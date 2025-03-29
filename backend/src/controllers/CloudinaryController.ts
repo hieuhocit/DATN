@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 // Server response
-import serverResponse from '../utils/helpers/reponses.js';
+import serverResponse from '../utils/helpers/responses.js';
 
 // Messages
 import messages from '../configs/messagesConfig.js';

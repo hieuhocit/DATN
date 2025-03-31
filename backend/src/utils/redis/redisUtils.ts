@@ -50,3 +50,27 @@ export const checkTokenInRedis = async (
 
   return await redisClient.hExists(`TOKEN_LIST:${email}`, `${token}:${jit}`);
 };
+
+export const saveResetCodeToRedis = async (
+  email: string,
+  code: string | number,
+  expires: number
+) => {
+  const redisClient = getRedisClient();
+
+  await redisClient.set(`RESET_CODE:${email}`, code, {
+    EX: expires,
+  });
+};
+
+export const getResetCodeInRedis = async (email: string) => {
+  const redisClient = getRedisClient();
+
+  return await redisClient.get(`RESET_CODE:${email}`);
+};
+
+export const deleteResetCodeFromRedis = async (email: string) => {
+  const redisClient = getRedisClient();
+
+  await redisClient.del(`RESET_CODE:${email}`);
+};

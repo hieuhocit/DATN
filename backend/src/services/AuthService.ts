@@ -29,13 +29,13 @@ import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 
 // Redis
-import { getRedisClient } from '../db/redisClient.js';
-import { RequestWithUser } from '../middlewares/authMiddleware.js';
 import {
   deleteAccessAndRefreshTokensFromRedis,
   deleteAllTokensFromRedis,
-  deleteTokenFromRedis,
+  deleteResetCodeFromRedis,
+  getResetCodeInRedis,
   saveAccessAndRefreshTokensToRedis,
+  saveResetCodeToRedis,
 } from '../utils/redis/redisUtils.js';
 
 export type UserCreateInput = Pick<UserType, 'email' | 'name'> & {
@@ -103,7 +103,10 @@ const AuthService = {
 
     // Helper function to generate and set tokens
     const setAuthTokens = async (
-      user: UserType & { accessToken?: string; refreshToken?: string }
+      user: Omit<UserType, 'passwordHash'> & {
+        accessToken?: string;
+        refreshToken?: string;
+      }
     ) => {
       const tokenPayload = {
         email: user.email,
@@ -140,7 +143,7 @@ const AuthService = {
       });
     };
 
-    let user: UserType;
+    let user: Omit<UserType, 'passwordHash'> & { passwordHash?: string };
 
     switch (data.provider) {
       case 'local': {
@@ -175,7 +178,7 @@ const AuthService = {
           });
         }
 
-        user = existedUser;
+        user = existedUser.toObject();
         break;
       }
 
@@ -215,7 +218,7 @@ const AuthService = {
           });
         }
 
-        user = existedUser;
+        user = existedUser.toObject();
         break;
       }
 
@@ -236,6 +239,9 @@ const AuthService = {
 
     // Generate and set authentication tokens
     await setAuthTokens(user);
+
+    delete user.passwordHash;
+
     return user;
   },
   sendResetCode: async function (email: string) {
@@ -260,13 +266,8 @@ const AuthService = {
     // Send reset code to email
     await EmailService.sendResetCode(user.name, email, resetCode);
 
-    // Save reset code to database
-    const passwordReset = new PasswordReset({
-      email,
-      code: resetCode,
-      expires: Date.now() + 1000 * 60 * 15, // 15 minutes
-    });
-    await passwordReset.save();
+    // Save reset code to redis
+    await saveResetCodeToRedis(email, resetCode, 60 * 15); // 15 minutes
 
     return resetCode;
   },
@@ -285,21 +286,18 @@ const AuthService = {
       });
     }
 
-    const passwordReset = await PasswordReset.findOne({
-      email,
-      code: resetCode,
-      expires: { $gt: Date.now() },
-    });
+    // Get reset code from redis
+    const storedResetCode = await getResetCodeInRedis(email);
 
-    if (!passwordReset) {
+    if (!storedResetCode || +storedResetCode !== resetCode) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
         message: 'Invalid reset code or expired',
       });
     }
 
-    // Delete reset code from database
-    await PasswordReset.deleteMany({ email: email });
+    // Delete reset code from redis
+    await deleteResetCodeFromRedis(email);
 
     const resetToken = generateToken({ email }, 'ACCESS', '15m');
 

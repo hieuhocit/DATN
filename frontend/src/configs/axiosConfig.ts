@@ -10,8 +10,7 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.log('Error in request interceptor', error);
-    return Promise.reject(error);
+    return error;
   }
 );
 
@@ -20,8 +19,13 @@ axiosInstance.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    console.log('Error in response interceptor', error);
-    return Promise.reject(error);
+    return (
+      error?.response?.data || {
+        statusCode: error.code,
+        statusText: 'error',
+        message: error.message || 'Something went wrong',
+      }
+    );
   }
 );
 

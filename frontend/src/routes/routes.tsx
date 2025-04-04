@@ -8,24 +8,24 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       {
-        path: '',
+        index: true,
         element: <Home />,
       },
+      {
+        path: '/login',
+        lazy: async () => {
+          const { default: Component } = await import('@pages/Login');
+          return { Component };
+        },
+      },
+      {
+        path: '/signup',
+        lazy: async () => {
+          const { default: Component } = await import('@pages/SignUp');
+          return { Component };
+        },
+      },
     ],
-  },
-  {
-    path: '/login',
-    lazy: async () => {
-      const { default: Component } = await import('@pages/Login');
-      return { Component };
-    },
-  },
-  {
-    path: '/signup',
-    lazy: async () => {
-      const { default: Component } = await import('@pages/SignUp');
-      return { Component };
-    },
   },
 ]);
 

@@ -1,29 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebookF, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { BsSun, BsMoon } from 'react-icons/bs';
 
-const SignUp: React.FC = () => {
+const SignUp = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
 
   // Toggle hiển thị mật khẩu
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
-  // Toggle Dark Mode
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDark]);
 
   // Xử lý khi nhấn nút "Tiếp tục với Facebook"
   const handleFacebookLogin = async () => {
@@ -52,98 +39,69 @@ const SignUp: React.FC = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen bg-cover bg-center flex flex-col items-center dark:bg-gray-900"
+    <div
+      className='min-h-screen bg-cover bg-center flex flex-col items-center dark:bg-gray-900'
       style={{
-        backgroundImage: "url('https://s3-alpha-sig.figma.com/img/84b5/e273/21aa0ec9bf62b4f0184fc192e721944e?Expires=1744588800&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=cAP~NA2JYc2W7W~tXpCU3K4rTCxrarTMEMoU5GyOZ0sGVLosrZVm4dRyiqda2yFuIAXjnWDat~h7ofTwbhmbXVQ8QcBO9EdavzPEf9XvqvTi~VBFiRw2Th5fiAWnoRYNcJorMd2xWWzDXtLM1QMY31GhK42kuQt1WjTaWNJAr~bu9WOhRa8HXOEW1V~qId4syNhFvq~ePlwA5mw76nwJdhi1JsPoiw4s7xRzkHMQTE0V3xHolUgYR7Lr3OM81xp3s0D8djhRmIIbyqqRkEUO4aslvSGX0IB46nSRGbNg6rGRSTkD70EaisJAgPQV8GYGYMmO7wBCCcXQ1kkLnTDKMQ__')"
+        backgroundImage:
+          "url('https://s3-alpha-sig.figma.com/img/84b5/e273/21aa0ec9bf62b4f0184fc192e721944e?Expires=1744588800&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=cAP~NA2JYc2W7W~tXpCU3K4rTCxrarTMEMoU5GyOZ0sGVLosrZVm4dRyiqda2yFuIAXjnWDat~h7ofTwbhmbXVQ8QcBO9EdavzPEf9XvqvTi~VBFiRw2Th5fiAWnoRYNcJorMd2xWWzDXtLM1QMY31GhK42kuQt1WjTaWNJAr~bu9WOhRa8HXOEW1V~qId4syNhFvq~ePlwA5mw76nwJdhi1JsPoiw4s7xRzkHMQTE0V3xHolUgYR7Lr3OM81xp3s0D8djhRmIIbyqqRkEUO4aslvSGX0IB46nSRGbNg6rGRSTkD70EaisJAgPQV8GYGYMmO7wBCCcXQ1kkLnTDKMQ__')",
       }}
     >
-      {/* Header */}
-      <header className="w-full flex justify-between items-center p-4 bg-white dark:bg-gray-800 shadow-md">
-        <div className="text-2xl font-bold text-purple-700 dark:text-white">Education</div>
-        
-        <div className="flex-1 mx-5 hidden sm:block">
-          <input
-            type="text"
-            placeholder="Tìm kiếm nội dung"
-            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500 transition-all"
-          />
-        </div>
-
-        <div className="flex gap-3">
-          <button 
-            onClick={() => navigate('/login')}
-            className="px-4 py-2 border border-purple-700 text-purple-700 dark:text-white rounded-full hover:bg-purple-50 dark:hover:bg-purple-900 transition-all"
-          >
-            Log in
-          </button>
-          <button onClick={() => navigate('/signup')}
-           className="px-4 py-2 bg-purple-700 text-white rounded-full hover:bg-purple-800 transition-all">
-            Sign up
-          </button>
-          <button 
-            onClick={() => setIsDark(!isDark)}
-            className="p-2 border rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
-          >
-            {isDark ? <BsSun size={20} className="text-yellow-400" /> : <BsMoon size={20} className="text-gray-800 dark:text-gray-200" />}
-          </button>
-        </div>
-      </header>
-
       {/* Sign Up Form */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mt-12 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Đăng nhập tài khoản</h2>
+      <div className='bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mt-12 text-center'>
+        <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
+          Đăng nhập tài khoản
+        </h2>
 
-        <form className="space-y-4 mt-4">
+        <form className='space-y-4 mt-4'>
           {/* <input
             type="text"
             placeholder="Tên đầy đủ"
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500"
           /> */}
           <input
-            type="email"
-            placeholder="Email"
-            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500"
+            type='email'
+            placeholder='Email'
+            className='w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500'
           />
-          <div className="relative">
+          <div className='relative'>
             <input
               type={showPassword ? 'text' : 'password'}
-              placeholder="Mật khẩu"
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500"
+              placeholder='Mật khẩu'
+              className='w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500'
             />
             <button
-              type="button"
+              type='button'
               onClick={togglePasswordVisibility}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-300"
+              className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-300'
             >
               {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
             </button>
           </div>
           <button
-            type="submit"
-            className="w-full p-3 bg-red-700 text-white rounded-md hover:bg-red-800 transition-all"
+            type='submit'
+            className='w-full p-3 bg-red-700 text-white rounded-md hover:bg-red-800 transition-all'
           >
             Đăng nhập
           </button>
         </form>
 
         {/* Social Login */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+        <div className='relative my-6'>
+          <div className='absolute inset-0 flex items-center'>
+            <div className='w-full border-t border-gray-300'></div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300">
-              Hoặc đăng nhập với  
+          <div className='relative flex justify-center text-sm'>
+            <span className='px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300'>
+              Hoặc đăng nhập với
             </span>
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className='space-y-3'>
           {/* Nút Facebook */}
           <button
             onClick={handleFacebookLogin}
-            className="w-full p-3 bg-[#1877F2] text-white rounded-md flex items-center justify-center gap-2 hover:bg-[#1565C0] transition-all"
+            className='w-full p-3 bg-[#1877F2] text-white rounded-md flex items-center justify-center gap-2 hover:bg-[#1565C0] transition-all'
           >
             <FaFacebookF size={20} />
             <span>Tiếp tục với Facebook</span>
@@ -152,7 +110,7 @@ const SignUp: React.FC = () => {
           {/* Nút Google */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white rounded-md flex items-center justify-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all"
+            className='w-full p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white rounded-md flex items-center justify-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all'
           >
             <FcGoogle size={20} />
             <span>Tiếp tục với Google</span>
@@ -160,9 +118,12 @@ const SignUp: React.FC = () => {
         </div>
 
         {/* Login Link */}
-        <p className="text-sm text-gray-600 dark:text-gray-300 mt-4">
+        <p className='text-sm text-gray-600 dark:text-gray-300 mt-4'>
           Chưa có tài khoản?{' '}
-          <Link to="/signup" className="text-purple-700 dark:text-purple-400 hover:underline">
+          <Link
+            to='/signup'
+            className='text-purple-700 dark:text-purple-400 hover:underline'
+          >
             Đăng ký
           </Link>
         </p>

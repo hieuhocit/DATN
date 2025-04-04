@@ -19,10 +19,7 @@
     "axios": "^1.8.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-<<<<<<< HEAD
-=======
     "react-facebook-login-lite": "^1.0.0",
->>>>>>> 39da05f7266fb674b09f1c1b2a7c8a76d4ad4ca5
     "react-icons": "^5.5.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.4.1"

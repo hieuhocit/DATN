@@ -11,10 +11,7 @@ export default function HomePage() {
   //   queryKey: ['verifyToken'],
   //   retry: false,
   // });
-<<<<<<< HEAD
 
-  return <></>;
-=======
   return (
     <>
       <h1>Home Page</h1>
@@ -22,5 +19,4 @@ export default function HomePage() {
       <Link to='/signup'>Sign Up</Link>
     </>
   );
->>>>>>> 39da05f7266fb674b09f1c1b2a7c8a76d4ad4ca5
 }

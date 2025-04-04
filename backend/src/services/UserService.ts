@@ -6,6 +6,7 @@ const UserService = {
     const user = await User.findOne({ email });
     return user;
   },
+  updateProfile: async function () {},
 };
 
 export default UserService;

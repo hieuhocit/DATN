@@ -6,6 +6,7 @@ import { MdKeyboardArrowRight } from 'react-icons/md';
 import { MdOutlineDarkMode } from 'react-icons/md';
 import { MdOutlineLightMode } from 'react-icons/md';
 import { IoMdClose } from 'react-icons/io';
+import { useTheme } from '@/hooks/useTheme';
 
 const categories = [
   {
@@ -178,6 +179,7 @@ interface IProps {
 }
 
 export default function Categories({ isOpen, closeFn }: IProps) {
+  const { theme, toggleTheme } = useTheme();
   console.log(categories);
 
   return (
@@ -185,6 +187,7 @@ export default function Categories({ isOpen, closeFn }: IProps) {
       <div className='absolute'>
         {/* Overlay */}
         <div
+          onClick={closeFn}
           className={`${
             isOpen ? 'z-10 opacity-100' : '-z-10 opacity-0 '
           } transition-opacity duration-[0.1s] ease-linear fixed inset-0 bg-black/50`}
@@ -214,7 +217,7 @@ export default function Categories({ isOpen, closeFn }: IProps) {
               <li>
                 <Link
                   className='block py-2 px-4 text-purple-500 hover:bg-purple-100 focus:bg-purple-100 transition-colors'
-                  to='/register'
+                  to='/sign-up'
                 >
                   Sign up
                 </Link>
@@ -234,11 +237,17 @@ export default function Categories({ isOpen, closeFn }: IProps) {
             {/* Theme mode  */}
             <div className='py-2'>
               <div className='py-2 px-4 '>
-                <button className='btn flex items-center gap-1 hover:scale-[1.01] focus:scale-[1.01] transition-transform'>
-                  <MdOutlineDarkMode className='text-2xl text-purple-800' />
-                  {/* <MdOutlineLightMode className='text-2xl text-purple-800' /> */}
+                <button
+                  onClick={toggleTheme}
+                  className='btn flex items-center gap-1 hover:scale-[1.01] focus:scale-[1.01] transition-transform'
+                >
+                  {theme == 'light' ? (
+                    <MdOutlineDarkMode className='text-2xl text-purple-800' />
+                  ) : (
+                    <MdOutlineLightMode className='text-2xl text-purple-800' />
+                  )}
                   <span className='bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-purple-800'>
-                    Chuyển sang tối
+                    Chuyển sang {theme == 'light' ? 'tối' : 'sáng'}
                   </span>
                 </button>
               </div>

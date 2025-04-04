@@ -19,7 +19,7 @@ const router = createBrowserRouter([
         },
       },
       {
-        path: '/signup',
+        path: '/sign-up',
         lazy: async () => {
           const { default: Component } = await import('@pages/SignUp');
           return { Component };

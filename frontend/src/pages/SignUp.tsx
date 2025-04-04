@@ -77,8 +77,7 @@ const SignUp: React.FC = () => {
           >
             Log in
           </button>
-          <button onClick={() => navigate('/signup')}
-           className="px-4 py-2 bg-purple-700 text-white rounded-full hover:bg-purple-800 transition-all">
+          <button className="px-4 py-2 bg-purple-700 text-white rounded-full hover:bg-purple-800 transition-all">
             Sign up
           </button>
           <button 
@@ -92,14 +91,14 @@ const SignUp: React.FC = () => {
 
       {/* Sign Up Form */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mt-12 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Đăng nhập tài khoản</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Đăng ký bằng email</h2>
 
         <form className="space-y-4 mt-4">
-          {/* <input
+          <input
             type="text"
             placeholder="Tên đầy đủ"
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500"
-          /> */}
+          />
           <input
             type="email"
             placeholder="Email"
@@ -123,7 +122,7 @@ const SignUp: React.FC = () => {
             type="submit"
             className="w-full p-3 bg-red-700 text-white rounded-md hover:bg-red-800 transition-all"
           >
-            Đăng nhập
+            Đăng ký
           </button>
         </form>
 
@@ -134,7 +133,7 @@ const SignUp: React.FC = () => {
           </div>
           <div className="relative flex justify-center text-sm">
             <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300">
-              Hoặc đăng nhập với  
+              Hoặc đăng ký với
             </span>
           </div>
         </div>
@@ -161,9 +160,9 @@ const SignUp: React.FC = () => {
 
         {/* Login Link */}
         <p className="text-sm text-gray-600 dark:text-gray-300 mt-4">
-          Chưa có tài khoản?{' '}
-          <Link to="/signup" className="text-purple-700 dark:text-purple-400 hover:underline">
-            Đăng ký
+          Đã có tài khoản?{' '}
+          <Link to="/login" className="text-purple-700 dark:text-purple-400 hover:underline">
+            Đăng nhập
           </Link>
         </p>
       </div>

@@ -24,6 +24,13 @@ const router = createBrowserRouter([
       return { Component };
     },
   },
+  {
+    path: '/signup', // Thêm route mới cho SignUp
+    lazy: async () => {
+      const { default: Component } = await import('@pages/SignUp');
+      return { Component };
+    },
+  },
 ]);
 
 export default router;

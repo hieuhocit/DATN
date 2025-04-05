@@ -52,7 +52,9 @@ export type UserLoginInput = {
 
 const AuthService = {
   register: async function (data: UserCreateInput) {
-    const existedUser = await UserService.getUserByEmail(data.email);
+    const existedUser = await UserService.getUserByEmailWithPasswordHash(
+      data.email
+    );
 
     if (existedUser) {
       const providerMessages = {
@@ -143,7 +145,7 @@ const AuthService = {
 
     switch (data.provider) {
       case 'local': {
-        const existedUser = await UserService.getUserByEmail(
+        const existedUser = await UserService.getUserByEmailWithPasswordHash(
           data.email as string
         );
 
@@ -176,7 +178,12 @@ const AuthService = {
           });
         }
 
-        user = existedUser.toObject();
+        user = existedUser.toObject() as Omit<UserType, 'passwordHash'> & {
+          passwordHash?: string;
+        };
+
+        delete user.passwordHash;
+
         break;
       }
 
@@ -204,7 +211,9 @@ const AuthService = {
             : (userInfo.picture as GoogleUserInfo['picture']);
 
         // Find or create user
-        let existedUser = await UserService.getUserByEmail(email);
+        let existedUser = await UserService.getUserByEmailWithoutPasswordHash(
+          email
+        );
 
         if (!existedUser) {
           existedUser = await this.register({
@@ -216,7 +225,6 @@ const AuthService = {
           });
         }
 
-        user = existedUser.toObject();
         break;
       }
 
@@ -236,7 +244,7 @@ const AuthService = {
     }
 
     // Generate and set authentication tokens
-    await setAuthTokens(user);
+    await setAuthTokens(user as UserType);
 
     return user;
   },
@@ -248,7 +256,7 @@ const AuthService = {
       });
     }
 
-    const user = await UserService.getUserByEmail(email);
+    const user = await UserService.getUserByEmailWithoutPasswordHash(email);
 
     if (!user) {
       throw serverResponse.createError({
@@ -303,7 +311,7 @@ const AuthService = {
     try {
       const { email } = verifyToken(token, 'ACCESS') as { email: string };
 
-      const user = await UserService.getUserByEmail(email);
+      const user = await UserService.getUserByEmailWithPasswordHash(email);
 
       if (!user) {
         throw serverResponse.createError({
@@ -315,6 +323,9 @@ const AuthService = {
       const passwordHash = bcrypt.hashSync(password, 10);
       user.passwordHash = passwordHash;
       await user?.save();
+
+      // Delete all tokens from Redis
+      await deleteAllTokensFromRedis(user.email);
     } catch (error) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
@@ -327,7 +338,7 @@ const AuthService = {
     oldPassword: string,
     newPassword: string
   ) {
-    const user = await UserService.getUserByEmail(email);
+    const user = await UserService.getUserByEmailWithPasswordHash(email);
 
     if (!user) {
       throw serverResponse.createError({

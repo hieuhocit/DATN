@@ -1,8 +1,18 @@
+// React
 import { useState } from 'react';
+
+// React router
 import { Link, useNavigate } from 'react-router-dom';
+
+// React icons
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebookF, FaEye, FaEyeSlash } from 'react-icons/fa';
+
+// Customs hooks
 import { useTheme } from '@/hooks/useTheme';
+
+// toastify
+import { toast } from 'react-toastify';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -17,6 +27,7 @@ const SignUp = () => {
   // Xử lý khi nhấn nút "Tiếp tục với Facebook"
   const handleFacebookLogin = async () => {
     try {
+      toast.success('Đăng nhập với Facebook thành công!');
       // Đây là nơi bạn sẽ gọi API khi backend sẵn sàng
       // Ví dụ: const response = await fetch('/api/auth/facebook', { method: 'POST' });
       console.log('Gọi API đăng nhập với Facebook');
@@ -125,7 +136,7 @@ const SignUp = () => {
         <p className='text-sm text-gray-600 dark:text-gray-300 mt-4'>
           Chưa có tài khoản?{' '}
           <Link
-            to='/signup'
+            to='/sign-up'
             className='text-purple-700 dark:text-purple-400 hover:underline'
           >
             Đăng ký

@@ -1,7 +1,3 @@
-// Models
-import User, { UserType } from '../models/User.js';
-import PasswordReset from '../models/PasswordReset.js';
-
 // Bcrypt
 import bcrypt from 'bcryptjs';
 
@@ -16,11 +12,13 @@ import { generateToken, verifyToken } from '../utils/helpers/tokens.js';
 
 // Types
 import { Response } from 'express';
+import { UserType } from '../models/User.js';
 
 // Services
 import GoogleService, { GoogleUserInfo } from './GoogleService.js';
 import FacebookService, { FacebookUserInfo } from './FacebookService.js';
 import EmailService from './EmailService.js';
+import UserService from './UserService.js';
 
 // Crypto
 import crypto from 'crypto';
@@ -54,7 +52,9 @@ export type UserLoginInput = {
 
 const AuthService = {
   register: async function (data: UserCreateInput) {
-    const existedUser = await User.findOne({ email: data.email });
+    const existedUser = await UserService.getUserByEmailWithPasswordHash(
+      data.email
+    );
 
     if (existedUser) {
       const providerMessages = {
@@ -81,7 +81,7 @@ const AuthService = {
       passwordHash = bcrypt.hashSync(data.password, 10);
     }
 
-    const newUser = new User({
+    const newUser = await UserService.createUser({
       email: data.email,
       name: data.name,
       passwordHash,
@@ -89,9 +89,7 @@ const AuthService = {
       avatarUrl: data?.avatarUrl || '',
     });
 
-    const result = await newUser.save();
-
-    return result;
+    return newUser;
   },
   login: async function (res: Response, data: UserLoginInput) {
     // Provider messages for authentication errors
@@ -103,7 +101,7 @@ const AuthService = {
 
     // Helper function to generate and set tokens
     const setAuthTokens = async (
-      user: Omit<UserType, 'passwordHash'> & {
+      user: UserType & {
         accessToken?: string;
         refreshToken?: string;
       }
@@ -143,11 +141,13 @@ const AuthService = {
       });
     };
 
-    let user: Omit<UserType, 'passwordHash'> & { passwordHash?: string };
+    let user;
 
     switch (data.provider) {
       case 'local': {
-        const existedUser = await User.findOne({ email: data.email });
+        const existedUser = await UserService.getUserByEmailWithPasswordHash(
+          data.email as string
+        );
 
         if (!existedUser) {
           throw serverResponse.createError({
@@ -178,7 +178,12 @@ const AuthService = {
           });
         }
 
-        user = existedUser.toObject();
+        user = existedUser.toObject() as Omit<UserType, 'passwordHash'> & {
+          passwordHash?: string;
+        };
+
+        delete user.passwordHash;
+
         break;
       }
 
@@ -206,7 +211,9 @@ const AuthService = {
             : (userInfo.picture as GoogleUserInfo['picture']);
 
         // Find or create user
-        let existedUser = await User.findOne({ email });
+        let existedUser = await UserService.getUserByEmailWithoutPasswordHash(
+          email
+        );
 
         if (!existedUser) {
           existedUser = await this.register({
@@ -218,7 +225,6 @@ const AuthService = {
           });
         }
 
-        user = existedUser.toObject();
         break;
       }
 
@@ -238,9 +244,7 @@ const AuthService = {
     }
 
     // Generate and set authentication tokens
-    await setAuthTokens(user);
-
-    delete user.passwordHash;
+    await setAuthTokens(user as UserType);
 
     return user;
   },
@@ -252,7 +256,7 @@ const AuthService = {
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await UserService.getUserByEmailWithoutPasswordHash(email);
 
     if (!user) {
       throw serverResponse.createError({
@@ -307,7 +311,7 @@ const AuthService = {
     try {
       const { email } = verifyToken(token, 'ACCESS') as { email: string };
 
-      const user = await User.findOne({ email });
+      const user = await UserService.getUserByEmailWithPasswordHash(email);
 
       if (!user) {
         throw serverResponse.createError({
@@ -319,6 +323,9 @@ const AuthService = {
       const passwordHash = bcrypt.hashSync(password, 10);
       user.passwordHash = passwordHash;
       await user?.save();
+
+      // Delete all tokens from Redis
+      await deleteAllTokensFromRedis(user.email);
     } catch (error) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
@@ -331,7 +338,7 @@ const AuthService = {
     oldPassword: string,
     newPassword: string
   ) {
-    const user = await User.findOne({ email });
+    const user = await UserService.getUserByEmailWithPasswordHash(email);
 
     if (!user) {
       throw serverResponse.createError({

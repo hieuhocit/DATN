@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+:root {
+  --toastify-text-color-light: black;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {

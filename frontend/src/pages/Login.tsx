@@ -51,6 +51,36 @@ const SignUp = () => {
     }
   };
 
+  // Local login
+  const handleLocalLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Validation constants
+    const PATTERNS = {
+      EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      // Password must contain at least one lowercase letter, one uppercase letter, one special character, and be between 6 to 24 characters long
+      PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,24}$/,
+    };
+
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!email || email.trim() === '') {
+      toast.error('Vui lòng nhập email!');
+      return;
+    }
+
+    if (!PATTERNS.EMAIL.test(email)) {
+      toast.error('Email không hợp lệ!');
+      return;
+    }
+
+    if (!password || password.trim() === '') {
+      toast.error('Vui lòng nhập mật khẩu!');
+      return;
+    }
+  };
+
   return (
     <div
       className={`${
@@ -67,7 +97,7 @@ const SignUp = () => {
           Đăng nhập tài khoản
         </h2>
 
-        <form className='space-y-4 mt-4'>
+        <form className='space-y-4 mt-4' onSubmit={handleLocalLogin}>
           {/* <input
             type="text"
             placeholder="Tên đầy đủ"
@@ -76,12 +106,14 @@ const SignUp = () => {
           <input
             type='email'
             placeholder='Email'
+            name='email'
             className='w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500'
           />
           <div className='relative'>
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder='Mật khẩu'
+              name='password'
               className='w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500'
             />
             <button

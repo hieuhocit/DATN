@@ -1,8 +1,18 @@
+// React
 import React, { useState } from 'react';
+
+// React router
 import { Link, useNavigate } from 'react-router-dom';
+
+// React icons
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebookF, FaEye, FaEyeSlash } from 'react-icons/fa';
+
+// Custom hooks
 import { useTheme } from '@/hooks/useTheme';
+
+// toastify
+import { toast } from 'react-toastify';
 
 const SignUp: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +25,47 @@ const SignUp: React.FC = () => {
   };
 
   // Email, password
-  const handleLocalLogin = async () => {};
+  const handleLocalLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Validation constants
+    const PATTERNS = {
+      EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      // Password must contain at least one lowercase letter, one uppercase letter, one special character, and be between 6 to 24 characters long
+      PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,24}$/,
+    };
+
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const name = formData.get('name') as string;
+
+    if (!name || name.trim() === '') {
+      toast.error('Vui lòng nhập tên!');
+      return;
+    }
+
+    if (!email || email.trim() === '') {
+      toast.error('Vui lòng nhập email!');
+      return;
+    }
+
+    if (!PATTERNS.EMAIL.test(email)) {
+      toast.error('Email không hợp lệ!');
+      return;
+    }
+
+    if (!password || password.trim() === '') {
+      toast.error('Vui lòng nhập email!');
+      return;
+    }
+
+    if (!PATTERNS.PASSWORD.test(password)) {
+      toast.error(
+        'Mật khẩu phải từ 6-24 ký tự và bao gồm ít nhất 1 chữ thường, 1 chữ hoa và 1 ký tự đặc biệt!'
+      );
+      return;
+    }
+  };
 
   // Xử lý khi nhấn nút "Tiếp tục với Facebook"
   const handleFacebookLogin = async () => {
@@ -59,20 +109,23 @@ const SignUp: React.FC = () => {
           Đăng ký bằng email
         </h2>
 
-        <form className='space-y-4 mt-4'>
+        <form className='space-y-4 mt-4' onSubmit={handleLocalLogin}>
           <input
             type='text'
+            name='name'
             placeholder='Tên đầy đủ'
             className='w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500'
           />
           <input
             type='email'
+            name='email'
             placeholder='Email'
             className='w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500'
           />
           <div className='relative'>
             <input
               type={showPassword ? 'text' : 'password'}
+              name='password'
               placeholder='Mật khẩu'
               className='w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500'
             />

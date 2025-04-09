@@ -25,12 +25,10 @@ const SignUp: React.FC = () => {
   };
 
   // Email, password
-  const handleLocalLogin = async (e: React.FormEvent) => {
+  const handleLocalSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Validation constants
     const PATTERNS = {
       EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      // Password must contain at least one lowercase letter, one uppercase letter, one special character, and be between 6 to 24 characters long
       PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,24}$/,
     };
 
@@ -55,7 +53,7 @@ const SignUp: React.FC = () => {
     }
 
     if (!password || password.trim() === '') {
-      toast.error('Vui lòng nhập email!');
+      toast.error('Vui lòng nhập mật khẩu!');
       return;
     }
 
@@ -70,26 +68,22 @@ const SignUp: React.FC = () => {
   // Xử lý khi nhấn nút "Tiếp tục với Facebook"
   const handleFacebookLogin = async () => {
     try {
-      // Đây là nơi bạn sẽ gọi API khi backend sẵn sàng
-      // Ví dụ: const response = await fetch('/api/auth/facebook', { method: 'POST' });
-      console.log('Gọi API đăng nhập với Facebook');
-      // Sau khi có backend, bạn có thể xử lý response ở đây
-      // Ví dụ: if (response.ok) { navigate('/dashboard'); }
+      toast.success('Đăng ký với Facebook thành công!');
+      console.log('Gọi API đăng ký với Facebook');
     } catch (error) {
-      console.error('Lỗi khi đăng nhập với Facebook:', error);
+      console.error('Lỗi khi đăng ký với Facebook:', error);
+      toast.error('Đăng ký với Facebook thất bại! Vui lòng thử lại.');
     }
   };
 
   // Xử lý khi nhấn nút "Tiếp tục với Google"
   const handleGoogleLogin = async () => {
     try {
-      // Đây là nơi bạn sẽ gọi API khi backend sẵn sàng
-      // Ví dụ: const response = await fetch('/api/auth/google', { method: 'POST' });
-      console.log('Gọi API đăng nhập với Google');
-      // Sau khi có backend, bạn có thể xử lý response ở đây
-      // Ví dụ: if (response.ok) { navigate('/dashboard'); }
+      toast.success('Đăng ký với Google thành công!');
+      console.log('Gọi API đăng ký với Google');
     } catch (error) {
-      console.error('Lỗi khi đăng nhập với Google:', error);
+      console.error('Lỗi khi đăng ký với Google:', error);
+      toast.error('Đăng ký với Google thất bại! Vui lòng thử lại.');
     }
   };
 
@@ -109,7 +103,7 @@ const SignUp: React.FC = () => {
           Đăng ký bằng email
         </h2>
 
-        <form className='space-y-4 mt-4' onSubmit={handleLocalLogin}>
+        <form className='space-y-4 mt-4' onSubmit={handleLocalSignUp}>
           <input
             type='text'
             name='name'

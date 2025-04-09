@@ -14,7 +14,7 @@ import { useTheme } from '@/hooks/useTheme';
 // toastify
 import { toast } from 'react-toastify';
 
-const SignUp = () => {
+const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const { theme } = useTheme();
@@ -41,13 +41,11 @@ const SignUp = () => {
   // Xử lý khi nhấn nút "Tiếp tục với Google"
   const handleGoogleLogin = async () => {
     try {
-      // Đây là nơi bạn sẽ gọi API khi backend sẵn sàng
-      // Ví dụ: const response = await fetch('/api/auth/google', { method: 'POST' });
+      toast.success('Đăng nhập với Google thành công!'); // Thêm thông báo toast
       console.log('Gọi API đăng nhập với Google');
-      // Sau khi có backend, bạn có thể xử lý response ở đây
-      // Ví dụ: if (response.ok) { navigate('/dashboard'); }
     } catch (error) {
       console.error('Lỗi khi đăng nhập với Google:', error);
+      toast.error('Đăng nhập với Google thất bại! Vui lòng thử lại.'); // Thêm thông báo lỗi
     }
   };
 
@@ -65,20 +63,32 @@ const SignUp = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    if (!email || email.trim() === '') {
-      toast.error('Vui lòng nhập email!');
-      return;
-    }
 
-    if (!PATTERNS.EMAIL.test(email)) {
-      toast.error('Email không hợp lệ!');
-      return;
-    }
 
-    if (!password || password.trim() === '') {
-      toast.error('Vui lòng nhập mật khẩu!');
-      return;
-    }
+  // Kiểm tra email
+  if (!email || email.trim() === '') {
+    toast.error('Vui lòng nhập email!');
+    return;
+  } else if (!PATTERNS.EMAIL.test(email)) {
+    toast.error('Email không hợp lệ!');
+    return;
+  }
+
+  // Kiểm tra mật khẩu
+  if (!password || password.trim() === '') {
+    toast.error('Vui lòng nhập mật khẩu!');
+    return;
+  } else if (!PATTERNS.PASSWORD.test(password)) {
+    toast.error('Mật khẩu phải từ 6-24 ký tự và bao gồm ít nhất 1 chữ thường, 1 chữ hoa và 1 ký tự đặc biệt!');
+    return;
+  }
+  };
+
+  //forgot-password
+  const handleForgotPassword = () => {
+    // Điều hướng đến trang reset mật khẩu
+    navigate('/forgot-password');
+    // toast.info('Vui lòng nhập email để đặt lại mật khẩu.');
   };
 
   return (
@@ -91,18 +101,12 @@ const SignUp = () => {
           "url('https://s3-alpha-sig.figma.com/img/84b5/e273/21aa0ec9bf62b4f0184fc192e721944e?Expires=1744588800&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=cAP~NA2JYc2W7W~tXpCU3K4rTCxrarTMEMoU5GyOZ0sGVLosrZVm4dRyiqda2yFuIAXjnWDat~h7ofTwbhmbXVQ8QcBO9EdavzPEf9XvqvTi~VBFiRw2Th5fiAWnoRYNcJorMd2xWWzDXtLM1QMY31GhK42kuQt1WjTaWNJAr~bu9WOhRa8HXOEW1V~qId4syNhFvq~ePlwA5mw76nwJdhi1JsPoiw4s7xRzkHMQTE0V3xHolUgYR7Lr3OM81xp3s0D8djhRmIIbyqqRkEUO4aslvSGX0IB46nSRGbNg6rGRSTkD70EaisJAgPQV8GYGYMmO7wBCCcXQ1kkLnTDKMQ__')",
       }}
     >
-      {/* Sign Up Form */}
       <div className='bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mt-12 text-center'>
         <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
           Đăng nhập tài khoản
         </h2>
 
         <form className='space-y-4 mt-4' onSubmit={handleLocalLogin}>
-          {/* <input
-            type="text"
-            placeholder="Tên đầy đủ"
-            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500"
-          /> */}
           <input
             type='email'
             placeholder='Email'
@@ -130,9 +134,19 @@ const SignUp = () => {
           >
             Đăng nhập
           </button>
+
+          {/* Thêm liên kết Quên mật khẩu */}
+          <div className='text-right mt-2'>
+            <button
+              type='button'
+              onClick={handleForgotPassword}
+              className='text-sm text-purple-700 dark:text-purple-400 hover:underline'
+            >
+              Quên mật khẩu?
+            </button>
+          </div>
         </form>
 
-        {/* Social Login */}
         <div className='relative my-6'>
           <div className='absolute inset-0 flex items-center'>
             <div className='w-full border-t border-gray-300'></div>
@@ -145,7 +159,6 @@ const SignUp = () => {
         </div>
 
         <div className='space-y-3'>
-          {/* Nút Facebook */}
           <button
             onClick={handleFacebookLogin}
             className='w-full p-3 bg-[#1877F2] text-white rounded-md flex items-center justify-center gap-2 hover:bg-[#1565C0] transition-all'
@@ -154,7 +167,6 @@ const SignUp = () => {
             <span>Tiếp tục với Facebook</span>
           </button>
 
-          {/* Nút Google */}
           <button
             onClick={handleGoogleLogin}
             className='w-full p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white rounded-md flex items-center justify-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all'
@@ -164,7 +176,6 @@ const SignUp = () => {
           </button>
         </div>
 
-        {/* Login Link */}
         <p className='text-sm text-gray-600 dark:text-gray-300 mt-4'>
           Chưa có tài khoản?{' '}
           <Link
@@ -179,4 +190,7 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default Login;
+
+
+

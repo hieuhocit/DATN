@@ -25,6 +25,13 @@ const router = createBrowserRouter([
           return { Component };
         },
       },
+      {
+        path: '/cart',
+        lazy: async () => {
+          const { default: Component } = await import('@pages/Cart');
+          return { Component };
+        },
+      },
     ],
   },
 ]);

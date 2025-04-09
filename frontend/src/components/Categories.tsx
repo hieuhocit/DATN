@@ -1,13 +1,20 @@
 // React router
 import { Link } from 'react-router-dom';
 
+// React
+import { useState } from 'react';
+
 // React icons
-import { MdKeyboardArrowRight } from 'react-icons/md';
-import { MdOutlineDarkMode } from 'react-icons/md';
-import { MdOutlineLightMode } from 'react-icons/md';
+import { MdKeyboardArrowRight, MdKeyboardArrowDown } from 'react-icons/md';
+import { MdOutlineDarkMode, MdOutlineLightMode } from 'react-icons/md';
 import { IoMdClose } from 'react-icons/io';
+import { IoSearchOutline, IoNotificationsOutline } from 'react-icons/io5';
+import { MdOutlineShoppingCart } from 'react-icons/md';
+
+// Hooks
 import { useTheme } from '@/hooks/useTheme';
 
+// Categories data
 const categories = [
   {
     id: 1,
@@ -176,20 +183,37 @@ const categories = [
 interface IProps {
   isOpen: boolean;
   closeFn: () => void;
+  showButtons?: boolean;
 }
 
-export default function Categories({ isOpen, closeFn }: IProps) {
+export default function Categories({ isOpen, closeFn, showButtons = true }: IProps) {
   const { theme, toggleTheme } = useTheme();
-  console.log(categories);
+  const [openCategories, setOpenCategories] = useState<number[]>([]);
+
+  // Toggle subcategory visibility
+  const toggleCategory = (categoryId: number) => {
+    setOpenCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  // Filter parent categories (categories with parentId === null)
+  const parentCategories = categories.filter((category) => category.parentId === null);
+
+  // Get subcategories for a given parent category
+  const getSubcategories = (parentId: number) =>
+    categories.filter((category) => category.parentId === parentId);
 
   return (
     <>
-      <div className='absolute'>
+      <div className="absolute">
         {/* Overlay */}
         <div
           onClick={closeFn}
           className={`${
-            isOpen ? 'z-10 opacity-100' : '-z-10 opacity-0 '
+            isOpen ? 'z-40 opacity-100' : '-z-10 opacity-0'
           } transition-opacity duration-[0.1s] ease-linear fixed inset-0 bg-black/50`}
         ></div>
 
@@ -197,27 +221,41 @@ export default function Categories({ isOpen, closeFn }: IProps) {
         <div
           className={`${
             isOpen ? 'translate-x-0' : '-translate-x-full'
-          } transition-transform duration-[0.2s] ease-out max-w-[280px] bg-white scroll-smooth custom-scrollbar fixed z-20 top-0 left-0 bottom-0 text-base`}
+          } transition-transform duration-[0.2s] ease-out max-w-[280px] ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          } scroll-smooth custom-scrollbar fixed z-50 top-0 left-0 bottom-0 text-base overflow-y-auto`} // Đồng bộ dark mode
         >
           <nav
             className={`${
               isOpen ? 'opacity-100 delay-[0.2s]' : 'opacity-0'
-            } transition-opacity divide-y divide-solid divide-gray-300`}
+            } transition-opacity divide-y divide-solid ${
+              theme === 'dark' ? 'divide-gray-600' : 'divide-gray-300'
+            }`} // Đồng bộ dark mode cho phân cách
           >
             {/* Login/Logout */}
-            <ul className='py-2'>
+            <ul className="py-2">
               <li>
                 <Link
-                  className='block py-2 px-4 text-purple-500 hover:bg-purple-100 focus:bg-purple-100 transition-colors'
-                  to='/login'
+                  className={`block py-2 px-4 ${
+                    theme === 'dark'
+                      ? 'text-gray-200 hover:bg-gray-700'
+                      : 'text-purple-500 hover:bg-purple-100'
+                  } focus:bg-purple-100 transition-colors`} // Đồng bộ dark mode
+                  to="/login"
+                  onClick={closeFn}
                 >
                   Login
                 </Link>
               </li>
               <li>
                 <Link
-                  className='block py-2 px-4 text-purple-500 hover:bg-purple-100 focus:bg-purple-100 transition-colors'
-                  to='/sign-up'
+                  className={`block py-2 px-4 ${
+                    theme === 'dark'
+                      ? 'text-gray-200 hover:bg-gray-700'
+                      : 'text-purple-500 hover:bg-purple-100'
+                  } focus:bg-purple-100 transition-colors`} // Đồng bộ dark mode
+                  to="/sign-up"
+                  onClick={closeFn}
                 >
                   Sign up
                 </Link>
@@ -225,50 +263,182 @@ export default function Categories({ isOpen, closeFn }: IProps) {
             </ul>
 
             {/* Categories */}
-            <ul className='py-2'>
-              <li>
-                <button className='py-2 px-4 flex gap-4 items-center justify-between w-full hover:bg-purple-100 focus:bg-purple-100 transition-colors cursor-pointer'>
-                  <div className='text-left'>Web Development</div>
-                  <MdKeyboardArrowRight className='text-xl' />
-                </button>
-              </li>
+            <ul className="py-2">
+              {parentCategories.map((category) => {
+                const subcategories = getSubcategories(category.id);
+                const isOpen = openCategories.includes(category.id);
+
+                return (
+                  <li key={category.id}>
+                    {/* Parent Category */}
+                    <button
+                      onClick={() => toggleCategory(category.id)}
+                      className={`py-2 px-4 flex gap-4 items-center justify-between w-full ${
+                        theme === 'dark'
+                          ? 'text-gray-200 hover:bg-gray-700'
+                          : 'text-gray-800 hover:bg-purple-100'
+                      } focus:bg-purple-100 transition-colors cursor-pointer`} // Đồng bộ dark mode
+                    >
+                      <div className="text-left">{category.name}</div>
+                      {subcategories.length > 0 && (
+                        isOpen ? (
+                          <MdKeyboardArrowDown
+                            className={`text-xl ${
+                              theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+                            }`} // Đồng bộ dark mode
+                          />
+                        ) : (
+                          <MdKeyboardArrowRight
+                            className={`text-xl ${
+                              theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+                            }`} // Đồng bộ dark mode
+                          />
+                        )
+                      )}
+                    </button>
+
+                    {/* Subcategories */}
+                    {isOpen && subcategories.length > 0 && (
+                      <ul className="pl-6">
+                        {subcategories.map((subcategory) => (
+                          <li key={subcategory.id}>
+                            <Link
+                              to={`/${subcategory.slug}`}
+                              onClick={closeFn}
+                              className={`block py-2 px-4 ${
+                                theme === 'dark'
+                                  ? 'text-gray-300 hover:bg-gray-700'
+                                  : 'text-gray-700 hover:bg-purple-100'
+                              } focus:bg-purple-100 transition-colors`} // Đồng bộ dark mode
+                            >
+                              {subcategory.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
 
-            {/* Theme mode  */}
-            <div className='py-2'>
-              <div className='py-2 px-4 '>
+            {/* Action Buttons (Search, Notifications, Cart) - Shown on non-desktop */}
+            {showButtons && (
+              <div className="py-2">
+                <div className="py-2 px-4">
+                  <h3
+                    className={`text-sm font-semibold ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                    } mb-2`} // Đồng bộ dark mode
+                  >
+                    Actions
+                  </h3>
+                  <ul className="space-y-2">
+                    <li>
+                      <button
+                        className={`flex items-center gap-2 py-2 px-4 w-full text-left ${
+                          theme === 'dark'
+                            ? 'text-gray-200 hover:bg-gray-700'
+                            : 'text-gray-800 hover:bg-purple-100'
+                        } focus:bg-purple-100 transition-colors`} // Đồng bộ dark mode
+                      >
+                        <IoSearchOutline
+                          className={`text-xl ${
+                            theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+                          }`} // Đồng bộ dark mode
+                        />
+                        <span>Tìm kiếm</span>
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        className={`flex items-center gap-2 py-2 px-4 w-full text-left ${
+                          theme === 'dark'
+                            ? 'text-gray-200 hover:bg-gray-700'
+                            : 'text-gray-800 hover:bg-purple-100'
+                        } focus:bg-purple-100 transition-colors`} // Đồng bộ dark mode
+                      >
+                        <IoNotificationsOutline
+                          className={`text-xl ${
+                            theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+                          }`} // Đồng bộ dark mode
+                        />
+                        <span>Thông báo</span>
+                      </button>
+                    </li>
+                    <li>
+                      <Link
+                        to="/cart"
+                        onClick={closeFn}
+                        className={`flex items-center gap-2 py-2 px-4 w-full text-left ${
+                          theme === 'dark'
+                            ? 'text-gray-200 hover:bg-gray-700'
+                            : 'text-gray-800 hover:bg-purple-100'
+                        } focus:bg-purple-100 transition-colors`} // Đồng bộ dark mode
+                      >
+                        <MdOutlineShoppingCart
+                          className={`text-xl ${
+                            theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+                          }`} // Đồng bộ dark mode
+                        />
+                        <span>Giỏ hàng</span>
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Theme Mode */}
+            <div className="py-2">
+              <div className="py-2 px-4">
                 <button
                   onClick={toggleTheme}
-                  className='btn flex items-center gap-1 hover:scale-[1.01] focus:scale-[1.01] transition-transform'
+                  className={`btn flex items-center gap-1 hover:scale-[1.01] focus:scale-[1.01] transition-transform ${
+                    theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+                  }`} // Đồng bộ dark mode
                 >
-                  {theme == 'light' ? (
-                    <MdOutlineDarkMode className='text-2xl text-purple-800' />
+                  {theme === 'light' ? (
+                    <MdOutlineDarkMode className="text-2xl text-purple-800" />
                   ) : (
-                    <MdOutlineLightMode className='text-2xl text-purple-800' />
+                    <MdOutlineLightMode className="text-2xl text-purple-800" />
                   )}
-                  <span className='bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-purple-800'>
-                    Chuyển sang {theme == 'light' ? 'tối' : 'sáng'}
+                  <span
+                    className={`bg-clip-text text-transparent bg-gradient-to-r ${
+                      theme === 'dark'
+                        ? 'from-blue-400 to-purple-400'
+                        : 'from-blue-700 to-purple-800'
+                    }`} // Đồng bộ dark mode
+                  >
+                    Chuyển sang {theme === 'light' ? 'tối' : 'sáng'}
                   </span>
                 </button>
               </div>
             </div>
           </nav>
+        </div>
 
-          {/* Close menu  */}
-          <div
-            className={`${
-              isOpen
-                ? 'z-10 opacity-100 scale-100 delay-[0.2s]'
-                : '-z-10 opacity-0 scale-0'
-            } transition-all absolute top-4 -right-4 translate-x-full`}
+        {/* Close Menu */}
+        <div
+          className={`${
+            isOpen
+              ? 'z-60 opacity-100 scale-100 delay-[0.2s]'
+              : '-z-10 opacity-0 scale-0'
+          } transition-all fixed top-4 right-4`} // Vị trí nút đóng
+        >
+          <button
+            onClick={closeFn}
+            className={`cursor-pointer p-3 rounded-full shadow-md hover:scale-[1.05] focus:scale-[1.05] transition-transform ${
+              theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+            }`} // Đồng bộ dark mode
+            aria-label="Đóng menu"
           >
-            <button
-              onClick={closeFn}
-              className='cursor-pointer bg-white p-3 rounded-full hover:scale-[1.05] focus:scale-[1.05] transition-transform'
-            >
-              <IoMdClose className='text-xl' />
-            </button>
-          </div>
+            <IoMdClose
+              className={`text-xl ${
+                theme === 'dark' ? 'text-gray-200' : 'text-gray-600'
+              }`} // Đồng bộ dark mode
+            />
+          </button>
         </div>
       </div>
     </>

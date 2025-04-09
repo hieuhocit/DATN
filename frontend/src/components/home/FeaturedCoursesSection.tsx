@@ -1,24 +1,18 @@
-import { Link } from 'react-router-dom';
-import {
-  IoStar,
-  IoStarHalf,
-  IoTimeOutline,
-  IoBookOutline,
-} from 'react-icons/io5';
-import { MdOutlineOndemandVideo } from 'react-icons/md';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaStar } from 'react-icons/fa'; // Sử dụng FaStar thay vì IoStar
+import { useTheme } from '@/hooks/useTheme'; // Import custom hook useTheme
 
 type Course = {
   id: number;
   title: string;
   description: string;
   instructor: string;
-  price: string;
+  originalPrice: string; // Giá gốc
+  discountedPrice: string; // Giá giảm
+  discount: string; // Phần trăm giảm giá
   rating: number;
   reviews: string;
-  hours: string;
-  lessons: string;
-  level: string;
-  isBestseller?: boolean;
+  image: string; // Thêm trường image
 };
 
 type FeaturedCoursesSectionProps = {
@@ -28,123 +22,112 @@ type FeaturedCoursesSectionProps = {
 const defaultCourses: Course[] = [
   {
     id: 1,
-    title: 'Complete Web Development Bootcamp 2024',
+    title: 'Adobe Illustrator Scratch Course',
     description:
-      'Learn web development from scratch with HTML, CSS, JavaScript, React, Node, and more.',
-    instructor: 'Nguyen Van A',
-    price: '599.000₫',
-    rating: 4.8,
-    reviews: '2.5k reviews',
-    hours: '42 giờ',
-    lessons: '65 bài học',
-    level: 'Cơ bản',
-    isBestseller: true,
+      'Lập trình là việc sử dụng các ngôn ngữ lập trình, các đoạn mã lệnh và các tiện ích có sẵn để xây dựng các chương trình',
+    instructor: 'Va Studio',
+    originalPrice: '500.000 VNĐ',
+    discountedPrice: '650.000 VNĐ',
+    discount: '30%',
+    rating: 5,
+    reviews: '1.2K',
+    image: 'https://gamikey.com/wp-content/uploads/2025/03/review-khi-cuoc-doi-cho-ban-qua-quyt-1.png', // Thay bằng URL hình ảnh thực tế
   },
   {
     id: 2,
-    title: 'Complete Web Development Bootcamp 2024',
+    title: 'Bootstrap, Vue, Web Framework',
     description:
-      'Learn web development from scratch with HTML, CSS, JavaScript, React, Node, and more.',
-    instructor: 'Nguyen Van A',
-    price: '599.000₫',
-    rating: 4.8,
-    reviews: '2.5k reviews',
-    hours: '42 giờ',
-    lessons: '65 bài học',
-    level: 'Cơ bản',
-    isBestseller: true,
+      'Học cách sử dụng Bootstrap và Vue để xây dựng các ứng dụng web hiện đại',
+    instructor: 'Va Studio',
+    originalPrice: '500.000 VNĐ',
+    discountedPrice: '650.000 VNĐ',
+    discount: '30%',
+    rating: 4,
+    reviews: '2.5K',
+    image: 'https://gamikey.com/wp-content/uploads/2025/03/review-khi-cuoc-doi-cho-ban-qua-quyt-1.png',
   },
   {
     id: 3,
-    title: 'Complete Web Development Bootcamp 2024',
+    title: 'Design Fundamentals Design Fundamentals',
     description:
-      'Learn web development from scratch with HTML, CSS, JavaScript, React, Node, and more.',
-    instructor: 'Nguyen Van A',
-    price: '599.000₫',
-    rating: 4.8,
-    reviews: '2.5k reviews',
-    hours: '42 giờ',
-    lessons: '65 bài học',
-    level: 'Cơ bản',
-    isBestseller: true,
+      'Tìm hiểu các nguyên tắc cơ bản về thiết kế đồ họa và giao diện người dùng',
+    instructor: 'Va Studio',
+    originalPrice: '500.000 VNĐ',
+    discountedPrice: '650.000 VNĐ',
+    discount: '30%',
+    rating: 5,
+    reviews: '1.8K',
+    image: 'https://gamikey.com/wp-content/uploads/2025/03/review-khi-cuoc-doi-cho-ban-qua-quyt-1.png',
   },
   {
     id: 4,
-    title: 'Complete Web Development Bootcamp 2024',
+    title: 'Ionic Build iOS, Android & More',
     description:
-      'Learn web development from scratch with HTML, CSS, JavaScript, React, Node, and more.',
-    instructor: 'Nguyen Van A',
-    price: '599.000₫',
-    rating: 4.8,
-    reviews: '2.5k reviews',
-    hours: '42 giờ',
-    lessons: '65 bài học',
-    level: 'Cơ bản',
-    isBestseller: true,
+      'Xây dựng ứng dụng di động đa nền tảng với Ionic và các công nghệ hiện đại',
+    instructor: 'Va Studio',
+    originalPrice: '500.000 VNĐ',
+    discountedPrice: '650.000 VNĐ',
+    discount: '30%',
+    rating: 4,
+    reviews: '3.1K',
+    image: 'https://gamikey.com/wp-content/uploads/2025/03/review-khi-cuoc-doi-cho-ban-qua-quyt-1.png',
   },
 ];
 
 // A reusable Course Card component
 const CourseCard = ({ course }: { course: Course }) => {
+  const navigate = useNavigate();
+
+  const handleCourseClick = () => {
+    navigate(`/course/${course.id}`);
+  };
+
   return (
-    <div className='bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300'>
-      <div className='relative'>
+    <div
+      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+      onClick={handleCourseClick}
+      role="button"
+      tabIndex={0}
+    >
+      {/* Hình ảnh và tag giảm giá */}
+      <div className="relative">
         <img
-          src={`https://source.unsplash.com/random/400x300?education,${course.id}`}
-          alt='Course thumbnail'
-          className='w-full h-48 object-cover'
+          src={course.image}
+          alt={course.title}
+          className="w-full h-48 object-cover rounded-t-lg"
         />
-        {course.isBestseller && (
-          <div className='absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded'>
-            BESTSELLER
-          </div>
-        )}
+        <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
+          Giảm {course.discount}
+        </span>
       </div>
-      <div className='p-6'>
-        <div className='flex items-center mb-2 text-yellow-500'>
-          <IoStar />
-          <IoStar />
-          <IoStar />
-          <IoStar />
-          <IoStarHalf />
-          <span className='text-gray-600 dark:text-gray-300 text-sm ml-2'>
-            {course.rating} ({course.reviews})
-          </span>
-        </div>
-        <h3 className='font-bold text-lg mb-2 text-gray-800 dark:text-white'>
+
+      {/* Nội dung */}
+      <div className="p-4">
+        <h3 className="font-semibold text-lg text-gray-800 dark:text-white">
           {course.title}
         </h3>
-        <p className='text-gray-600 dark:text-gray-300 text-sm mb-4'>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          {course.instructor}
+        </p>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 line-clamp-2">
           {course.description}
         </p>
-        <div className='flex items-center text-sm text-gray-500 dark:text-gray-400 gap-4 mb-4'>
-          <div className='flex items-center'>
-            <MdOutlineOndemandVideo className='mr-1' />
-            <span>{course.hours}</span>
-          </div>
-          <div className='flex items-center'>
-            <IoBookOutline className='mr-1' />
-            <span>{course.lessons}</span>
-          </div>
-          <div className='flex items-center'>
-            <IoTimeOutline className='mr-1' />
-            <span>{course.level}</span>
-          </div>
+        <div className="flex items-center mt-2">
+          {[...Array(Math.floor(course.rating))].map((_, i) => (
+            <FaStar key={i} className="text-yellow-400" />
+          ))}
+          {course.rating % 1 !== 0 && <FaStar className="text-yellow-400" />}
+          <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+            ({course.reviews})
+          </span>
         </div>
-        <div className='flex justify-between items-center'>
-          <div className='flex items-center'>
-            <img
-              src={`https://source.unsplash.com/random/100x100?portrait,${course.id}`}
-              alt='instructor'
-              className='w-8 h-8 rounded-full mr-2'
-            />
-            <span className='text-sm text-gray-600 dark:text-gray-300'>
-              {course.instructor}
-            </span>
-          </div>
-          <div className='text-lg font-bold text-purple-600 dark:text-purple-400'>
-            {course.price}
-          </div>
+        <div className="flex items-center justify-between mt-3">
+          <span className="text-lg font-semibold text-gray-800 dark:text-white">
+            {course.originalPrice}
+          </span>
+          <span className="text-sm text-gray-500 dark:text-gray-400 line-through">
+            {course.discountedPrice}
+          </span>
         </div>
       </div>
     </div>
@@ -154,27 +137,33 @@ const CourseCard = ({ course }: { course: Course }) => {
 export const FeaturedCoursesSection = ({
   courses = defaultCourses,
 }: FeaturedCoursesSectionProps) => {
+  const { theme } = useTheme(); // Lấy theme từ useTheme hook
+
   return (
-    <section className='py-16 bg-gray-50 dark:bg-gray-900'>
-      <div className='container mx-auto px-4'>
-        <div className='flex justify-between items-end mb-12'>
+    <section
+      className={`py-16 ${
+        theme === 'dark' ? 'dark bg-gray-900' : 'bg-gray-50'
+      }`}
+    >
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className='text-3xl font-bold mb-4 text-gray-800 dark:text-white'>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-800 dark:text-white">
               Khóa học nổi bật
             </h2>
-            <p className='text-gray-600 dark:text-gray-300'>
+            <p className="text-gray-600 dark:text-gray-300">
               Các khóa học phổ biến và được đánh giá cao
             </p>
           </div>
           <Link
-            to='/courses'
-            className='text-purple-600 dark:text-purple-400 hover:underline'
+            to="/courses"
+            className="text-purple-600 dark:text-purple-400 hover:underline"
           >
             Xem tất cả
           </Link>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8'>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {courses.map((course) => (
             <CourseCard key={course.id} course={course} />
           ))}

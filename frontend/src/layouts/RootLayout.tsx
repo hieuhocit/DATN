@@ -2,12 +2,12 @@
 import { Outlet } from 'react-router-dom';
 
 // components
-import Header from '@components/Header';
+import Header from '@/components/header/Header';
 
 // Notification
 import { ToastContainer, Bounce } from 'react-toastify';
 
-// Theme hook
+// Hooks
 import { useTheme } from '@/hooks/useTheme';
 
 export default function RootLayout() {

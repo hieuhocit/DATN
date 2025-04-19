@@ -14,7 +14,15 @@ import Cart from './Cart';
 import Notification from './Notification';
 import Profile from './Profile';
 
+// Hooks
+import { useAppSelector } from '@/hooks/useStore';
+
+// Selectors
+import { isLoggedInSelector } from '@/features/account';
+
 export default function DesktopHeader() {
+  const isLoggedIn = useAppSelector(isLoggedInSelector);
+
   return (
     <Stack direction={'row'} alignItems='center' gap={8} sx={{ width: '100%' }}>
       <Stack direction={'row'} spacing={3} alignItems='center'>
@@ -52,10 +60,10 @@ export default function DesktopHeader() {
         <Cart />
 
         {/* Notifications */}
-        <Notification />
+        {isLoggedIn && <Notification />}
 
         {/* Profile */}
-        <Profile />
+        {isLoggedIn && <Profile />}
       </Stack>
     </Stack>
   );

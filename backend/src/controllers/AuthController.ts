@@ -161,7 +161,7 @@ const AuthController = {
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess({
           ...messages.OK,
-          message: 'Logout successfully!',
+          message: 'Đăng xuất thành công!',
         })
       );
     } catch (error) {
@@ -170,17 +170,16 @@ const AuthController = {
   },
   verifyToken: async (req: Request, res: Response, next: NextFunction) => {
     const user = (req as RequestWithUser).user;
+
+    const data = await AuthService.getUserByEmail(user.email);
+
     res.status(messages.OK.statusCode).json(
       serverResponse.createSuccess(
         {
           ...messages.OK,
           message: 'Token verified successfully!',
         },
-        {
-          email: user.email,
-          role: user.role,
-          registerProvider: user.registerProvider,
-        }
+        data
       )
     );
   },

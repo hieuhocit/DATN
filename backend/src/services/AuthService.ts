@@ -45,6 +45,26 @@ export type UserLoginInput = {
 };
 
 const AuthService = {
+  getUserByEmail: async function (email: string) {
+    if (!email || email.trim() === '') {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: 'Vui lòng nhập email!',
+      });
+    }
+
+    const user = await UserService.getUserByEmailWithoutPasswordHash(email);
+
+    if (!user) {
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: 'Tài khoản không tồn tại!',
+      });
+    }
+
+    return user;
+  },
+
   register: async function (data: UserCreateInput) {
     const newUser = await UserService.createUser(data);
     return newUser;
@@ -87,14 +107,14 @@ const AuthService = {
 
       res.cookie('acc_t', accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'none',
       });
 
       res.cookie('ref_t', refreshToken, {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'none',
       });
     };
@@ -110,7 +130,7 @@ const AuthService = {
         if (!existedUser) {
           throw serverResponse.createError({
             ...messages.NOT_FOUND,
-            message: 'Account not found!',
+            message: 'Tài khoản không tồn tại!',
           });
         }
 
@@ -120,7 +140,7 @@ const AuthService = {
             message:
               providerMessages[
                 existedUser.registerProvider as keyof typeof providerMessages
-              ] || 'Please log in with your original registration method.',
+              ] || 'Vui lòng đăng nhập bằng tài khoản đã liên kết!',
           });
         }
 
@@ -132,7 +152,7 @@ const AuthService = {
         if (!isPasswordMatch) {
           throw serverResponse.createError({
             ...messages.BAD_REQUEST,
-            message: 'Password is incorrect!',
+            message: 'Mật khẩu không chính xác!',
           });
         }
 
@@ -184,13 +204,14 @@ const AuthService = {
           });
         }
 
+        user = existedUser;
         break;
       }
 
       default: {
         throw serverResponse.createError({
           ...messages.BAD_REQUEST,
-          message: 'Invalid provider specified.',
+          message: 'Nhà cung cấp không hợp lệ!',
         });
       }
     }

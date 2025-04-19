@@ -71,7 +71,7 @@ export const validateRegister = (
   ) {
     errorResponse.errors['email'] = {
       field: 'email',
-      message: 'Invalid email address.',
+      message: 'Email không hợp lệ.',
     };
   }
 
@@ -155,13 +155,13 @@ export const validateLogin = (
     switch (provider) {
       case 'local': {
         if (!email || email.trim() === '') {
-          addError('email', 'The email field is required.');
+          addError('email', 'Vui lòng nhập email.');
         } else if (!PATTERNS.EMAIL.test(email)) {
-          addError('email', 'Invalid email address.');
+          addError('email', 'Email không hợp lệ.');
         }
 
         if (!password || password.trim() === '') {
-          addError('password', 'The password field is required.');
+          addError('password', 'Vui lòng nhập mật khẩu.');
         }
         break;
       }

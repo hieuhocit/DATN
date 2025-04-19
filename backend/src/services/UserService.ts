@@ -25,10 +25,10 @@ const UserService = {
     if (existedUser) {
       const providerMessages = {
         google:
-          'Your account is connected to Google. Please log in with Google.',
+          'Tài khoản của bạn đã được kết nối với Google. Vui lòng đăng nhập bằng Google.',
         facebook:
-          'Your account is connected to Facebook. Please log in with Facebook',
-        default: 'Account already exists.',
+          'Tài khoản của bạn đã được kết nối với Facebook. Vui lòng đăng nhập bằng Facebook.',
+        default: 'Tài khoản đã tồn tại',
       };
 
       const provider =

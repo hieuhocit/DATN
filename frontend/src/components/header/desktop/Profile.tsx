@@ -9,9 +9,23 @@ import LogoutIcon from '@mui/icons-material/Logout';
 // React
 import { useState } from 'react';
 
+// Services
+import { logout } from '@/services/authService';
+
+// Toast
+import { toast } from 'react-toastify';
+
+// React router
+import { useNavigate } from 'react-router-dom';
+
+// Hooks
+import { useAppDispatch } from '@/hooks/useStore';
+import { setAccountLoggedOut } from '@/features/account';
+
 export default function Profile() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -20,6 +34,18 @@ export default function Profile() {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    const data = await logout();
+
+    if (data.statusCode === 200) {
+      dispatch(setAccountLoggedOut());
+      toast.success(data.message);
+      navigate('/');
+    } else {
+      toast.error(data.message);
+    }
   };
 
   return (
@@ -36,7 +62,12 @@ export default function Profile() {
         {/* Will display if use register to be teacher */}
         <MenuItem onClick={handleClose}>Giáo viên</MenuItem>
         <MenuItem onClick={handleClose}>
-          <Stack direction={'row'} alignItems={'center'} gap={3}>
+          <Stack
+            onClick={handleLogout}
+            direction={'row'}
+            alignItems={'center'}
+            gap={3}
+          >
             Đăng xuất
             <LogoutIcon fontSize='small' />
           </Stack>

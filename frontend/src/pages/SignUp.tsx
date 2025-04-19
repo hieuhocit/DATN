@@ -1,7 +1,16 @@
+// React
 import React, { useState } from 'react';
+
+// React router
 import { Link, useNavigate } from 'react-router-dom';
-import { FcGoogle } from 'react-icons/fc';
-import { FaFacebookF, FaEye, FaEyeSlash } from 'react-icons/fa';
+
+// Icons
+import GoogleIcon from '@mui/icons-material/Google';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+
+// MUI
 import {
   Box,
   Button,
@@ -12,87 +21,197 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+
+// React Toastify
 import { toast } from 'react-toastify';
 
+// Components
+import Section from '@/components/common/Section';
+
+// Login facebook and google
+import FacebookLogin from 'react-facebook-login';
+import { useGoogleLogin } from '@react-oauth/google';
+
+// Services
+import { login, register } from '@/services/authService';
+
+// Redux
+import { setAccountLoggedIn } from '@/features/account';
+import { useAppDispatch } from '@/hooks/useStore';
+
+// Types
+type UserInfoFacebook = {
+  status?: 'unknown';
+  accessToken: string;
+  data_access_expiration_time: number;
+  expiresIn: number;
+  graphDomain: string;
+  name: string;
+  signedRequest: string;
+  userID: string;
+  id?: string;
+  error?: {
+    code: number;
+    fbtrace_id: string;
+    message: string;
+    type: string;
+  };
+};
+
 const SignUp: React.FC = () => {
-  const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const [showPassword, setShowPassword] = useState(false);
   const isDark = theme.palette.mode === 'dark';
 
   const handleShowPassword = () => setShowPassword((prev) => !prev);
 
-  const handleLocalSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
     const PATTERNS = {
       EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,24}$/,
     };
 
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get('name')?.toString().trim();
-    const email = formData.get('email')?.toString().trim();
-    const password = formData.get('password')?.toString().trim();
+    if (!name || name.trim() === '') {
+      toast.error('Vui lòng nhập tên đầy đủ!');
+      return;
+    }
 
-    if (!name) return toast.error('Vui lòng nhập tên!');
-    if (!email) return toast.error('Vui lòng nhập email!');
-    if (!PATTERNS.EMAIL.test(email)) return toast.error('Email không hợp lệ!');
-    if (!password) return toast.error('Vui lòng nhập mật khẩu!');
-    if (!PATTERNS.PASSWORD.test(password))
-      return toast.error(
+    if (!email || email.trim() === '') {
+      toast.error('Vui lòng nhập email!');
+      return;
+    } else if (!PATTERNS.EMAIL.test(email)) {
+      toast.error('Email không hợp lệ!');
+      return;
+    }
+
+    if (!password || password.trim() === '') {
+      toast.error('Vui lòng nhập mật khẩu!');
+      return;
+    } else if (!PATTERNS.PASSWORD.test(password)) {
+      toast.error(
         'Mật khẩu phải từ 6-24 ký tự và bao gồm ít nhất 1 chữ thường, 1 chữ hoa và 1 ký tự đặc biệt!'
       );
+      return;
+    }
 
     try {
-      // Placeholder for actual sign-up logic (e.g., API call)
-      // await signUpWithEmail({ name, email, password });
+      const dataRes = (await register({
+        name,
+        email,
+        password,
+        provider: 'local',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      })) as any;
+
+      // Error is thrown by axios
+      if (dataRes.statusCode === 'ERR_NETWORK') {
+        toast.error('Đã xảy ra lỗi!');
+        return;
+      }
+
+      if (dataRes.statusCode !== 200 && dataRes.statusCode !== 201) {
+        if (dataRes?.errors?.name) toast.error(dataRes.errors.name.message);
+        else if (dataRes?.errors?.email)
+          toast.error(dataRes.errors.email.message);
+        else if (dataRes?.errors?.password)
+          toast.error(dataRes.errors.password.message);
+        else toast.error(dataRes.message);
+        return;
+      }
+
       toast.success('Đăng ký thành công!');
-      navigate('/login'); // Redirect to login page after success
+      navigate('/login');
     } catch (error) {
-      console.error('Sign-up error:', error);
-      toast.error('Đăng ký thất bại. Vui lòng thử lại!');
+      console.error('Error :', error);
+      toast.error('Đã xảy ra lỗi');
     }
   };
 
-  // Xử lý khi nhấn nút "Tiếp tục với Facebook"
-  const handleFacebookLogin = async () => {
-    try {
-      toast.success('Đăng ký với Facebook thành công!');
-      console.log('Gọi API đăng ký với Facebook');
-    } catch (error) {
-      console.error('Lỗi khi đăng ký với Facebook:', error);
-      toast.error('Đăng ký với Facebook thất bại! Vui lòng thử lại.');
-    }
-  };
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const dataRes = (await login({
+          googleAccessToken: tokenResponse.access_token,
+          provider: 'google',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        })) as any;
 
-  // Xử lý khi nhấn nút "Tiếp tục với Google"
-  const handleGoogleLogin = async () => {
+        // Error is thrown by axios
+        if (dataRes.statusCode === 'ERR_NETWORK') {
+          toast.error('Đã xảy ra lỗi!');
+        }
+
+        if (dataRes.statusCode === 200) {
+          dispatch(setAccountLoggedIn(dataRes.data));
+          toast.success('Đăng nhập thành công!');
+          navigate('/');
+          return;
+        } else {
+          toast.error(dataRes.message);
+        }
+      } catch (error) {
+        console.error('Error :', error);
+        toast.error('Đã xảy ra lỗi');
+      }
+    },
+    onError: (error) => {
+      console.error('Login Failed:', error);
+      toast.error('Đã xảy ra lỗi');
+    },
+  });
+
+  const loginWithFacebookCallback = async (userInfo: UserInfoFacebook) => {
+    if (userInfo?.status === 'unknown' || userInfo?.error) {
+      return;
+    }
     try {
-      toast.success('Đăng ký với Google thành công!');
-      console.log('Gọi API đăng ký với Google');
+      const dataRes = (await login({
+        facebookAccessToken: userInfo.accessToken,
+        provider: 'facebook',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      })) as any;
+
+      // Error is thrown by axios
+      if (dataRes.statusCode === 'ERR_NETWORK') {
+        toast.error('Đã xảy ra lỗi!');
+      }
+
+      if (dataRes.statusCode === 200) {
+        dispatch(setAccountLoggedIn(dataRes.data));
+        toast.success('Đăng nhập thành công!');
+        navigate('/');
+      } else {
+        toast.error(dataRes.message);
+      }
     } catch (error) {
-      console.error('Lỗi khi đăng ký với Google:', error);
-      toast.error('Đăng ký với Google thất bại! Vui lòng thử lại.');
+      console.error('Error :', error);
+      toast.error('Đã xảy ra lỗi');
     }
   };
 
   return (
-    <Box
+    <Section
       sx={{
-        minHeight: '100vh',
+        mt: '96px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        // backgroundImage: "url('https://s3-alpha-sig.figma.com/img/84b5/e273/21aa0ec9bf62b4f0184fc192e721944e?Expires=1744588800&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=cAP~NA2JYc2W7W~tXpCU3K4rTCxrarTMEMoU5GyOZ0sGVLosrZVm4dRyiqda2yFuIAXjnWDat~h7ofTwbhmbXVQ8QcBO9EdavzPEf9XvqvTi~VBFiRw2Th5fiAWnoRYNcJorMd2xWWzDXtLM1QMY31GhK42kuQt1WjTaWNJAr~bu9WOhRa8HXOEW1V~qId4syNhFvq~ePlwA5mw76nwJdhi1JsPoiw4s7xRzkHMQTE0V3xHolUgYR7Lr3OM81xp3s0D8djhRmIIbyqqRkEUO4aslvSGX0IB46nSRGbNg6rGRSTkD70EaisJAgPQV8GYGYMmO7wBCCcXQ1kkLnTDKMQ__')", // Replace with your valid image URL
-        backgroundColor: isDark ? 'grey.900' : 'grey.200', // Fallback color
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
       }}
     >
       <Box
         sx={{
-          bgcolor: isDark ? 'rgba(33, 33, 33, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+          bgcolor: isDark
+            ? 'rgba(33, 33, 33, 0.9)'
+            : 'rgba(255, 255, 255, 0.9)',
           p: { xs: 3, sm: 4 },
           borderRadius: 2,
           boxShadow: 5,
@@ -103,8 +222,8 @@ const SignUp: React.FC = () => {
         }}
       >
         <Typography
-          variant="h5"
-          fontWeight="bold"
+          variant='h5'
+          fontWeight='bold'
           color={isDark ? 'white' : 'grey.900'}
           mb={2}
         >
@@ -112,42 +231,53 @@ const SignUp: React.FC = () => {
         </Typography>
 
         <Box
-          component="form"
-          onSubmit={handleLocalSignUp}
+          component='form'
+          onSubmit={handleSignup}
           sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
           <TextField
-            name="name"
-            label="Tên đầy đủ"
+            name='name'
+            label='Tên đầy đủ'
             fullWidth
-            variant="outlined"
+            variant='outlined'
             InputProps={{
-              style: { backgroundColor: isDark ? '#424242' : 'white', color: isDark ? 'white' : 'black' },
+              style: {
+                backgroundColor: isDark ? '#424242' : 'white',
+                color: isDark ? 'white' : 'black',
+              },
             }}
             InputLabelProps={{ style: { color: isDark ? '#e0e0e0' : '#666' } }}
           />
           <TextField
-            name="email"
-            label="Email"
-            type="email"
+            name='email'
+            label='Email'
+            type='email'
             fullWidth
-            variant="outlined"
+            variant='outlined'
             InputProps={{
-              style: { backgroundColor: isDark ? '#424242' : 'white', color: isDark ? 'white' : 'black' },
+              style: {
+                backgroundColor: isDark ? '#424242' : 'white',
+                color: isDark ? 'white' : 'black',
+              },
             }}
             InputLabelProps={{ style: { color: isDark ? '#e0e0e0' : '#666' } }}
           />
           <Box sx={{ position: 'relative' }}>
             <TextField
-              name="password"
-              label="Mật khẩu"
+              name='password'
+              label='Mật khẩu'
               type={showPassword ? 'text' : 'password'}
               fullWidth
-              variant="outlined"
+              variant='outlined'
               InputProps={{
-                style: { backgroundColor: isDark ? '#424242' : 'white', color: isDark ? 'white' : 'black' },
+                style: {
+                  backgroundColor: isDark ? '#424242' : 'white',
+                  color: isDark ? 'white' : 'black',
+                },
               }}
-              InputLabelProps={{ style: { color: isDark ? '#e0e0e0' : '#666' } }}
+              InputLabelProps={{
+                style: { color: isDark ? '#e0e0e0' : '#666' },
+              }}
             />
             <IconButton
               onClick={handleShowPassword}
@@ -159,13 +289,13 @@ const SignUp: React.FC = () => {
                 color: isDark ? 'grey.300' : 'grey.500',
               }}
             >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
+              {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </IconButton>
           </Box>
 
           <Button
-            type="submit"
-            variant="contained"
+            type='submit'
+            variant='contained'
             fullWidth
             sx={{
               bgcolor: '#d32f2f',
@@ -183,7 +313,7 @@ const SignUp: React.FC = () => {
         <Box sx={{ my: 3, position: 'relative' }}>
           <Divider sx={{ bgcolor: isDark ? 'grey.600' : 'grey.300' }} />
           <Typography
-            variant="body2"
+            variant='body2'
             sx={{
               position: 'absolute',
               top: '50%',
@@ -199,27 +329,40 @@ const SignUp: React.FC = () => {
         </Box>
 
         <Stack spacing={2}>
-          <Button
-            onClick={handleFacebookLogin}
-            fullWidth
-            variant="contained"
-            startIcon={<FaFacebookF />}
+          <Box
             sx={{
-              bgcolor: '#1877F2',
-              '&:hover': { bgcolor: '#1565C0' },
-              textTransform: 'none',
-              py: 1.5,
+              '&  .fb-button': {
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingBlock: '12px',
+                borderRadius: '4px',
+                gap: '8px',
+                cursor: 'pointer',
+                fontWeight: 600,
+                border: 'none',
+                color: 'white',
+                background: isDark ? '#424242' : '#023e8a',
+              },
             }}
           >
-            Tiếp tục với Facebook
-          </Button>
+            <FacebookLogin
+              appId={import.meta.env.VITE_FACEBOOK_APP_ID}
+              autoLoad={false}
+              callback={loginWithFacebookCallback}
+              icon={<FacebookIcon fontSize='medium' />}
+              textButton='Tiếp tục với Facebook'
+              cssClass='fb-button'
+            />
+          </Box>
           <Button
-            onClick={handleGoogleLogin}
+            onClick={() => loginWithGoogle()}
             fullWidth
-            variant="outlined"
-            startIcon={<FcGoogle />}
+            variant='outlined'
+            startIcon={<GoogleIcon fontSize='large' />}
             sx={{
-              bgcolor: isDark ? '#424242' : 'white',
+              // bgcolor: isDark ? '#424242' : 'white',
               color: isDark ? 'white' : 'black',
               borderColor: isDark ? 'grey.600' : 'grey.300',
               '&:hover': {
@@ -233,17 +376,23 @@ const SignUp: React.FC = () => {
           </Button>
         </Stack>
 
-        <Typography variant="body2" sx={{ mt: 2, color: isDark ? 'grey.300' : 'grey.600' }}>
+        <Typography
+          variant='body2'
+          sx={{ mt: 2, color: isDark ? 'grey.300' : 'grey.600' }}
+        >
           Đã có tài khoản?{' '}
           <Link
-            to="/login"
-            style={{ color: isDark ? '#BB86FC' : '#6200EA', textDecoration: 'none' }}
+            to='/login'
+            style={{
+              color: isDark ? '#BB86FC' : '#6200EA',
+              textDecoration: 'none',
+            }}
           >
             Đăng nhập
           </Link>
         </Typography>
       </Box>
-    </Box>
+    </Section>
   );
 };
 

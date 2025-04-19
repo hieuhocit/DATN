@@ -7,7 +7,7 @@ import Image from '../common/Image';
 
 export default function Introduction() {
   return (
-    <Section sx={{ mt: '48px' }}>
+    <Section sx={{ mt: '128px' }}>
       <Box
         sx={{
           width: '100%',

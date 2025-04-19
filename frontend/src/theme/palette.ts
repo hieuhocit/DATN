@@ -13,6 +13,10 @@ export const lightPalette: PaletteOptions = {
   action: {
     hover: 'rgba(0, 0, 0, 0.15) !important',
   },
+  background: {
+    paper: common.white,
+    default: '#edf6f9',
+  },
 };
 
 export const darkPalette: PaletteOptions = {

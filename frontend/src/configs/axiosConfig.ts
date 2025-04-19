@@ -23,7 +23,7 @@ axiosInstance.interceptors.response.use(
       error?.response?.data || {
         statusCode: error.code,
         statusText: 'error',
-        message: error.message || 'Something went wrong',
+        message: error.message || 'Đã xảy ra lỗi',
       }
     );
   }

@@ -7,7 +7,7 @@ import DesktopHeader from './desktop/DesktopHeader';
 
 export default function Header() {
   return (
-    <AppBar position='static'>
+    <AppBar position='fixed'>
       <Toolbar
         sx={{
           alignItems: 'center',

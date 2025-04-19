@@ -13,8 +13,9 @@ import Badge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { Stack, Tooltip, Typography } from '@mui/material';
+import { Button, Stack, Tooltip, Typography } from '@mui/material';
 import { OneLineTypography, TwoLineTypography } from '@/components/typography';
+import { Link } from 'react-router-dom';
 
 export default function Cart() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -46,6 +47,20 @@ export default function Cart() {
           open={open}
           onClose={handleClose}
         >
+          <Stack
+            direction={'row'}
+            alignItems={'center'}
+            gap={1}
+            padding={2}
+            justifyContent={'space-between'}
+          >
+            <Typography variant='body1' fontWeight={600}>
+              Giỏ hàng của bạn
+            </Typography>
+            <Link to='/cart'>
+              <Typography fontSize={'0.85rem'}>Xem tất cả</Typography>
+            </Link>
+          </Stack>
           <MenuItem onClick={handleClose}>
             <CartItem />
           </MenuItem>

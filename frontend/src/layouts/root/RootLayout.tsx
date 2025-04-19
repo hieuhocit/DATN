@@ -12,12 +12,14 @@ import { useTheme } from '@/hooks/useTheme';
 
 // MUI
 import { CssBaseline, ThemeProvider } from '@mui/material';
+
+// Stores
 import { getTheme } from '@/theme';
 
 export default function RootLayout() {
   const { themeMode } = useTheme();
-  const isDarkMode = themeMode === 'dark';
 
+  const isDarkMode = themeMode === 'dark';
   const theme = getTheme(themeMode);
 
   return (

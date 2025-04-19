@@ -2,7 +2,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 // Layouts
-import RootLayout from '@/layouts/RootLayout';
+import RootLayout, { loader as rootLoader } from '@/layouts/root/index';
 
 // Pages
 import Home from '@/pages/Home';
@@ -11,6 +11,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
+    loader: rootLoader,
     children: [
       {
         index: true,

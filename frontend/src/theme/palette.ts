@@ -21,6 +21,10 @@ export const lightPalette: PaletteOptions = {
 
 export const darkPalette: PaletteOptions = {
   mode: 'dark',
+  primary: {
+    main: common.black,
+    contrastText: common.white,
+  },
   background: {
     paper: '#212529',
     default: '#000',

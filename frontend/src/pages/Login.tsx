@@ -80,12 +80,13 @@ const Login: React.FC = () => {
         // Error is thrown by axios
         if (dataRes.statusCode === 'ERR_NETWORK') {
           toast.error('Đã xảy ra lỗi!');
+          return;
         }
 
         if (dataRes.statusCode === 200) {
           dispatch(setAccountLoggedIn(dataRes.data));
-          toast.success('Đăng nhập thành công!');
           navigate('/');
+          toast.success('Đăng nhập thành công!');
           return;
         } else {
           toast.error(dataRes.message);
@@ -154,8 +155,8 @@ const Login: React.FC = () => {
       }
 
       dispatch(setAccountLoggedIn(dataRes.data));
-      toast.success('Đăng nhập thành công!');
       navigate('/');
+      toast.success('Đăng nhập thành công!');
     } catch (error) {
       console.error('Error :', error);
       toast.error('Đã xảy ra lỗi');
@@ -176,12 +177,13 @@ const Login: React.FC = () => {
       // Error is thrown by axios
       if (dataRes.statusCode === 'ERR_NETWORK') {
         toast.error('Đã xảy ra lỗi!');
+        return;
       }
 
       if (dataRes.statusCode === 200) {
         dispatch(setAccountLoggedIn(dataRes.data));
-        toast.success('Đăng nhập thành công!');
         navigate('/');
+        toast.success('Đăng nhập thành công!');
       } else {
         toast.error(dataRes.message);
       }

@@ -128,8 +128,8 @@ const SignUp: React.FC = () => {
         return;
       }
 
-      toast.success('Đăng ký thành công!');
       navigate('/login');
+      toast.success('Đăng ký thành công!');
     } catch (error) {
       console.error('Error :', error);
       toast.error('Đã xảy ra lỗi');
@@ -152,8 +152,8 @@ const SignUp: React.FC = () => {
 
         if (dataRes.statusCode === 200) {
           dispatch(setAccountLoggedIn(dataRes.data));
-          toast.success('Đăng nhập thành công!');
           navigate('/');
+          toast.success('Đăng nhập thành công!');
           return;
         } else {
           toast.error(dataRes.message);
@@ -187,8 +187,8 @@ const SignUp: React.FC = () => {
 
       if (dataRes.statusCode === 200) {
         dispatch(setAccountLoggedIn(dataRes.data));
-        toast.success('Đăng nhập thành công!');
         navigate('/');
+        toast.success('Đăng nhập thành công!');
       } else {
         toast.error(dataRes.message);
       }

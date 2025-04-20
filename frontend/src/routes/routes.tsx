@@ -38,6 +38,22 @@ const router = createBrowserRouter([
           return { Component };
         },
       },
+      {
+        path: '/course/:courseId',
+        lazy: async () => {
+          const { default: Component } = await import(
+            '@/pages/course-details/CourseDetails'
+          );
+          return { Component };
+        },
+      },
+      {
+        path: '/learning/:courseSlug/:lessonId',
+        lazy: async () => {
+          const { default: Component } = await import('@/pages/learn/Learning');
+          return { Component };
+        },
+      },
     ],
   },
 ]);

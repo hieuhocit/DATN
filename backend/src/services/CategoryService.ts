@@ -19,8 +19,9 @@ type CategoryCreateInput = Pick<CategoryType, 'name' | 'description'> & {
 
 const CategoryService = {
   createCategory: async function (data: CategoryCreateInput) {
+    let parentCategory;
     if (data.parentId) {
-      await this.getCategoryById(data.parentId);
+      parentCategory = await this.getCategoryById(data.parentId);
     }
 
     const existedCategory = await Category.findOne({
@@ -34,10 +35,16 @@ const CategoryService = {
       });
     }
 
-    const slug = (slugify as any)(data.name, {
-      lower: true,
-      locale: 'vi',
-    });
+    let slug =
+      '/' +
+      (slugify as any)(data.name, {
+        lower: true,
+        locale: 'vi',
+      });
+
+    if (parentCategory) {
+      slug = parentCategory.slug + slug;
+    }
 
     const category = await Category.create({ ...data, slug });
 
@@ -45,26 +52,31 @@ const CategoryService = {
   },
   getCategoryById: async function (id: string) {
     try {
-      const category = await Category.findById(id);
+      const category = await Category.findById(id).populate({
+        path: 'children',
+      });
+
       if (!category) {
         throw serverResponse.createError({
           ...messages.NOT_FOUND,
-          message: 'Category not found',
+          message: 'Không tìm thấy danh mục',
         });
       }
       return category;
     } catch (error) {
       // Handle error if id is not a valid ObjectId
       throw serverResponse.createError({
-        ...messages.BAD_REQUEST,
-        message: 'Invalid category ID',
+        ...messages.NOT_FOUND,
+        message: 'Không tìm thấy danh mục',
       });
     }
   },
   getAllCategories: async function () {
-    const categories = await Category.find({ parentId: null }).populate({
-      path: 'children',
-    });
+    const categories = await Category.find({ parentId: null })
+      .populate({
+        path: 'children',
+      })
+      .sort({ createdAt: -1 });
     return categories;
   },
   deleteCategoryById: async function (id: string) {
@@ -74,7 +86,7 @@ const CategoryService = {
     } catch (error) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'Category not found',
+        message: 'Không tìm thấy danh mục',
       });
     }
   },

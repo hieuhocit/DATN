@@ -84,7 +84,7 @@ const CategoryController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Delete category successfully',
+            message: 'Xoá danh mục thành công',
           },
           null
         )
@@ -112,7 +112,7 @@ const CategoryController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Update category successfully',
+            message: 'Câp nhật danh mục thành công',
           },
           category
         )

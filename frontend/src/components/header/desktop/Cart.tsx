@@ -13,7 +13,7 @@ import Badge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { Button, Stack, Tooltip, Typography } from '@mui/material';
+import { Stack, Tooltip, Typography } from '@mui/material';
 import { OneLineTypography, TwoLineTypography } from '@/components/typography';
 import { Link } from 'react-router-dom';
 
@@ -57,7 +57,7 @@ export default function Cart() {
             <Typography variant='body1' fontWeight={600}>
               Giỏ hàng của bạn
             </Typography>
-            <Link to='/cart'>
+            <Link to='/cart' onClick={handleClose}>
               <Typography fontSize={'0.85rem'}>Xem tất cả</Typography>
             </Link>
           </Stack>

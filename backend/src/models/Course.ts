@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { InferSchemaType } from 'mongoose';
 
 const CourseSchema = new mongoose.Schema(
   {
@@ -63,5 +63,29 @@ const CourseSchema = new mongoose.Schema(
   {
     id: false,
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
   }
 );
+
+CourseSchema.virtual('instructor', {
+  ref: 'User',
+  localField: 'instructorId',
+  foreignField: '_id',
+});
+
+CourseSchema.virtual('category', {
+  ref: 'Category',
+  localField: 'categoryId',
+  foreignField: '_id',
+});
+
+export type CourseType = mongoose.InferSchemaType<typeof CourseSchema>;
+
+const Course = mongoose.model('Course', CourseSchema);
+
+export default Course;

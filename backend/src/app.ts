@@ -19,6 +19,7 @@ import AuthRoutes from './routes/AuthRoutes.js';
 import UserRoutes from './routes/UserRoutes.js';
 import CloudinaryRoutes from './routes/CloudinaryRoutes.js';
 import CategoryRoutes from './routes/CategoryRoutes.js';
+import CourseRoutes from './routes/CourseRoutes.js';
 
 // Configuring dotenv
 dotenv.config();
@@ -46,6 +47,7 @@ app.use('/api', AuthRoutes);
 app.use('/api', UserRoutes);
 app.use('/api', CloudinaryRoutes);
 app.use('/api', CategoryRoutes);
+app.use('/api', CourseRoutes);
 
 // Not found handler
 app.use(notFoundError);

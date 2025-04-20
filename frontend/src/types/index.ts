@@ -12,3 +12,23 @@ export type User = {
   accessToken: string;
   refreshToken: string;
 };
+
+export type Course = {
+  _id: string;
+  title: string;
+  slug: string;
+  description: string;
+  price: number;
+  discountPrice: number;
+  thumbnail: string;
+  author: User;
+  categoryId: string;
+  level: 'beginner' | 'intermediate' | 'expert' | 'all';
+  duration: number;
+  requirements: string;
+  rating: number;
+  whatYouWillLearn: string;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+};

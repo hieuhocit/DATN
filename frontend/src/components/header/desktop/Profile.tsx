@@ -18,15 +18,17 @@ import { toast } from 'react-toastify';
 // React router
 import { useNavigate } from 'react-router-dom';
 
-// Hooks
-import { useAppDispatch } from '@/hooks/useStore';
-import { setAccountLoggedOut } from '@/features/account';
+// Redux
+import { useAppDispatch, useAppSelector } from '@/hooks/useStore';
+import { setAccountLoggedOut, userSelector } from '@/features/account';
 
 export default function Profile() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const open = Boolean(anchorEl);
+
+  const user = useAppSelector(userSelector);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -52,15 +54,22 @@ export default function Profile() {
     <Box>
       <Tooltip title='Tài khoản'>
         <IconButton onClick={handleClick} size='medium' color='inherit'>
-          <Avatar sx={{ width: 32, height: 32 }}>T</Avatar>
+          <Avatar sx={{ width: 32, height: 32 }}>{user?.name[0]}</Avatar>
         </IconButton>
       </Tooltip>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         <MenuItem onClick={handleClose}>Học tập</MenuItem>
         <MenuItem onClick={handleClose}>Hồ sơ</MenuItem>
         <MenuItem onClick={handleClose}>Giỏ hàng</MenuItem>
-        {/* Will display if use register to be teacher */}
-        <MenuItem onClick={handleClose}>Giáo viên</MenuItem>
+        {['admin', 'instructor'].includes(user?.role || '') && (
+          <MenuItem onClick={handleClose}>Giáo viên</MenuItem>
+        )}
+        {user?.role === 'user' && (
+          <MenuItem onClick={handleClose}>Trở thành giảng viên</MenuItem>
+        )}
+        {user?.role === 'admin' && (
+          <MenuItem onClick={handleClose}>Quản trị</MenuItem>
+        )}
         <MenuItem onClick={handleClose}>
           <Stack
             onClick={handleLogout}

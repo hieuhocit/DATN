@@ -70,13 +70,13 @@ export default function DesktopHeader() {
           <>
             <Link
               style={{ textDecoration: 'none', color: 'inherit' }}
-              to={'/login'}
+              to={'/sign-up'}
             >
               <Button variant='outlined'>Đăng ký</Button>
             </Link>
             <Link
               style={{ textDecoration: 'none', color: 'inherit' }}
-              to={'/sign-up'}
+              to={'/login'}
             >
               <Button variant='contained'>Đăng nhập</Button>
             </Link>

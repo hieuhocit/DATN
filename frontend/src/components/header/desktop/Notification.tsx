@@ -23,9 +23,15 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import Image from '@/components/common/Image';
 import { TwoLineTypography } from '@/components/typography';
 
+// Redux
+import { useAppSelector } from '@/hooks/useStore';
+import { userSelector } from '@/features/account';
+
 export default function Notification() {
   const [value, setValue] = useState(0);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const user = useAppSelector(userSelector);
 
   const open = Boolean(anchorEl);
 
@@ -78,20 +84,24 @@ export default function Notification() {
                 label='Học sinh'
                 {...a11yProps(0)}
               />
-              <Tab
-                sx={{
-                  textTransform: 'capitalize',
-                }}
-                label='Sinh viên'
-                {...a11yProps(1)}
-              />
-              <Tab
-                sx={{
-                  textTransform: 'capitalize',
-                }}
-                label='Quản trị'
-                {...a11yProps(2)}
-              />
+              {['admin', 'instructor'].includes(user?.role || '') && (
+                <Tab
+                  sx={{
+                    textTransform: 'capitalize',
+                  }}
+                  label='Giáo viên'
+                  {...a11yProps(1)}
+                />
+              )}
+              {user?.role === 'admin' && (
+                <Tab
+                  sx={{
+                    textTransform: 'capitalize',
+                  }}
+                  label='Quản trị'
+                  {...a11yProps(2)}
+                />
+              )}
             </Tabs>
           </Box>
 
@@ -108,23 +118,27 @@ export default function Notification() {
               </ListItemButton>
             </List>
           </CustomTabPanel>
-          <CustomTabPanel value={value} index={1}>
-            <List sx={{ width: '100%', p: 0, bgcolor: 'background.paper' }}>
-              <ListItemButton>
-                <NotificationItem />
-              </ListItemButton>
-              <ListItemButton>
-                <NotificationItem />
-              </ListItemButton>
-            </List>
-          </CustomTabPanel>
-          <CustomTabPanel value={value} index={2}>
-            <List sx={{ width: '100%', p: 0, bgcolor: 'background.paper' }}>
-              <ListItemButton>
-                <NotificationItem />
-              </ListItemButton>
-            </List>
-          </CustomTabPanel>
+          {['admin', 'instructor'].includes(user?.role || '') && (
+            <CustomTabPanel value={value} index={1}>
+              <List sx={{ width: '100%', p: 0, bgcolor: 'background.paper' }}>
+                <ListItemButton>
+                  <NotificationItem />
+                </ListItemButton>
+                <ListItemButton>
+                  <NotificationItem />
+                </ListItemButton>
+              </List>
+            </CustomTabPanel>
+          )}
+          {user?.role === 'admin' && (
+            <CustomTabPanel value={value} index={2}>
+              <List sx={{ width: '100%', p: 0, bgcolor: 'background.paper' }}>
+                <ListItemButton>
+                  <NotificationItem />
+                </ListItemButton>
+              </List>
+            </CustomTabPanel>
+          )}
         </Box>
       </Menu>
     </Box>

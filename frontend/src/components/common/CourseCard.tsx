@@ -1,15 +1,24 @@
 // Components
-import Image from '../common/Image';
+import Image from './Image';
 import { OneLineTypography, TwoLineTypography } from '../typography';
 
-// MUI
-import { Box, Rating, Stack, Tooltip, Typography } from '@mui/material';
+// Icons
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 
-export default function Card() {
+// MUI
+import { Box, Button, Rating, Stack, Tooltip, Typography } from '@mui/material';
+
+// Types
+import { Course } from '@/types';
+type Props = {
+  course: Course;
+};
+
+export default function Card({ course }: Props) {
   return (
     <Tooltip
       title='Xem chi tiết'
-      sx={{ cursor: 'pointer' }}
+      sx={{ cursor: 'pointer', pb: 1 }}
       followCursor
       PopperProps={{
         modifiers: [
@@ -22,7 +31,7 @@ export default function Card() {
         ],
       }}
     >
-      <Stack direction={'column'} width={'100%'} gap={1}>
+      <Stack direction={'column'} width={'100%'} gap={'4px'}>
         <Box
           sx={{
             width: '100%',
@@ -35,33 +44,43 @@ export default function Card() {
           <Image src='/images/image-placeholder.png' fill />
         </Box>
         <TwoLineTypography
-          sx={{ maxWidth: '100%', fontSize: '1rem' }}
+          sx={{ maxWidth: '100%', height: '40px', fontSize: '1rem' }}
           fontWeight={600}
         >
-          React JS: Learn React JS From Scratch with Hands-On Projects
+          {course.title}
         </TwoLineTypography>
         <OneLineTypography
           sx={{ opacity: 0.8, fontSize: '0.8rem' }}
           variant='body1'
           fontWeight={400}
         >
-          Oak Academy,OAK Academy Team
+          {course.author.name}
         </OneLineTypography>
         <Stack direction={'row'} alignItems={'center'} gap={'4px'}>
           <Typography sx={{ color: '#ff7b00', fontWeight: 600 }}>
-            4.5
+            {course.rating}
           </Typography>
           <Rating
             name='rating'
-            defaultValue={4.5}
+            value={course.rating}
             precision={0.5}
             size='small'
             readOnly
           />
         </Stack>
-        <Typography sx={{ fontSize: '1rem' }} fontWeight={600}>
-          ₫959,000
-        </Typography>
+        <Stack
+          direction={'row'}
+          alignItems={'center'}
+          justifyContent={'space-between'}
+        >
+          <Typography sx={{ fontSize: '1rem' }} fontWeight={600}>
+            ₫{course.price}
+          </Typography>
+          <Button variant='text' sx={{ gap: 1 }}>
+            <AddShoppingCartIcon />
+            <Typography>Giỏ hàng</Typography>
+          </Button>
+        </Stack>
       </Stack>
     </Tooltip>
   );

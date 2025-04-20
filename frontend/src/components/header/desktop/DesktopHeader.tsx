@@ -1,6 +1,6 @@
 // MUI
 import Box from '@mui/material/Box';
-import { Stack } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 
 // React router
 import { Link } from 'react-router-dom';
@@ -64,6 +64,24 @@ export default function DesktopHeader() {
 
         {/* Profile */}
         {isLoggedIn && <Profile />}
+
+        {/*  */}
+        {!isLoggedIn && (
+          <>
+            <Link
+              style={{ textDecoration: 'none', color: 'inherit' }}
+              to={'/login'}
+            >
+              <Button variant='outlined'>Đăng ký</Button>
+            </Link>
+            <Link
+              style={{ textDecoration: 'none', color: 'inherit' }}
+              to={'/sign-up'}
+            >
+              <Button variant='contained'>Đăng nhập</Button>
+            </Link>
+          </>
+        )}
       </Stack>
     </Stack>
   );

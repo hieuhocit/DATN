@@ -252,6 +252,6 @@ const coursesData: Course[] = [
   },
 ];
 
-export default function Recommendation() {
-  return <CourseSection title='Đề xuất cho bạn' courses={coursesData} />;
+export default function Popular() {
+  return <CourseSection title='Phổ biến' courses={coursesData} />;
 }

@@ -32,30 +32,9 @@ const router = createBrowserRouter([
         },
       },
       {
-        path: '/account',
-        lazy: async () => {
-          const { default: Component } = await import('@pages/Account');
-          return { Component };
-        },
-      },
-      {
         path: '/cart',
         lazy: async () => {
           const { default: Component } = await import('@pages/Cart');
-          return { Component };
-        },
-      },
-      {
-        path: '/source',
-        lazy: async () => {
-          const { default: Component } = await import('@/pages/CourceList');
-          return { Component };
-        },
-      },
-      {
-        path: '/course/:id',
-        lazy: async () => {
-          const { default: Component } = await import('@pages/CourseDetail');
           return { Component };
         },
       },

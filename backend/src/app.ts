@@ -1,27 +1,28 @@
 // Importing packages
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
 // Importing db
-import db from './db/index.js';
-import redisClient from './db/redisClient.js';
+import db from "./db/index.js";
+import redisClient from "./db/redisClient.js";
 
 // Import middlewares
 import {
   defaultError,
   notFoundError,
-} from './middlewares/errorHandlingMiddleware.js';
+} from "./middlewares/errorHandlingMiddleware.js";
 
 // Routes
-import AuthRoutes from './routes/AuthRoutes.js';
-import UserRoutes from './routes/UserRoutes.js';
-import CloudinaryRoutes from './routes/CloudinaryRoutes.js';
-import CategoryRoutes from './routes/CategoryRoutes.js';
-import CourseRoutes from './routes/CourseRoutes.js';
-import LessonRoutes from './routes/LessonRoutes.js';
-import CartRoutes from './routes/CartRoutes.js';
+import AuthRoutes from "./routes/AuthRoutes.js";
+import UserRoutes from "./routes/UserRoutes.js";
+import CloudinaryRoutes from "./routes/CloudinaryRoutes.js";
+import CategoryRoutes from "./routes/CategoryRoutes.js";
+import CourseRoutes from "./routes/CourseRoutes.js";
+import LessonRoutes from "./routes/LessonRoutes.js";
+import CartRoutes from "./routes/CartRoutes.js";
+import LessonProgressRoutes from "./routes/LessonProgressRoutes.js";
 
 // Configuring dotenv
 dotenv.config();
@@ -36,7 +37,7 @@ redisClient.connect(app);
 // Middlewares
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
@@ -45,13 +46,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api', AuthRoutes);
-app.use('/api', UserRoutes);
-app.use('/api', CloudinaryRoutes);
-app.use('/api', CategoryRoutes);
-app.use('/api', CourseRoutes);
-app.use('/api', LessonRoutes);
-app.use('/api', CartRoutes);
+app.use("/api", AuthRoutes);
+app.use("/api", UserRoutes);
+app.use("/api", CloudinaryRoutes);
+app.use("/api", CategoryRoutes);
+app.use("/api", CourseRoutes);
+app.use("/api", LessonRoutes);
+app.use("/api", CartRoutes);
+app.use("/api", LessonProgressRoutes);
 
 // Not found handler
 app.use(notFoundError);
@@ -63,8 +65,8 @@ app.use(defaultError);
 const PORT = process.env.PORT || 3000;
 
 // Run if the database has connected
-app.on('ready', () => {
-  app.on('redisReady', () => {
+app.on("ready", () => {
+  app.on("redisReady", () => {
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });

@@ -1,51 +1,49 @@
 // Express
-import { Router } from 'express';
+import { Router } from "express";
 
 // Controllers
-import CategoryController from '../controllers/CategoryController.js';
+import CategoryController from "../controllers/CategoryController.js";
 
 // Auth
 import {
   authMiddleware,
   authorizationMiddleware,
-} from '../middlewares/authMiddleware.js';
+} from "../middlewares/authMiddleware.js";
 
 // Create router
 const CategoryRoutes = Router();
 
 // Routes
 CategoryRoutes.get(
-  '/categories',
+  "/categories",
   authMiddleware,
-  authorizationMiddleware(['admin']),
   CategoryController.getAllCategories
 );
 
 CategoryRoutes.post(
-  '/categories',
+  "/categories",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin"]),
   CategoryController.createCategory
 );
 
 CategoryRoutes.get(
-  '/categories/:id',
+  "/categories/:id",
   authMiddleware,
-  authorizationMiddleware(['admin']),
   CategoryController.getCategoryById
 );
 
 CategoryRoutes.delete(
-  '/categories/:id',
+  "/categories/:id",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin"]),
   CategoryController.deleteCategoryById
 );
 
 CategoryRoutes.put(
-  '/categories/:id',
+  "/categories/:id",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin"]),
   CategoryController.updateCategoryById
 );
 

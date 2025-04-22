@@ -1,51 +1,46 @@
 // Express
-import { Router } from 'express';
+import { Router } from "express";
 
 // Controllers
-import LessonController from '../controllers/LessonController.js';
+import LessonController from "../controllers/LessonController.js";
 
 // Auth
 import {
   authMiddleware,
   authorizationMiddleware,
-} from '../middlewares/authMiddleware.js';
+} from "../middlewares/authMiddleware.js";
 
 // Create router
 const LessonRoutes = Router();
 
 // Routes
-LessonRoutes.get(
-  '/lessons',
-  authMiddleware,
-  authorizationMiddleware(['admin']),
-  LessonController.getAllLessons
-);
+LessonRoutes.get("/lessons", authMiddleware, LessonController.getAllLessons);
 
 LessonRoutes.post(
-  '/lessons',
+  "/lessons",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin", "instructor"]),
   LessonController.createLesson
 );
 
 LessonRoutes.get(
-  '/lessons/:id',
+  "/lessons/:id",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin"]),
   LessonController.getLessonById
 );
 
 LessonRoutes.delete(
-  '/lessons/:id',
+  "/lessons/:id",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin", "instructor"]),
   LessonController.deleteLessonById
 );
 
 LessonRoutes.put(
-  '/lessons/:id',
+  "/lessons/:id",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin", "instructor"]),
   LessonController.updateLessonById
 );
 

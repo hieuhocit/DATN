@@ -1,37 +1,23 @@
 // Express
-import { Router } from 'express';
+import { Router } from "express";
 
 // Controllers
-import CartController from '../controllers/CartController.js';
+import CartController from "../controllers/CartController.js";
 
 // Auth
-import {
-  authMiddleware,
-  authorizationMiddleware,
-} from '../middlewares/authMiddleware.js';
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 // Create router
 const CartRoutes = Router();
 
 // Routes
-CartRoutes.get(
-  '/cart',
-  authMiddleware,
-  authorizationMiddleware(['admin']),
-  CartController.getCartByUserId
-);
+CartRoutes.get("/cart", authMiddleware, CartController.getCartByUserId);
 
-CartRoutes.post(
-  '/cart',
-  authMiddleware,
-  authorizationMiddleware(['admin']),
-  CartController.createCartItem
-);
+CartRoutes.post("/cart", authMiddleware, CartController.createCartItem);
 
 CartRoutes.delete(
-  '/cart/:id',
+  "/cart/:id",
   authMiddleware,
-  authorizationMiddleware(['admin']),
   CartController.deleteCartItemById
 );
 

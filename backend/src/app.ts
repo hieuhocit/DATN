@@ -24,6 +24,7 @@ import LessonRoutes from "./routes/LessonRoutes.js";
 import CartRoutes from "./routes/CartRoutes.js";
 import LessonProgressRoutes from "./routes/LessonProgressRoutes.js";
 import NoteRoutes from "./routes/NoteRoutes.js";
+import ReviewRoutes from "./routes/ReviewRoutes.js";
 
 // Configuring dotenv
 dotenv.config();
@@ -56,6 +57,7 @@ app.use("/api", LessonRoutes);
 app.use("/api", CartRoutes);
 app.use("/api", LessonProgressRoutes);
 app.use("/api", NoteRoutes);
+app.use("/api", ReviewRoutes);
 
 // Not found handler
 app.use(notFoundError);

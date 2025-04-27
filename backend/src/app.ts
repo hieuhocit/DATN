@@ -28,6 +28,7 @@ import ReviewRoutes from "./routes/ReviewRoutes.js";
 import CommentRoutes from "./routes/CommentRoutes.js";
 import VNPayRoutes from "./routes/VNPayRoutes.js";
 import NotificationRoutes from "./routes/NotificationRoutes.js";
+import AIRoutes from "./routes/AIRoutes.js";
 
 // Configuring dotenv
 dotenv.config();
@@ -64,6 +65,7 @@ app.use("/api", ReviewRoutes);
 app.use("/api", CommentRoutes);
 app.use("/api", VNPayRoutes);
 app.use("/api", NotificationRoutes);
+app.use("/api", AIRoutes);
 
 // Not found handler
 app.use(notFoundError);

@@ -27,6 +27,12 @@ const LessonService = {
       .sort({ createdAt: -1 });
     return lessons;
   },
+  getAllLessonsByCourseId: async function (courseId: string) {
+    const lessons = await Lesson.find({ courseId }).populate({
+      path: 'course',
+    });
+    return lessons;
+  },
   getLessonById: async function (id: string) {
     try {
       const lesson = await Lesson.findById(id).populate({

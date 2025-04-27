@@ -1,95 +1,67 @@
-import { useState, useEffect } from 'react';
-import { Box, IconButton, useMediaQuery } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import { useTheme } from '@mui/material/styles';
-import Section from '@/components/common/Section';
+import { Box } from "@mui/material";
 
-import { fetchCourseLessons, fetchCourseDetails, fetchProgress, fetchComments } from './learn/api';
-import VideoPlayer from './learn/VideoPlayer';
-import Comments from './learn/Comments';
-import Sidebar from './learn/SlideBar';
-import LessonNavigation from './learn/LessonNavigation';
+import Section from "@/components/common/Section";
+import VideoPlayer from "@components/learning/VideoPlayer";
+import Comments from "../components/learning/Comments";
+import Sidebar from "../components/learning/SideBar";
+import LessonNavigation from "../components/learning/LessonNavigation";
 
-export default function LearningLayout({ courseId = 1, userId = 1 }) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [lessons, setLessons] = useState([]);
-  const [currentLessonId, setCurrentLessonId] = useState(null);
-  const [course, setCourse] = useState(null);
-  const [progress, setProgress] = useState(0);
-  const [comments, setComments] = useState([]);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isDark = theme.palette.mode === 'dark';
-
-  const currentLesson = lessons.find((l) => l.id === currentLessonId);
-  const currentLessonIndex = lessons.findIndex((l) => l.id === currentLessonId);
-
-  useEffect(() => {
-    const loadData = async () => {
-      const [lessonsData, courseData, progressData] = await Promise.all([
-        fetchCourseLessons(courseId),
-        fetchCourseDetails(courseId),
-        fetchProgress(userId, courseId),
-      ]);
-
-      setLessons(lessonsData);
-      setCourse(courseData);
-      setProgress(progressData.completionPercentage);
-      setCurrentLessonId(lessonsData[0]?.id);
-    };
-    loadData();
-  }, [courseId, userId]);
-
-  useEffect(() => {
-    if (currentLessonId) {
-      fetchComments(currentLessonId).then(setComments);
-    }
-  }, [currentLessonId]);
-
-  if (!currentLesson || !course) return null;
-
+export default function LearningPage() {
   return (
-    <Section>
-      <Box sx={{ px: { xs: 2, md: 4 }, py: 4, pb: 10 }}>
-        {isMobile && (
-          <IconButton onClick={() => setDrawerOpen(true)} sx={{ mb: 2 }}>
-            <MenuIcon sx={{ color: isDark ? '#fff' : '#000' }} />
-          </IconButton>
-        )}
-
-        <Box sx={{ display: 'flex', gap: 3 }}>
+    <Section sx={{ mt: "128px", mb: "128px" }}>
+      <Box>
+        <Box sx={{ display: "flex", gap: 3 }}>
           <Box sx={{ flexGrow: 1 }}>
-            <VideoPlayer lesson={currentLesson} course={course} />
-            <Comments comments={comments} />
+            <VideoPlayer
+              publicId="videos/sskgoahpg0bmoshkfwuc"
+              playerConfig={{
+                profile: import.meta.env.VITE_CLOUDINARY_PROFILE,
+                cloud_name: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+                controls: true,
+                fluid: true,
+                muted: false,
+                posterOptions: {
+                  transformation: { effect: ["blur"] },
+                },
+                bigPlayButton: true,
+                aiHighlightsGraph: true,
+                chaptersButton: true,
+                pictureInPictureToggle: true,
+                playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+                showJumpControls: true,
+                showLogo: false,
+                seekThumbnails: true,
+                // floatingWhenNotVisible: 'right',
+              }}
+              sourceConfig={{
+                // info: { title: 'Glide Over Coastal Beach' },
+                preload: "metadata",
+                textTracks: {
+                  captions: {
+                    label: "Vietnamese",
+                    language: "vi",
+                    url: "https://res.cloudinary.com/dzemgr0jr/raw/upload/v1741271376/subtitles/pnsaadmtyili2juj2rti.vtt",
+                    default: true,
+                  },
+                  // subtitles: [
+                  //   {
+                  //     label: 'Vietnamese',
+                  //     language: 'vi',
+                  //     url: '/subs.vtt',
+                  //   },
+                  // ],
+                },
+                sourceTypes: ["hls"],
+              }}
+            />
+
+            <Comments comments={[]} />
           </Box>
 
-          {!isMobile && (
-            <Sidebar
-              lessons={lessons}
-              currentLessonId={currentLessonId}
-              onLessonClick={setCurrentLessonId}
-              progress={progress}
-            />
-          )}
+          <Sidebar lessons={[]} currentLessonId={1} progress={0} />
         </Box>
 
-        <LessonNavigation
-          lessons={lessons}
-          currentLessonIndex={currentLessonIndex}
-          onNavigate={setCurrentLessonId}
-        />
-
-        {isMobile && (
-          <Sidebar
-            lessons={lessons}
-            currentLessonId={currentLessonId}
-            onLessonClick={setCurrentLessonId}
-            progress={progress}
-            mobile
-            open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
-          />
-        )}
+        <LessonNavigation lessons={[]} currentLessonIndex={1} />
       </Box>
     </Section>
   );

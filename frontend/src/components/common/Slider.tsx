@@ -1,25 +1,26 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // Components
-import Card from '@/components/common/CourseCard';
+import Card from "@/components/common/CourseCard";
 
 // Icons
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 // Splide
 // @ts-ignore
-import { Splide, SplideSlide } from '@splidejs/react-splide';
+import { Splide, SplideSlide } from "@splidejs/react-splide";
 // @ts-ignore
-import '@splidejs/react-splide/css';
+import "@splidejs/react-splide/css";
 
 // MUI
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton } from "@mui/material";
 
 // React
-import { useRef } from 'react';
+import { useRef } from "react";
 
 // Types
-import { Course } from '@/types';
+import { Course } from "@/types";
+import { Link } from "react-router-dom";
 type Props = {
   courses: Course[];
 };
@@ -30,23 +31,23 @@ export default function Slider({ courses }: Props) {
   const handlePrev = () => {
     if (splideRef.current) {
       // @ts-ignore
-      splideRef.current.splide.go('<');
+      splideRef.current.splide.go("<");
     }
   };
 
   const handleNext = () => {
     if (splideRef.current) {
       // @ts-ignore
-      splideRef.current.splide.go('>');
+      splideRef.current.splide.go(">");
     }
   };
 
   const splideOptions = {
-    type: 'slide',
+    type: "slide",
     speed: 500,
     perPage: 4,
     perMove: 1,
-    gap: '24px',
+    gap: "24px",
     arrows: false,
     pagination: false,
     drag: false,
@@ -62,46 +63,54 @@ export default function Slider({ courses }: Props) {
   return (
     <Box
       sx={{
-        width: '100%',
-        position: 'relative',
+        width: "100%",
+        position: "relative",
       }}
     >
       <IconButton
         onClick={handlePrev}
         sx={{
-          position: 'absolute',
+          position: "absolute",
           left: 0,
           zIndex: 999,
-          top: '90px',
-          transform: 'translateY(-50%) translateX(-50%)',
-          backgroundColor: 'background.paper',
-          '&:hover': {
-            backgroundColor: 'background.paper',
+          top: "90px",
+          transform: "translateY(-50%) translateX(-50%)",
+          backgroundColor: "background.paper",
+          "&:hover": {
+            backgroundColor: "background.paper",
           },
         }}
       >
-        <ArrowBackIosNewIcon fontSize='large' />
+        <ArrowBackIosNewIcon fontSize="large" />
       </IconButton>
       <IconButton
         onClick={handleNext}
         sx={{
-          position: 'absolute',
+          position: "absolute",
           right: 0,
           zIndex: 999,
-          top: '90px',
-          transform: 'translateY(-50%) translateX(calc(50%))',
-          backgroundColor: 'background.paper',
-          '&:hover': {
-            backgroundColor: 'background.paper',
+          top: "90px",
+          transform: "translateY(-50%) translateX(calc(50%))",
+          backgroundColor: "background.paper",
+          "&:hover": {
+            backgroundColor: "background.paper",
           },
         }}
       >
-        <ArrowForwardIosIcon fontSize='large' />
+        <ArrowForwardIosIcon fontSize="large" />
       </IconButton>
       <Splide ref={splideRef} options={splideOptions}>
         {courses.map((course) => (
           <SplideSlide key={course._id}>
-            <Card course={course} />
+            <Link
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+              }}
+              to={`/courses/${course._id}`}
+            >
+              <Card course={course} />
+            </Link>
           </SplideSlide>
         ))}
       </Splide>

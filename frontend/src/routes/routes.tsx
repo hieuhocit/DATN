@@ -1,64 +1,58 @@
 // React router
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
 
 // Layouts
-import RootLayout, { loader as rootLoader } from '@/layouts/root/index';
+import RootLayout, { loader as rootLoader } from "@/layouts/root/index";
 
 // Pages
-import Home from '@/pages/Home';
+import Home, { loader as homeLoader } from "@/pages/home";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <RootLayout />,
     loader: rootLoader,
     children: [
       {
         index: true,
         element: <Home />,
+        // loader: homeLoader,
       },
       {
-        path: '/login',
+        path: "/login",
         lazy: async () => {
-          const { default: Component } = await import('@pages/Login');
+          const { default: Component } = await import("@pages/Login");
           return { Component };
         },
       },
       {
-        path: '/sign-up',
+        path: "/sign-up",
         lazy: async () => {
-          const { default: Component } = await import('@pages/SignUp');
+          const { default: Component } = await import("@pages/SignUp");
           return { Component };
         },
       },
       {
-        path: '/cart',
+        path: "/cart",
         lazy: async () => {
-          const { default: Component } = await import('@pages/Cart');
+          const { default: Component } = await import("@pages/Cart");
           return { Component };
         },
       },
       {
-        path: '/course/:courseId',
+        path: "/courses/:courseId",
         lazy: async () => {
-          const { default: Component } = await import(
-            '@/pages/course-details/CourseDetails'
+          const { default: Component, loader } = await import(
+            "@/pages/course-details"
           );
-          return { Component };
+          return { Component, loader };
         },
       },
       {
         // path: '/learning/:courseSlug/:lessonId',
-        path: '/learning',
+        path: "/learning",
         lazy: async () => {
-          const { default: Component } = await import('@/pages/Learning');
-          return { Component };
-        },
-      },
-      {
-        path: '/review',
-        lazy: async () => {
-          const { default: Component } = await import('@pages/Review');
+          const { default: Component } = await import("@/pages/Learning");
           return { Component };
         },
       },

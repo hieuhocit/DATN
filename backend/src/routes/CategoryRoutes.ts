@@ -16,7 +16,6 @@ const CategoryRoutes = Router();
 // Routes
 CategoryRoutes.get(
   "/categories",
-  authMiddleware,
   CategoryController.getAllCategories
 );
 

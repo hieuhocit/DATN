@@ -3,12 +3,12 @@ export type User = {
   email: string;
   name: string;
   bio: string;
-  avatarUrl: '';
-  role: 'user' | 'instructor' | 'admin';
-  registerProvider: 'local' | 'google' | 'facebook';
+  avatarUrl: string;
+  role: "user" | "instructor" | "admin";
+  registerProvider: "local" | "google" | "facebook";
   createdAt: string;
   updatedAt: string;
-  __v: 0;
+  __v: number;
   accessToken: string;
   refreshToken: string;
 };
@@ -19,16 +19,48 @@ export type Course = {
   slug: string;
   description: string;
   price: number;
-  discountPrice: number;
+  discountPrice: number | null;
   thumbnail: string;
-  author: User;
+  instructorId: string;
   categoryId: string;
-  level: 'beginner' | 'intermediate' | 'expert' | 'all';
+  level: string;
   duration: number;
   requirements: string;
-  rating: number;
   whatYouWillLearn: string;
   isPublished: boolean;
+  enrollmentCount?: number;
+  averageRating?: number;
+  reviewCount?: number;
   createdAt: string;
   updatedAt: string;
+  __v: number;
+  instructor: User[];
+  category: Category[];
 };
+
+export interface Review {
+  _id: string;
+  userId: string;
+  courseId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    _id: string;
+    name: string;
+    avatarUrl: string;
+  }[];
+}
+
+export interface Category {
+  _id: string;
+  name: string;
+  description: string;
+  slug: string;
+  parentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  children?: Category[];
+}

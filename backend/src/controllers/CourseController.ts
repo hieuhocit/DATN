@@ -1,16 +1,60 @@
 // Types
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from "express";
 
 // Services
-import CourseService from '../services/CourseService.js';
+import CourseService from "../services/CourseService.js";
+import ReviewService from "../services/ReviewService.js";
+import LessonService from "../services/LessonService.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 const CourseController = {
+  get20PopularCourses: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const courses = await CourseService.get20PopularCourses();
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Lấy khoá học phổ biến thành công",
+          },
+          courses
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+  get20NewestCourses: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const courses = await CourseService.get20NewestCourses();
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Lấy khoá học mới nhất thành công",
+          },
+          courses
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
   getAllCourses: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const courses = await CourseService.getAllCourses();
@@ -19,7 +63,7 @@ const CourseController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Get all courses successfully',
+            message: "Get all courses successfully",
           },
           courses
         )
@@ -33,14 +77,21 @@ const CourseController = {
       const { id } = req.params;
 
       const course = await CourseService.getCourseById(id);
+      const reviews = await ReviewService.getAllReviewsByCourseId(id);
+      const lessons = await LessonService.getAllLessonsByCourseId(id);
 
+      console.log(course);
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Lấy khoá học thành công',
+            message: "Lấy khoá học thành công",
           },
-          course
+          {
+            course: course,
+            reviews: reviews,
+            lessons: lessons,
+          }
         )
       );
     } catch (error) {
@@ -79,7 +130,7 @@ const CourseController = {
         serverResponse.createSuccess(
           {
             ...messages.CREATED,
-            message: 'Khoá học đã được tạo thành công',
+            message: "Khoá học đã được tạo thành công",
           },
           course
         )
@@ -98,7 +149,7 @@ const CourseController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Khoá học đã được xoá thành công',
+            message: "Khoá học đã được xoá thành công",
           },
           null
         )
@@ -144,7 +195,7 @@ const CourseController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Khoá học đã được cập nhật thành công',
+            message: "Khoá học đã được cập nhật thành công",
           },
           course
         )

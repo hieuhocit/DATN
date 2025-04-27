@@ -16,6 +16,9 @@ const CourseRoutes = Router();
 // Routes
 CourseRoutes.get("/courses", authMiddleware, CourseController.getAllCourses);
 
+CourseRoutes.get("/courses/popular", CourseController.get20PopularCourses);
+CourseRoutes.get("/courses/newest", CourseController.get20NewestCourses);
+
 CourseRoutes.post(
   "/courses",
   authMiddleware,
@@ -23,12 +26,7 @@ CourseRoutes.post(
   CourseController.createCourse
 );
 
-CourseRoutes.get(
-  "/courses/:id",
-  authMiddleware,
-  authorizationMiddleware(["admin"]),
-  CourseController.getCourseById
-);
+CourseRoutes.get("/courses/:id", CourseController.getCourseById);
 
 CourseRoutes.delete(
   "/courses/:id",

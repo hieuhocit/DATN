@@ -1,61 +1,230 @@
 // Models
-import Course, { CourseType } from '../models/Course.js';
+import Course, { CourseType } from "../models/Course.js";
+import Enrollment from "../models/Enrollment.js";
+import Review from "../models/Review.js";
 
 // Slugify
-import slugify from 'slugify';
+import slugify from "slugify";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Mongoose
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 // Types
 type CourseCreateInput = Pick<
   CourseType,
-  | 'title'
-  | 'description'
-  | 'price'
-  | 'thumbnail'
-  | 'instructorId'
-  | 'categoryId'
-  | 'level'
-  | 'duration'
-  | 'requirements'
-  | 'whatYouWillLearn'
+  | "title"
+  | "description"
+  | "price"
+  | "thumbnail"
+  | "instructorId"
+  | "categoryId"
+  | "level"
+  | "duration"
+  | "requirements"
+  | "whatYouWillLearn"
 > & {
   discountPrice?: number;
 };
 
 const CourseService = {
+  get20PopularCourses: async function () {
+    // Kiểm tra xem có enrollments nào không
+    const hasEnrollments = await Enrollment.exists({});
+
+    let courseIds;
+    let courses;
+
+    if (hasEnrollments) {
+      // Tính số lượng đăng ký cho mỗi khóa học
+      const courseEnrollments = await Enrollment.aggregate([
+        {
+          $group: {
+            _id: "$courseId",
+            enrollmentCount: { $sum: 1 },
+          },
+        },
+        { $sort: { enrollmentCount: -1 } },
+        { $limit: 20 },
+      ]);
+
+      // Lấy IDs của các khóa học phổ biến
+      courseIds = courseEnrollments.map((item) => item._id);
+
+      // Query các khóa học theo IDs
+      courses = await Course.find({
+        _id: { $in: courseIds },
+        // isPublished: true,
+      }).populate("instructor category");
+
+      // Thêm số lượng đăng ký vào mỗi khóa học
+      courses = courses.map((course: any) => {
+        const enrollment = courseEnrollments.find(
+          (e) => e._id.toString() === course._id.toString()
+        );
+
+        course = course.toObject(); // Chuyển Mongoose document thành JavaScript object
+        course.enrollmentCount = enrollment ? enrollment.enrollmentCount : 0;
+
+        return course;
+      });
+    } else {
+      // Lấy 20 khóa học mới nhất nếu không có đăng ký
+      courses = await Course.find({
+        /* isPublished: true */
+      })
+        .populate("instructor category")
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .lean();
+
+      // Thêm enrollmentCount = 0 cho mỗi khóa học
+      courses = courses.map((course: any) => {
+        course.enrollmentCount = 0;
+        return course;
+      });
+
+      courseIds = courses.map((course) => course._id);
+    }
+
+    // Tính rating trung bình cho mỗi khóa học
+    const courseRatings = await Review.aggregate([
+      {
+        $match: { courseId: { $in: courseIds } },
+      },
+      {
+        $group: {
+          _id: "$courseId",
+          averageRating: { $avg: "$rating" },
+          reviewCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Thêm thông tin rating vào mỗi khóa học
+    courses = courses.map((course) => {
+      const rating = courseRatings.find(
+        (r) => r._id.toString() === course._id.toString()
+      );
+
+      course.averageRating = rating
+        ? parseFloat(rating.averageRating.toFixed(1))
+        : 0;
+      course.reviewCount = rating ? rating.reviewCount : 0;
+
+      return course;
+    });
+
+    // Sắp xếp lại nếu cần thiết (nếu có đăng ký)
+    if (hasEnrollments) {
+      courses.sort((a, b) => b.enrollmentCount - a.enrollmentCount);
+    }
+
+    return courses;
+  },
+  get20NewestCourses: async function () {
+    // Lấy 20 khóa học mới nhất nếu không có đăng ký
+    let courses = await Course.find({
+      /* isPublished: true */
+    })
+      .populate("instructor category")
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .lean();
+
+    const courseIds = courses.map((course) => course._id);
+
+    // Tính rating trung bình cho mỗi khóa học
+    const courseRatings = await Review.aggregate([
+      {
+        $match: { courseId: { $in: courseIds } },
+      },
+      {
+        $group: {
+          _id: "$courseId",
+          averageRating: { $avg: "$rating" },
+          reviewCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Thêm thông tin rating vào mỗi khóa học
+    courses = courses.map((course: any) => {
+      const rating = courseRatings.find(
+        (r) => r._id.toString() === course._id.toString()
+      );
+
+      course.averageRating = rating
+        ? parseFloat(rating.averageRating.toFixed(1))
+        : 0;
+      course.reviewCount = rating ? rating.reviewCount : 0;
+
+      return course;
+    });
+
+    return courses;
+  },
   getAllCourses: async function () {
     const courses = await Course.find()
       .populate({
-        path: 'category instructor',
+        path: "category instructor",
       })
       .sort({ createdAt: -1 });
     return courses;
   },
   getCourseById: async function (id: string) {
     try {
-      const course = await Course.findById(id).populate({
-        path: 'category instructor',
+      let course: any = await Course.findById(id).populate({
+        path: "category instructor",
       });
+
       if (!course) {
         throw serverResponse.createError({
           ...messages.NOT_FOUND,
-          message: 'Không tìm thấy khoá học',
+          message: "Không tìm thấy khoá học",
         });
       }
+
+      const courseIds = [course?._id];
+
+      // Tính rating trung bình cho mỗi khóa học
+      const courseRatings = await Review.aggregate([
+        {
+          $match: { courseId: { $in: courseIds } },
+        },
+        {
+          $group: {
+            _id: "$courseId",
+            averageRating: { $avg: "$rating" },
+            reviewCount: { $sum: 1 },
+          },
+        },
+      ]);
+
+      // Thêm thông tin rating vào mỗi khóa học
+      const rating = courseRatings.find(
+        (r) => r._id.toString() === course._id.toString()
+      );
+
+      course = course.toObject();
+
+      course.averageRating = rating
+        ? parseFloat(rating.averageRating.toFixed(1))
+        : 0;
+
+      course.reviewCount = rating ? rating.reviewCount : 0;
+
       return course;
     } catch (error) {
       // Handle error if id is not a valid ObjectId
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'Không tìm thấy khoá học',
+        message: "Không tìm thấy khoá học",
       });
     }
   },
@@ -67,15 +236,15 @@ const CourseService = {
     if (existedCourse) {
       throw serverResponse.createError({
         ...messages.ALREADY_EXISTS,
-        message: 'Khoá học đã tồn tại',
+        message: "Khoá học đã tồn tại",
       });
     }
 
     const slug =
-      '/' +
+      "/" +
       (slugify as any)(data.title, {
         lower: true,
-        locale: 'vi',
+        locale: "vi",
       });
 
     const course = await Course.create({ ...data, slug });
@@ -89,7 +258,7 @@ const CourseService = {
     } catch (error) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'Không tìm thấy khoá học',
+        message: "Không tìm thấy khoá học",
       });
     }
   },
@@ -108,15 +277,15 @@ const CourseService = {
     if (existedCourse) {
       throw serverResponse.createError({
         ...messages.ALREADY_EXISTS,
-        message: 'Khoá học đã tồn tại',
+        message: "Khoá học đã tồn tại",
       });
     }
 
     const slug =
-      '/' +
+      "/" +
       (slugify as any)(data.title, {
         lower: true,
-        locale: 'vi',
+        locale: "vi",
       });
 
     course.title = data.title;

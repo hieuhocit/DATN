@@ -49,8 +49,7 @@ const router = createBrowserRouter([
         },
       },
       {
-        // path: '/learning/:courseSlug/:lessonId',
-        path: "/learning",
+        path: "/learning/:courseSlug",
         lazy: async () => {
           const { default: Component } = await import("@/pages/Learning");
           return { Component };

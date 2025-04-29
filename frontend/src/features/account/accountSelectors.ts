@@ -1,6 +1,6 @@
 // Redux
-import { RootState } from '@/store/store';
-import { createSelector } from '@reduxjs/toolkit';
+import { RootState } from "@/store/store";
+import { createSelector } from "@reduxjs/toolkit";
 
 const accountSelector = (state: RootState) => state.account;
 
@@ -11,4 +11,14 @@ const isLoggedInSelector = createSelector(
 
 const userSelector = createSelector(accountSelector, (account) => account.user);
 
-export { accountSelector, isLoggedInSelector, userSelector };
+const enrollmentsSelector = createSelector(
+  accountSelector,
+  (account) => account.enrollments
+);
+
+export {
+  accountSelector,
+  isLoggedInSelector,
+  userSelector,
+  enrollmentsSelector,
+};

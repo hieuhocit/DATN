@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -19,13 +19,16 @@ axiosInstance.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    return (
-      error?.response?.data || {
-        statusCode: error.code,
-        statusText: 'error',
-        message: error.message || 'Đã xảy ra lỗi',
-      }
-    );
+    const data = error?.response?.data;
+    return data
+      ? { data }
+      : {
+          data: {
+            statusCode: error.code,
+            statusText: "error",
+            message: error.message || "Đã xảy ra lỗi",
+          },
+        };
   }
 );
 

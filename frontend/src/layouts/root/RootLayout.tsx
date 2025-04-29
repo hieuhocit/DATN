@@ -1,25 +1,66 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // react-router
-import { Outlet } from 'react-router-dom';
+import { Outlet } from "react-router-dom";
 
 // components
-import Header from '@/components/header/Header';
+import Header from "@/components/header/Header";
 
 // Notification
-import { ToastContainer, Bounce } from 'react-toastify';
+import { ToastContainer, Bounce } from "react-toastify";
 
 // Hooks
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from "@/hooks/useTheme";
 
 // MUI
-import { CssBaseline, ThemeProvider } from '@mui/material';
+import { CssBaseline, ThemeProvider } from "@mui/material";
 
 // Stores
-import { getTheme } from '@/theme';
+import { getTheme } from "@/theme";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import { isLoggedInSelector } from "@/features/account";
+import { getEnrollments } from "@/services/enrollmentService";
+import { setEnrollments } from "@/features/account/accountSlice";
+import { getCart } from "@/services/cartService";
+import { replaceCart } from "@/features/cart";
 
 export default function RootLayout() {
   const { themeMode } = useTheme();
+  const dispatch = useAppDispatch();
+  const isLoggedIn = useAppSelector(isLoggedInSelector);
 
-  const isDarkMode = themeMode === 'dark';
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    async function fetchEnrollmentsAndSyncCart() {
+      try {
+        const enrollments = await getEnrollments();
+        dispatch(setEnrollments(enrollments));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    fetchEnrollmentsAndSyncCart();
+  }, [isLoggedIn, dispatch]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    async function fetchCart() {
+      try {
+        const newCart = ((await getCart()) as any[])?.map(
+          (item) => item.course?.[0]
+        );
+        dispatch(replaceCart(newCart));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchCart();
+  }, [isLoggedIn, dispatch]);
+
+  const isDarkMode = themeMode === "dark";
   const theme = getTheme(themeMode);
 
   return (
@@ -29,7 +70,7 @@ export default function RootLayout() {
         <Header />
         <Outlet />
         <ToastContainer
-          position='top-right'
+          position="top-right"
           autoClose={3000}
           hideProgressBar={false}
           newestOnTop={false}
@@ -38,7 +79,7 @@ export default function RootLayout() {
           pauseOnFocusLoss
           draggable
           pauseOnHover
-          theme={isDarkMode ? 'dark' : 'light'}
+          theme={isDarkMode ? "dark" : "light"}
           transition={Bounce}
         />
       </ThemeProvider>

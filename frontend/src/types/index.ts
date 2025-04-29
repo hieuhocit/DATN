@@ -64,3 +64,56 @@ export interface Category {
   __v: number;
   children?: Category[];
 }
+
+export interface Payment {
+  paymentDetails: {
+    vnp_Amount: string;
+    vnp_BankCode: string;
+    vnp_BankTranNo: string;
+    vnp_CardType: string;
+    vnp_OrderInfo: string;
+    vnp_PayDate: string;
+    vnp_ResponseCode: string;
+    vnp_TmnCode: string;
+    vnp_TransactionNo: string;
+    vnp_TransactionStatus: string;
+    vnp_TxnRef: string;
+  };
+  _id: string;
+  userId: string;
+  amount: number;
+  transactionId: string;
+  paymentMethod: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface Enrollment {
+  _id: string;
+  userId: string;
+  courseId: string;
+  paymentId: string;
+  completionPercentage: number;
+  isCompleted: boolean;
+  completedAt: null | string;
+  enrolledAt: string;
+  lastAccessedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  user: User[];
+  course: Course[];
+  payment: Payment[];
+}
+
+export interface CartItem {
+  _id: string;
+  userId: string;
+  courseId: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  user: User[];
+  course: Course[];
+}

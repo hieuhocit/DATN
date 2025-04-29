@@ -1,20 +1,20 @@
 // Types
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from "express";
 
 // Services
-import CartService from '../services/CartService.js';
-import UserService from '../services/UserService.js';
+import CartService from "../services/CartService.js";
+import UserService from "../services/UserService.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 // Type
-import type { RequestWithUser } from '../middlewares/authMiddleware.js';
+import type { RequestWithUser } from "../middlewares/authMiddleware.js";
 
-const LessonController = {
+const CartController = {
   getCartByUserId: async (req: Request, res: Response, next: NextFunction) => {
     const user = (req as RequestWithUser).user;
     try {
@@ -25,7 +25,7 @@ const LessonController = {
       if (!existedUser) {
         throw serverResponse.createError({
           ...messages.NOT_FOUND,
-          message: 'Người dùng không tồn tại',
+          message: "Người dùng không tồn tại",
         });
       }
 
@@ -35,7 +35,7 @@ const LessonController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Lấy giỏ hàng thành công',
+            message: "Lấy giỏ hàng thành công",
           },
           cart
         )
@@ -56,7 +56,7 @@ const LessonController = {
       if (!existedUser) {
         throw serverResponse.createError({
           ...messages.NOT_FOUND,
-          message: 'Người dùng không tồn tại',
+          message: "Người dùng không tồn tại",
         });
       }
 
@@ -69,7 +69,7 @@ const LessonController = {
         serverResponse.createSuccess(
           {
             ...messages.CREATED,
-            message: 'Đã thêm khoá học vào giỏ hàng thành công',
+            message: "Đã thêm khoá học vào giỏ hàng thành công",
           },
           cartItem
         )
@@ -94,7 +94,7 @@ const LessonController = {
       if (!existedUser) {
         throw serverResponse.createError({
           ...messages.NOT_FOUND,
-          message: 'Người dùng không tồn tại',
+          message: "Người dùng không tồn tại",
         });
       }
 
@@ -103,7 +103,7 @@ const LessonController = {
       if (!result) {
         throw serverResponse.createError({
           ...messages.NOT_FOUND,
-          message: 'Không tìm thấy khoá học trong giỏ hàng',
+          message: "Không tìm thấy khoá học trong giỏ hàng",
         });
       }
 
@@ -111,7 +111,7 @@ const LessonController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Khoá học đã được xóa khỏi giỏ hàng thành công',
+            message: "Khoá học đã được xóa khỏi giỏ hàng thành công",
           },
           null
         )
@@ -120,6 +120,44 @@ const LessonController = {
       next(error);
     }
   },
+  addMultipleCoursesToCart: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const user = (req as RequestWithUser).user;
+    try {
+      const { courseIds } = req.body;
+
+      const existedUser = await UserService.getUserByEmailWithoutPasswordHash(
+        user.email
+      );
+
+      if (!existedUser) {
+        throw serverResponse.createError({
+          ...messages.NOT_FOUND,
+          message: "Người dùng không tồn tại",
+        });
+      }
+
+      const items = await CartService.addMultipleCoursesToCart(
+        existedUser._id,
+        courseIds
+      );
+
+      res.status(messages.CREATED.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.CREATED,
+            message: "Đã thêm khoá học vào giỏ hàng thành công",
+          },
+          items
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
-export default LessonController;
+export default CartController;

@@ -1,5 +1,6 @@
 // Models
 import Cart, { CartType } from "../models/Cart.js";
+import Enrollment from "../models/Enrollment.js";
 
 // Slugify
 import slugify from "slugify";
@@ -24,6 +25,7 @@ const CartService = {
   },
   createCartItem: async function (data: CreateCartItemInput) {
     const existedCartItem = await Cart.findOne({
+      userId: data.userId,
       courseId: data.courseId,
     });
 
@@ -31,6 +33,18 @@ const CartService = {
       throw serverResponse.createError({
         ...messages.ALREADY_EXISTS,
         message: "Khoá học đã tồn tại trong giỏ hàng",
+      });
+    }
+
+    const enrolledCourse = await Enrollment.findOne({
+      userId: data.userId,
+      courseId: data.courseId,
+    });
+
+    if (enrolledCourse) {
+      throw serverResponse.createError({
+        ...messages.ALREADY_EXISTS,
+        message: "Bạn đã mua khoá học này rồi",
       });
     }
 
@@ -52,6 +66,45 @@ const CartService = {
         message: "Không tìm thấy khoá học trong giỏ hàng",
       });
     }
+  },
+  addOneItem: async function (data: CreateCartItemInput) {
+    const existedCartItem = await Cart.findOne({
+      userId: data.userId,
+      courseId: data.courseId,
+    });
+
+    if (existedCartItem) {
+      return null;
+    }
+
+    const enrolledCourse = await Enrollment.findOne({
+      userId: data.userId,
+      courseId: data.courseId,
+    });
+
+    if (enrolledCourse) {
+      return null;
+    }
+
+    const cartItem = await Cart.create(data);
+
+    return cartItem;
+  },
+  addMultipleCoursesToCart: async function (
+    userId: CartType["userId"],
+    courseIds: CartType["courseId"][]
+  ) {
+    let result = [];
+    for await (const courseId of courseIds) {
+      const cartItem = await this.addOneItem({
+        userId,
+        courseId,
+      });
+      if (cartItem) {
+        result.push(cartItem);
+      }
+    }
+    return result;
   },
 };
 

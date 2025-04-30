@@ -66,6 +66,11 @@ export default function Profile() {
     handleClose();
   };
 
+  const handleGoTo = (path: string) => {
+    navigate(path);
+    handleClose();
+  };
+
   return (
     <Box>
       <Tooltip title="Tài khoản">
@@ -74,11 +79,13 @@ export default function Profile() {
         </IconButton>
       </Tooltip>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem onClick={handleClose}>Học tập</MenuItem>
-        <MenuItem onClick={handleClose}>Hồ sơ</MenuItem>
-        <MenuItem onClick={handleClose}>Giỏ hàng</MenuItem>
+        <MenuItem onClick={() => handleGoTo("my-learning")}>Học tập</MenuItem>
+        <MenuItem onClick={() => handleGoTo("/profile")}>Hồ sơ</MenuItem>
+        <MenuItem onClick={() => handleGoTo("/cart")}>Giỏ hàng</MenuItem>
         {["admin", "instructor"].includes(user?.role || "") && (
-          <MenuItem onClick={handleClose}>Giáo viên</MenuItem>
+          <MenuItem onClick={() => handleGoTo("/instructor")}>
+            Giáo viên
+          </MenuItem>
         )}
         {user?.role === "user" && (
           <MenuItem onClick={handleBecomeInstructor}>
@@ -86,7 +93,7 @@ export default function Profile() {
           </MenuItem>
         )}
         {user?.role === "admin" && (
-          <MenuItem onClick={handleClose}>Quản trị</MenuItem>
+          <MenuItem onClick={() => handleGoTo("/admin")}>Quản trị</MenuItem>
         )}
         <MenuItem onClick={handleClose}>
           <Stack

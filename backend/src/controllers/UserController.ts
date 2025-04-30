@@ -48,7 +48,7 @@ const UserController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: "Update user successfully!",
+            message: "Cập nhật thông tin cá nhân thành công!",
           },
           data
         )

@@ -8,3 +8,12 @@ export const becomeInstructor = async () => {
     return error;
   }
 };
+
+export const uploadProfile = async (data: object) => {
+  try {
+    const response = await axios.put("/users/me", data);
+    return response;
+  } catch (error) {
+    return error;
+  }
+};

@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useRef, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -13,6 +14,12 @@ import {
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import Section from "@/components/common/Section";
 import { useTheme } from "@/hooks/useTheme";
+import { useAppSelector } from "@/hooks/useStore";
+import { accountSelector } from "@/features/account";
+import { uploadFileToCloudinary } from "@/services/cloudinaryService";
+import { toast } from "react-toastify";
+import { uploadProfile } from "@/services/userService";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfile {
   email: string;
@@ -24,25 +31,79 @@ interface UserProfile {
 const Profile: React.FC = () => {
   const { themeMode } = useTheme();
 
-  const [profile, setProfile] = useState<UserProfile>({
-    email: "user@example.com",
-    name: "John Doe",
-    bio: "A passionate developer",
-    avatar: "https://via.placeholder.com/150",
-  });
+  const { user } = useAppSelector(accountSelector);
 
+  const navigate = useNavigate();
+
+  const [profile, setProfile] = useState<UserProfile>({
+    email: "",
+    name: "",
+    bio: "",
+    avatar: "",
+  });
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
+
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        email: user.email,
+        name: user.name,
+        bio: user.bio,
+        avatar: user.avatarUrl || "https://via.placeholder.com/150",
+      });
+
+      setEditedProfile({
+        email: user.email,
+        name: user.name,
+        bio: user.bio,
+        avatar: user.avatarUrl || "https://via.placeholder.com/150",
+      });
+    }
+  }, [user]);
 
   const handleEdit = () => {
     setIsEditing(true);
     setEditedProfile(profile);
   };
 
-  const handleSave = () => {
-    setProfile(editedProfile);
-    setIsEditing(false);
+  const handleSave = async () => {
+    const formData = new FormData();
+    const file = fileInputRef.current?.files?.[0];
+
+    try {
+      let avatarUrl: string | null = null;
+
+      if (file) {
+        formData.append("type", "image");
+        formData.append("file", file);
+
+        const res = await uploadFileToCloudinary(formData);
+
+        avatarUrl = res?.secure_url || null;
+      }
+
+      const data = {
+        name: editedProfile.name,
+        bio: editedProfile.bio,
+        avatarUrl: avatarUrl,
+      };
+
+      const res = (await uploadProfile(data)) as any;
+
+      if (res.statusCode === 200) {
+        toast.success("Cập nhật thông tin thành công!");
+        navigate("/profile", { replace: true });
+      } else {
+        toast.error("Có lỗi xảy ra khi cập nhật thông tin.");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Có lỗi xảy ra khi tải lên tệp.");
+    } finally {
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {
@@ -75,8 +136,7 @@ const Profile: React.FC = () => {
             p: 4,
             bgcolor: themeMode === "dark" ? "grey.900" : "background.paper",
             border: 1,
-            borderColor:
-              themeMode === "dark" ? "grey.700" : "grey.200",
+            borderColor: themeMode === "dark" ? "grey.700" : "grey.200",
           }}
         >
           <Typography
@@ -91,9 +151,18 @@ const Profile: React.FC = () => {
             Thông tin cá nhân
           </Typography>
 
-          <Box display="flex" justifyContent="center" mb={3} position="relative">
+          <Box
+            display="flex"
+            justifyContent="center"
+            mb={3}
+            position="relative"
+          >
             <Avatar
-              src={isEditing ? editedProfile.avatar : profile.avatar || ""}
+              src={
+                isEditing
+                  ? editedProfile.avatar || undefined
+                  : profile.avatar || undefined
+              }
               sx={{ width: 120, height: 120 }}
             />
             {isEditing && (
@@ -141,7 +210,7 @@ const Profile: React.FC = () => {
               variant="outlined"
             />
             <TextField
-              label="Giới thiệu"
+              label="Tiểu sử"
               name="bio"
               value={isEditing ? editedProfile.bio : profile.bio}
               onChange={handleInputChange}
@@ -155,7 +224,11 @@ const Profile: React.FC = () => {
             <Box display="flex" justifyContent="flex-end" gap={1}>
               {isEditing ? (
                 <>
-                  <Button variant="contained" color="primary" onClick={handleSave}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSave}
+                  >
                     Lưu
                   </Button>
                   <Button variant="outlined" onClick={handleCancel}>
@@ -163,7 +236,11 @@ const Profile: React.FC = () => {
                   </Button>
                 </>
               ) : (
-                <Button variant="contained" color="primary" onClick={handleEdit}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleEdit}
+                >
                   Chỉnh sửa
                 </Button>
               )}

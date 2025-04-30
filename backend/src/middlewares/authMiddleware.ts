@@ -1,39 +1,39 @@
 // Express
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 // Message config
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Verify token
-import { verifyToken, generateToken } from '../utils/helpers/tokens.js';
+import { verifyToken, generateToken } from "../utils/helpers/tokens.js";
 
 // JWT
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 // UUID
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 // Redis utils
-import {
-  checkTokenInRedis,
-  deleteAccessAndRefreshTokensFromRedis,
-  saveAccessAndRefreshTokensToRedis,
-} from '../utils/redis/redisUtils.js';
+import { checkTokenInRedis } from "../utils/redis/redisUtils.js";
+import { getBlacklist } from "../utils/helpers/blacklist.js";
 
 export type JwtPayLoadType = {
   email: string;
-  role: 'user' | 'instructor' | 'admin';
-  registerProvider: 'local' | 'google' | 'facebook';
+  role: "user" | "instructor" | "admin";
+  registerProvider: "local" | "google" | "facebook";
   jit: string;
   iat: number;
   exp: number;
 };
 
 export type RequestWithUser = Request & {
-  user: Pick<JwtPayLoadType, 'email' | 'role' | 'registerProvider' | 'jit'>;
+  user: Pick<JwtPayLoadType, "email" | "role" | "registerProvider" | "jit"> & {
+    accessToken?: string;
+    refreshToken?: string;
+  };
 };
 
 // Authentication middleware
@@ -48,31 +48,33 @@ export const authMiddleware = async (
     if (!accessToken) {
       throw serverResponse.createError({
         ...messages.UNAUTHORIZED,
-        message: 'Access token is required',
+        message: "Access token is required",
       });
     }
 
-    const user = verifyToken(accessToken, 'ACCESS') as JwtPayLoadType;
+    const user = verifyToken(accessToken, "ACCESS") as JwtPayLoadType;
 
-    const isAccessTokenExists = await checkTokenInRedis(
-      user.email,
-      accessToken,
-      user.jit
-    );
+    // const isAccessTokenExists = await checkTokenInRedis(
+    //   user.email,
+    //   accessToken,
+    //   user.jit
+    // );
 
-    // Check if the access token does not exist in the TOKEN_LIST (revoked)
-    if (!isAccessTokenExists) {
-      throw serverResponse.createError({
-        ...messages.UNAUTHORIZED,
-        message: 'Access token is revoked',
-      });
-    }
+    // // Check if the access token does not exist in the TOKEN_LIST (revoked)
+    // if (!isAccessTokenExists) {
+    //   throw serverResponse.createError({
+    //     ...messages.UNAUTHORIZED,
+    //     message: "Access token is revoked",
+    //   });
+    // }
 
     (req as RequestWithUser).user = {
       email: user.email,
       role: user.role,
       registerProvider: user.registerProvider,
       jit: user.jit,
+      accessToken,
+      refreshToken,
     };
 
     next();
@@ -91,7 +93,7 @@ export const authMiddleware = async (
   }
 };
 
-type RoleType = 'user' | 'instructor' | 'admin';
+type RoleType = "user" | "instructor" | "admin";
 
 // Authorization middleware
 export const authorizationMiddleware = (roles: RoleType[]) => {
@@ -101,14 +103,14 @@ export const authorizationMiddleware = (roles: RoleType[]) => {
     if (!user) {
       throw serverResponse.createError({
         ...messages.UNAUTHORIZED,
-        message: 'Authentication is needed before authorization',
+        message: "Authentication is needed before authorization",
       });
     }
 
     if (!roles.includes(user.role)) {
       throw serverResponse.createError({
         ...messages.FORBIDDEN,
-        message: 'You do not have permission to access this resource.',
+        message: "You do not have permission to access this resource.",
       });
     }
 
@@ -124,21 +126,33 @@ const handleRefreshToken = async (
   next: NextFunction
 ) => {
   try {
-    const decoded = verifyToken(refreshToken, 'REFRESH') as JwtPayLoadType;
+    const decoded = verifyToken(refreshToken, "REFRESH") as JwtPayLoadType;
 
-    const isRefreshTokenExists = await checkTokenInRedis(
-      decoded.email,
-      refreshToken,
-      decoded.jit
-    );
+    const blacklist = getBlacklist() as string[];
 
-    // Check if the refresh token does not exist in the TOKEN_LIST (revoked)
-    if (!isRefreshTokenExists) {
+    const isRefreshTokenInBlacklist = blacklist?.includes(refreshToken);
+
+    // Check if the refresh token is blacklisted
+    if (isRefreshTokenInBlacklist) {
       throw serverResponse.createError({
         ...messages.UNAUTHORIZED,
-        message: 'Refresh token is revoked',
+        message: "Refresh token is revoked",
       });
     }
+
+    // const isRefreshTokenExists = await checkTokenInRedis(
+    //   decoded.email,
+    //   refreshToken,
+    //   decoded.jit
+    // );
+
+    // // Check if the refresh token does not exist in the TOKEN_LIST (revoked)
+    // if (!isRefreshTokenExists) {
+    //   throw serverResponse.createError({
+    //     ...messages.UNAUTHORIZED,
+    //     message: "Refresh token is revoked",
+    //   });
+    // }
 
     const payload = {
       email: decoded.email,
@@ -147,42 +161,44 @@ const handleRefreshToken = async (
       registerProvider: decoded.registerProvider,
     };
 
-    const newAccessToken = generateToken(payload, 'ACCESS', '15m');
-    const newRefreshToken = generateToken(payload, 'REFRESH', '7d');
+    const newAccessToken = generateToken(payload, "ACCESS", "15m");
+    const newRefreshToken = generateToken(payload, "REFRESH", "7d");
 
-    // Delete old tokens from Redis
-    await deleteAccessAndRefreshTokensFromRedis(
-      decoded.email,
-      accessToken,
-      refreshToken,
-      decoded.jit
-    );
+    // // Delete old tokens from Redis
+    // await deleteAccessAndRefreshTokensFromRedis(
+    //   decoded.email,
+    //   accessToken,
+    //   refreshToken,
+    //   decoded.jit
+    // );
 
-    // Save new tokens to Redis
-    await saveAccessAndRefreshTokensToRedis(
-      payload.email,
-      newAccessToken,
-      newRefreshToken,
-      payload.jit
-    );
+    // // Save new tokens to Redis
+    // await saveAccessAndRefreshTokensToRedis(
+    //   payload.email,
+    //   newAccessToken,
+    //   newRefreshToken,
+    //   payload.jit
+    // );
 
     (req as RequestWithUser).user = {
       email: payload.email,
       role: payload.role,
       registerProvider: payload.registerProvider,
       jit: payload.jit,
+      accessToken,
+      refreshToken,
     };
 
-    res.cookie('acc_t', newAccessToken, {
+    res.cookie("acc_t", newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
     });
 
-    res.cookie('ref_t', newRefreshToken, {
+    res.cookie("ref_t", newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 

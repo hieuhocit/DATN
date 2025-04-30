@@ -1,30 +1,30 @@
 // Bcrypt
-import bcrypt from 'bcryptjs';
+import bcrypt from "bcryptjs";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Tokens
-import { generateToken, verifyToken } from '../utils/helpers/tokens.js';
+import { generateToken, verifyToken } from "../utils/helpers/tokens.js";
 
 // Types
-import { Response } from 'express';
-import { UserType } from '../models/User.js';
+import { Response } from "express";
+import { UserType } from "../models/User.js";
 
 // Services
-import GoogleService, { GoogleUserInfo } from './GoogleService.js';
-import FacebookService, { FacebookUserInfo } from './FacebookService.js';
-import EmailService from './EmailService.js';
-import UserService, { UserCreateInput } from './UserService.js';
+import GoogleService, { GoogleUserInfo } from "./GoogleService.js";
+import FacebookService, { FacebookUserInfo } from "./FacebookService.js";
+import EmailService from "./EmailService.js";
+import UserService, { UserCreateInput } from "./UserService.js";
 
 // Crypto
-import crypto from 'crypto';
+import crypto from "crypto";
 
 // UUID
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 // Redis
 import {
@@ -34,22 +34,23 @@ import {
   getResetCodeInRedis,
   saveAccessAndRefreshTokensToRedis,
   saveResetCodeToRedis,
-} from '../utils/redis/redisUtils.js';
+} from "../utils/redis/redisUtils.js";
+import { getBlacklist, saveBlackList } from "../utils/helpers/blacklist.js";
 
 export type UserLoginInput = {
   email?: string;
   password?: string;
   googleAccessToken?: string;
   facebookAccessToken?: string;
-  provider: 'local' | 'google' | 'facebook';
+  provider: "local" | "google" | "facebook";
 };
 
 const AuthService = {
   getUserByEmail: async function (email: string) {
-    if (!email || email.trim() === '') {
+    if (!email || email.trim() === "") {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: 'Vui lòng nhập email!',
+        message: "Vui lòng nhập email!",
       });
     }
 
@@ -58,13 +59,12 @@ const AuthService = {
     if (!user) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'Tài khoản không tồn tại!',
+        message: "Tài khoản không tồn tại!",
       });
     }
 
     return user;
   },
-
   register: async function (data: UserCreateInput) {
     const newUser = await UserService.createUser(data);
     return newUser;
@@ -72,9 +72,9 @@ const AuthService = {
   login: async function (res: Response, data: UserLoginInput) {
     // Provider messages for authentication errors
     const providerMessages = {
-      google: 'Your account is connected to Google. Please log in with Google.',
+      google: "Your account is connected to Google. Please log in with Google.",
       facebook:
-        'Your account is connected to Facebook. Please log in with Facebook',
+        "Your account is connected to Facebook. Please log in with Facebook",
     };
 
     // Helper function to generate and set tokens
@@ -91,38 +91,38 @@ const AuthService = {
         registerProvider: user.registerProvider,
       };
 
-      const accessToken = generateToken(tokenPayload, 'ACCESS', '15m');
-      const refreshToken = generateToken(tokenPayload, 'REFRESH', '7d');
+      const accessToken = generateToken(tokenPayload, "ACCESS", "15m");
+      const refreshToken = generateToken(tokenPayload, "REFRESH", "7d");
 
       //
-      await saveAccessAndRefreshTokensToRedis(
-        user.email,
-        accessToken,
-        refreshToken,
-        tokenPayload.jit
-      );
+      // await saveAccessAndRefreshTokensToRedis(
+      //   user.email,
+      //   accessToken,
+      //   refreshToken,
+      //   tokenPayload.jit
+      // );
 
       user.accessToken = accessToken;
       user.refreshToken = refreshToken;
 
-      res.cookie('acc_t', accessToken, {
+      res.cookie("acc_t", accessToken, {
         httpOnly: true,
         secure: true,
-        sameSite: 'none',
+        sameSite: "none",
       });
 
-      res.cookie('ref_t', refreshToken, {
+      res.cookie("ref_t", refreshToken, {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         httpOnly: true,
         secure: true,
-        sameSite: 'none',
+        sameSite: "none",
       });
     };
 
     let user;
 
     switch (data.provider) {
-      case 'local': {
+      case "local": {
         const existedUser = await UserService.getUserByEmailWithPasswordHash(
           data.email as string
         );
@@ -130,17 +130,17 @@ const AuthService = {
         if (!existedUser) {
           throw serverResponse.createError({
             ...messages.NOT_FOUND,
-            message: 'Tài khoản không tồn tại!',
+            message: "Tài khoản không tồn tại!",
           });
         }
 
-        if (existedUser.registerProvider !== 'local') {
+        if (existedUser.registerProvider !== "local") {
           throw serverResponse.createError({
             ...messages.BAD_REQUEST,
             message:
               providerMessages[
                 existedUser.registerProvider as keyof typeof providerMessages
-              ] || 'Vui lòng đăng nhập bằng tài khoản đã liên kết!',
+              ] || "Vui lòng đăng nhập bằng tài khoản đã liên kết!",
           });
         }
 
@@ -152,11 +152,11 @@ const AuthService = {
         if (!isPasswordMatch) {
           throw serverResponse.createError({
             ...messages.BAD_REQUEST,
-            message: 'Mật khẩu không chính xác!',
+            message: "Mật khẩu không chính xác!",
           });
         }
 
-        user = existedUser.toObject() as Omit<UserType, 'passwordHash'> & {
+        user = existedUser.toObject() as Omit<UserType, "passwordHash"> & {
           passwordHash?: string;
         };
 
@@ -165,15 +165,15 @@ const AuthService = {
         break;
       }
 
-      case 'google':
-      case 'facebook': {
+      case "google":
+      case "facebook": {
         const provider = data.provider;
 
         const service =
-          provider === 'facebook' ? FacebookService : GoogleService;
+          provider === "facebook" ? FacebookService : GoogleService;
 
         const tokenField =
-          provider === 'facebook' ? 'facebookAccessToken' : 'googleAccessToken';
+          provider === "facebook" ? "facebookAccessToken" : "googleAccessToken";
 
         const accessToken = data[tokenField] as string;
 
@@ -184,9 +184,9 @@ const AuthService = {
         const name = userInfo.name;
 
         const avatarUrl =
-          provider === 'facebook'
-            ? (userInfo.picture as FacebookUserInfo['picture']).data.url
-            : (userInfo.picture as GoogleUserInfo['picture']);
+          provider === "facebook"
+            ? (userInfo.picture as FacebookUserInfo["picture"]).data.url
+            : (userInfo.picture as GoogleUserInfo["picture"]);
 
         // Find or create user
         let existedUser = await UserService.getUserByEmailWithoutPasswordHash(
@@ -197,9 +197,9 @@ const AuthService = {
           existedUser = await this.register({
             email,
             name,
-            bio: '',
+            bio: "",
             avatarUrl,
-            password: '',
+            password: "",
             provider: data.provider,
           });
         }
@@ -211,7 +211,7 @@ const AuthService = {
       default: {
         throw serverResponse.createError({
           ...messages.BAD_REQUEST,
-          message: 'Nhà cung cấp không hợp lệ!',
+          message: "Nhà cung cấp không hợp lệ!",
         });
       }
     }
@@ -219,7 +219,7 @@ const AuthService = {
     if (!user) {
       throw serverResponse.createError({
         ...messages.SERVER_ERROR,
-        message: 'Failed to authenticate user.',
+        message: "Failed to authenticate user.",
       });
     }
 
@@ -229,10 +229,10 @@ const AuthService = {
     return user;
   },
   sendResetCode: async function (email: string) {
-    if (!email || email.trim() === '') {
+    if (!email || email.trim() === "") {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: 'Email is required',
+        message: "Email is required",
       });
     }
 
@@ -241,7 +241,7 @@ const AuthService = {
     if (!user) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'Account not found!',
+        message: "Account not found!",
       });
     }
 
@@ -256,17 +256,17 @@ const AuthService = {
     return resetCode;
   },
   verifyResetCode: async function (email: string, resetCode: number) {
-    if (!email || email.trim() === '') {
+    if (!email || email.trim() === "") {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: 'Email is required',
+        message: "Email is required",
       });
     }
 
     if (!resetCode) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: 'Reset code is required',
+        message: "Reset code is required",
       });
     }
 
@@ -276,27 +276,27 @@ const AuthService = {
     if (!storedResetCode || +storedResetCode !== resetCode) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: 'Invalid reset code or expired',
+        message: "Invalid reset code or expired",
       });
     }
 
     // Delete reset code from redis
     await deleteResetCodeFromRedis(email);
 
-    const resetToken = generateToken({ email }, 'ACCESS', '15m');
+    const resetToken = generateToken({ email }, "ACCESS", "15m");
 
     return resetToken;
   },
   resetPassword: async function (token: string, password: string) {
     try {
-      const { email } = verifyToken(token, 'ACCESS') as { email: string };
+      const { email } = verifyToken(token, "ACCESS") as { email: string };
 
       const user = await UserService.getUserByEmailWithPasswordHash(email);
 
       if (!user) {
         throw serverResponse.createError({
           ...messages.BAD_REQUEST,
-          message: 'Invalid reset token',
+          message: "Invalid reset token",
         });
       }
 
@@ -309,21 +309,22 @@ const AuthService = {
     } catch (error) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: 'Invalid reset token',
+        message: "Invalid reset token",
       });
     }
   },
   changePassword: async function (
     email: string,
     oldPassword: string,
-    newPassword: string
+    newPassword: string,
+    refreshToken: string
   ) {
     const user = await UserService.getUserByEmailWithPasswordHash(email);
 
     if (!user) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'Account not found!',
+        message: "Account not found!",
       });
     }
 
@@ -332,7 +333,7 @@ const AuthService = {
     if (!isPasswordMatch) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: 'Old password is incorrect!',
+        message: "Old password is incorrect!",
       });
     }
 
@@ -340,29 +341,36 @@ const AuthService = {
     user.passwordHash = passwordHash;
     await user.save();
 
-    // Delete all tokens from Redis
-    await deleteAllTokensFromRedis(user.email);
+    // // Delete all tokens from Redis
+    // await deleteAllTokensFromRedis(user.email);
+    const blacklist = getBlacklist();
+    blacklist?.push(refreshToken);
+    saveBlackList(blacklist || []);
 
     return user;
   },
   logout: async function (
     data: {
-      email: string;
-      accessToken: string;
+      // email: string;
+      // accessToken: string;
       refreshToken: string;
-      jit: string;
+      // jit: string;
     },
     res: Response
   ) {
-    await deleteAccessAndRefreshTokensFromRedis(
-      data.email,
-      data.accessToken,
-      data.refreshToken,
-      data.jit
-    );
+    const blacklist = getBlacklist();
+    blacklist?.push(data.refreshToken);
+    saveBlackList(blacklist || []);
 
-    res.clearCookie('acc_t');
-    res.clearCookie('ref_t');
+    // await deleteAccessAndRefreshTokensFromRedis(
+    //   data.email,
+    //   data.accessToken,
+    //   data.refreshToken,
+    //   data.jit
+    // );
+
+    res.clearCookie("acc_t");
+    res.clearCookie("ref_t");
   },
 };
 

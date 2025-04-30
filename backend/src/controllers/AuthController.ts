@@ -1,17 +1,17 @@
 // Express
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 // Services
-import AuthService from '../services/AuthService.js';
+import AuthService from "../services/AuthService.js";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Types
-import { RequestWithUser } from '../types/types.js';
+import { RequestWithUser } from "../types/types.js";
 
 const AuthController = {
   register: async (req: Request, res: Response, next: NextFunction) => {
@@ -22,14 +22,14 @@ const AuthController = {
         email,
         name,
         password,
-        provider: 'local',
+        provider: "local",
       });
 
       res.status(messages.CREATED.statusCode).json(
         serverResponse.createSuccess(
           {
             ...messages.CREATED,
-            message: 'Register successfully!',
+            message: "Register successfully!",
           },
           user
         )
@@ -60,7 +60,7 @@ const AuthController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Login successfully!',
+            message: "Login successfully!",
           },
           user
         )
@@ -77,7 +77,7 @@ const AuthController = {
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess({
           ...messages.OK,
-          message: 'Reset code has been sent to your email!',
+          message: "Reset code has been sent to your email!",
         })
       );
     } catch (error) {
@@ -94,7 +94,7 @@ const AuthController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Reset code verified!',
+            message: "Reset code verified!",
           },
           { resetToken: result }
         )
@@ -112,7 +112,7 @@ const AuthController = {
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess({
           ...messages.OK,
-          message: 'Password has been reset!',
+          message: "Password has been reset!",
         })
       );
     } catch (error) {
@@ -126,14 +126,15 @@ const AuthController = {
       const data = await AuthService.changePassword(
         user.email,
         oldPassword,
-        newPassword
+        newPassword,
+        user.refreshToken || ""
       );
 
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Password has been changed!',
+            message: "Password has been changed!",
           },
           data
         )
@@ -143,17 +144,19 @@ const AuthController = {
     }
   },
   logout: async (req: Request, res: Response, next: NextFunction) => {
-    const { acc_t: accessToken, ref_t: refreshToken } = req.cookies;
-    const email = (req as RequestWithUser).user.email;
-    const jit = (req as RequestWithUser).user.jit;
+    // const { acc_t: accessToken, ref_t: refreshToken } = req.cookies;
+    // const email = (req as RequestWithUser).user.email;
+    // const jit = (req as RequestWithUser).user.jit;
+
+    const user = (req as RequestWithUser).user;
 
     try {
       await AuthService.logout(
         {
-          email,
-          accessToken,
-          refreshToken,
-          jit,
+          // email,
+          // accessToken,
+          refreshToken: user.refreshToken || "",
+          // jit,
         },
         res
       );
@@ -161,7 +164,7 @@ const AuthController = {
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess({
           ...messages.OK,
-          message: 'Đăng xuất thành công!',
+          message: "Đăng xuất thành công!",
         })
       );
     } catch (error) {
@@ -177,7 +180,7 @@ const AuthController = {
       serverResponse.createSuccess(
         {
           ...messages.OK,
-          message: 'Token verified successfully!',
+          message: "Token verified successfully!",
         },
         data
       )

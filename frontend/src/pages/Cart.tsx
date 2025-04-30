@@ -4,7 +4,6 @@ import { useTheme } from "@/hooks/useTheme";
 
 // MUI Components
 import {
-  Box,
   Typography,
   IconButton,
   Stack,
@@ -12,6 +11,8 @@ import {
   CardContent,
   CardMedia,
   Rating,
+  Container,
+  Divider,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Checkout from "@/components/checkout/Checkout";
@@ -61,39 +62,36 @@ const Cart: React.FC = () => {
 
   return (
     <Section sx={{ mt: "128px", mb: "128px" }}>
-      <Box
-        sx={{
-          position: "relative",
-        }}
-      >
-        <Box
+      <Container>
+        <Typography
+          variant="h4"
           sx={{
-            maxWidth: "64rem",
-            mx: "auto",
-            position: "relative",
-            zIndex: 10,
+            fontWeight: "bold",
+            color: themeMode === "dark" ? "white" : "text.primary",
+            mb: 2,
           }}
         >
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: "bold",
-              color: themeMode === "dark" ? "white" : "text.primary",
-              mb: 2,
-            }}
-          >
-            Giỏ hàng
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: themeMode === "dark" ? "grey.300" : "text.secondary",
-              mb: 3,
-            }}
-          >
-            {courses.length} khóa học trong giỏ hàng
-          </Typography>
+          Giỏ hàng
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            color: themeMode === "dark" ? "grey.300" : "text.secondary",
+            mb: 3,
+          }}
+        >
+          {courses.length} khóa học trong giỏ hàng
+        </Typography>
 
+        <Stack
+          width={1}
+          direction={{
+            xs: "column-reverse",
+            lg: "row",
+          }}
+          justifyContent={"space-between"}
+          gap={8}
+        >
           <Stack spacing={2}>
             {courses.length === 0 ? (
               <Typography
@@ -198,38 +196,29 @@ const Cart: React.FC = () => {
           </Stack>
 
           {courses.length > 0 && (
-            <Stack
-              direction="row"
-              justifyContent="flex-end"
-              alignItems="center"
-              spacing={2}
-              sx={{ mt: 3 }}
-            >
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: themeMode === "dark" ? "grey.300" : "text.secondary",
-                  }}
-                >
-                  Tổng:
-                </Typography>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: "bold",
-                    color: themeMode === "dark" ? "white" : "text.primary",
-                  }}
-                >
-                  {formatPrice(totalPrice)}
-                </Typography>
+            <>
+              <Stack direction="column" spacing={2}>
+                <Stack direction="column" alignItems="flex-start" spacing={1}>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color:
+                        themeMode === "dark" ? "grey.300" : "text.secondary",
+                    }}
+                  >
+                    Tổng:
+                  </Typography>
+                  <Typography variant="h5" fontWeight={600}>
+                    {formatPrice(totalPrice)}
+                  </Typography>
+                </Stack>
+                <Divider />
+                <Checkout />
               </Stack>
-
-              <Checkout />
-            </Stack>
+            </>
           )}
-        </Box>
-      </Box>
+        </Stack>
+      </Container>
     </Section>
   );
 };

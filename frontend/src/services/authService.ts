@@ -1,7 +1,7 @@
-import axios from '@/configs/axiosConfig';
+import axios from "@/configs/axiosConfig";
 
 // Types
-import { User } from '@/types';
+import { User } from "@/types";
 
 interface CommonResponse {
   statusCode: number;
@@ -25,7 +25,7 @@ interface VerifyTokenResponse extends CommonResponse {
 
 export const login = async (data: object): Promise<LoginResponse> => {
   try {
-    const result = (await axios.post('/login', data)) as LoginResponse;
+    const result = (await axios.post("/login", data)) as LoginResponse;
     return result;
   } catch (error) {
     return error as LoginResponse;
@@ -34,8 +34,8 @@ export const login = async (data: object): Promise<LoginResponse> => {
 
 export const register = async (data: object) => {
   try {
-    const result = (await axios.post('/register', data)) as RegisterResponse;
-    return result;
+    const result = (await axios.post("/register", data)) as RegisterResponse;
+    return result.data;
   } catch (error) {
     return error as RegisterResponse;
   }
@@ -43,7 +43,7 @@ export const register = async (data: object) => {
 
 export const verifyToken = async (): Promise<VerifyTokenResponse> => {
   try {
-    const data = (await axios.post('/verify-token')) as VerifyTokenResponse;
+    const data = (await axios.post("/verify-token")) as VerifyTokenResponse;
     return data;
   } catch (error) {
     return error as VerifyTokenResponse;
@@ -52,7 +52,7 @@ export const verifyToken = async (): Promise<VerifyTokenResponse> => {
 
 export const logout = async () => {
   try {
-    const result = (await axios.post('/logout')) as CommonResponse;
+    const result = (await axios.post("/logout")) as CommonResponse;
     return result;
   } catch (error) {
     return error as CommonResponse;

@@ -44,12 +44,10 @@ const VNPayService = {
     let amount = 0;
 
     for await (const cartItem of cart) {
-      const course = await CourseService.getCourseById(
-        cartItem.courseId.toString()
-      );
+      const courseId = cartItem.courseId.toString();
+      const course = await CourseService.getCourseById(courseId);
       amount += course.price;
     }
-
     process.env.TZ = "Asia/Ho_Chi_Minh";
 
     const date = new Date();
@@ -78,9 +76,7 @@ const VNPayService = {
     vnp_Params["vnp_ReturnUrl"] = returnUrl;
     vnp_Params["vnp_IpAddr"] = ipAddr;
     vnp_Params["vnp_CreateDate"] = createDate;
-    if (bankCode !== null && bankCode !== "") {
-      vnp_Params["vnp_BankCode"] = bankCode;
-    }
+    vnp_Params["vnp_BankCode"] = bankCode ?? "VNBANK";
 
     sortObject(vnp_Params).forEach(([key, value]) => {
       if (!value || value === "" || value === undefined || value === null) {
@@ -169,7 +165,11 @@ const VNPayService = {
 
         await Enrollment.create(enrollmentData);
         await PaymentItem.create(paymentItemData);
-        await CartService.deleteCartItemById(cartItem._id.toString(), userId);
+
+        await CartService.deleteCartItemByCourseIdAndUserId(
+          course._id.toString(),
+          userId
+        );
       }
 
       return true;

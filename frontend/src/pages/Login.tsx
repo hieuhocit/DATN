@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 
 // React router
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 // Icons
 import GoogleIcon from "@mui/icons-material/Google";
@@ -67,6 +67,10 @@ const Login: React.FC = () => {
 
   const isDark = theme.palette.mode === "dark";
 
+  const [searchParams] = useSearchParams();
+
+  const redirectUrl = searchParams.get("redirectUrl");
+
   const handleShowPassword = () => setShowPassword((prev) => !prev);
 
   const loginWithGoogle = useGoogleLogin({
@@ -87,7 +91,7 @@ const Login: React.FC = () => {
         if (dataRes.statusCode === 200) {
           await syncCart();
           dispatch(setAccountLoggedIn(dataRes.data));
-          navigate("/");
+          navigate(redirectUrl ?? "/");
           toast.success("Đăng nhập thành công!");
           return;
         } else {
@@ -157,7 +161,7 @@ const Login: React.FC = () => {
       }
       await syncCart();
       dispatch(setAccountLoggedIn(dataRes.data));
-      navigate("/");
+      navigate(redirectUrl ?? "/");
       toast.success("Đăng nhập thành công!");
     } catch (error) {
       console.error("Error :", error);
@@ -185,7 +189,7 @@ const Login: React.FC = () => {
       if (dataRes.statusCode === 200) {
         await syncCart();
         dispatch(setAccountLoggedIn(dataRes.data));
-        navigate("/");
+        navigate(redirectUrl ?? "/");
         toast.success("Đăng nhập thành công!");
       } else {
         toast.error(dataRes.message);
@@ -377,7 +381,7 @@ const Login: React.FC = () => {
         >
           Chưa có tài khoản?{" "}
           <Link
-            to="/sign-up"
+            to={`/sign-up${redirectUrl ? `?redirectUrl=${redirectUrl}` : ""}`}
             style={{
               color: isDark ? "#BB86FC" : "#6200EA",
               textDecoration: "none",

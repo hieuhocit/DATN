@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 
 // React router
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 // Icons
 import GoogleIcon from "@mui/icons-material/Google";
@@ -68,6 +68,10 @@ const SignUp: React.FC = () => {
 
   const handleShowPassword = () => setShowPassword((prev) => !prev);
 
+  const [searchParams] = useSearchParams();
+
+  const redirectUrl = searchParams.get("redirectUrl");
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -118,8 +122,9 @@ const SignUp: React.FC = () => {
         toast.error("Đã xảy ra lỗi!");
         return;
       }
+      const statusCode = dataRes.statusCode;
 
-      if (dataRes.statusCode !== 200 && dataRes.statusCode !== 201) {
+      if (statusCode && statusCode !== 200 && statusCode !== 201) {
         if (dataRes?.errors?.name) toast.error(dataRes.errors.name.message);
         else if (dataRes?.errors?.email)
           toast.error(dataRes.errors.email.message);
@@ -129,7 +134,7 @@ const SignUp: React.FC = () => {
         return;
       }
 
-      navigate("/login");
+      navigate(`/login${redirectUrl ? `?redirectUrl=${redirectUrl}` : ""}`);
       toast.success("Đăng ký thành công!");
     } catch (error) {
       console.error("Error :", error);
@@ -154,7 +159,7 @@ const SignUp: React.FC = () => {
         if (dataRes.statusCode === 200) {
           await syncCart();
           dispatch(setAccountLoggedIn(dataRes.data));
-          navigate("/");
+          navigate(redirectUrl ?? "/");
           toast.success("Đăng nhập thành công!");
           return;
         } else {
@@ -190,7 +195,7 @@ const SignUp: React.FC = () => {
       if (dataRes.statusCode === 200) {
         await syncCart();
         dispatch(setAccountLoggedIn(dataRes.data));
-        navigate("/");
+        navigate(redirectUrl ?? "/");
         toast.success("Đăng nhập thành công!");
       } else {
         toast.error(dataRes.message);
@@ -385,7 +390,7 @@ const SignUp: React.FC = () => {
         >
           Đã có tài khoản?{" "}
           <Link
-            to="/login"
+            to={`/login${redirectUrl ? `?redirectUrl=${redirectUrl}` : ""}`}
             style={{
               color: isDark ? "#BB86FC" : "#6200EA",
               textDecoration: "none",

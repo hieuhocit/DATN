@@ -1,83 +1,122 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getPaymentUrl, getResultPayment } from "@/services/checkoutService";
+import {
+  Button,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Radio,
+  RadioGroup,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-
-declare global {
-  interface Window {
-    handleAfterPayment: (href: string) => void;
-  }
-}
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import { isLoggedInSelector } from "@/features/account";
+import { replaceCart } from "@/features/cart";
 
 export default function Checkout() {
   const [bankCode, setBankCode] = useState("VNBANK");
   const [searchParams] = useSearchParams();
+
+  const isLoggedIn = useAppSelector(isLoggedInSelector);
+
+  const dispatch = useAppDispatch();
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const vnp_ResponseCode = searchParams.get("vnp_ResponseCode");
-    if(vnp_ResponseCode === "00") {
+    if (vnp_ResponseCode === "00") {
       handleAfterPayment(window.location.href);
     }
   }, []);
 
   const handlePay = async () => {
-    const res: any = await getPaymentUrl({
-      bankCode,
-    });
-
-    // const outerWidth = window.outerWidth > 1000 ? window.outerWidth : 1000;
-    // const outerHeight = window.outerHeight;
-
-    const data = res.data;
-
-    window.handleAfterPayment = handleAfterPayment;
-
-    window.open(data.url,'_self')
+    if (isLoggedIn) {
+      const res: any = await getPaymentUrl({
+        bankCode,
+      });
+      console.log(res);
+      const data = res.data;
+      window.open(data.url, "_self");
+    } else {
+      navigate(`/login?redirectUrl=/cart`);
+    }
   };
 
   const handleAfterPayment = async (href: string) => {
-    console.log("handleAfterPayment", href);
     const params = new URL(href).searchParams;
     const res: any = await getResultPayment(params);
-    const data = res.data;
+
+    if (res.statusCode !== 200) {
+      toast.error(res.message);
+      return;
+    }
+
     toast.success("Thanh toán thành công");
-    console.log(data);
-    navigate('/cart')
+    dispatch(replaceCart([]));
+    navigate("/");
+  };
+
+  const handleChangeBankCode = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setBankCode((event.target as HTMLInputElement).value);
   };
 
   return (
-    <>
-      <div></div>
-      <div>
-        <label>Chọn phương thức thanh toán:</label>
-        <br />
-        <label>
-          <input
-            type="radio"
-            name="bankCode"
-            checked={bankCode === "VNBANK"}
-            value={"VNBANK"}
-            onChange={(e) => setBankCode(e.target.value)}
-          />
-          <span>Thanh toán qua ATM-Tài khoản ngân hàng nội địa</span>
-        </label>
-        <br />
-        <label>
-          <input
-            type="radio"
-            name="bankCode"
-            checked={bankCode === "INTCARD"}
-            value={"INTCARD"}
-            onChange={(e) => setBankCode(e.target.value)}
-          />
-          <span>Thanh toán qua thẻ quốc tế</span>
-        </label>
-      </div>
-      <div>
-        <button onClick={handlePay}>Thanh toán</button>
-      </div>
-    </>
+    <FormControl>
+      <FormLabel focused={false} id="controlled-payment-method">
+        Chọn phương thức thanh toán:
+      </FormLabel>
+
+      <RadioGroup
+        aria-labelledby="controlled-payment-method"
+        name="bankCode"
+        value={bankCode}
+        onChange={handleChangeBankCode}
+      >
+        <FormControlLabel
+          value="VNBANK"
+          control={<Radio color="default" />}
+          label={
+            <Stack direction={"row"} gap={1} justifyContent={"space-between"}>
+              <Typography>
+                Thanh toán qua ATM-Tài khoản ngân hàng nội địa
+              </Typography>
+              <AccountBalanceIcon />
+            </Stack>
+          }
+        />
+        <FormControlLabel
+          value="INTCARD"
+          control={<Radio color="default" />}
+          label={
+            <Stack direction={"row"} gap={1} justifyContent={"space-between"}>
+              <Typography>Thanh toán qua thẻ quốc tế</Typography>
+              <CreditCardIcon />
+            </Stack>
+          }
+        />
+      </RadioGroup>
+      <Button
+        onClick={handlePay}
+        variant="contained"
+        color="primary"
+        size="large"
+        fullWidth
+        sx={{
+          mt: 2,
+          py: 1.5,
+          textTransform: "none",
+          fontWeight: 600,
+        }}
+      >
+        Thanh toán
+      </Button>
+    </FormControl>
   );
 }

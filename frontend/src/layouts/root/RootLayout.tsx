@@ -49,9 +49,9 @@ export default function RootLayout() {
 
     async function fetchCart() {
       try {
-        const newCart = ((await getCart()) as any[])?.map(
-          (item) => item.course?.[0]
-        );
+        const newCart = ((await getCart()) as any[])
+          ?.map((item) => item.course?.[0])
+          .filter((item) => item !== undefined);
         dispatch(replaceCart(newCart ?? []));
       } catch (error) {
         console.error(error);

@@ -50,17 +50,21 @@ const CartService = {
     cart.forEach((element: any) => {
       const course = element.course[0];
 
-      const courseId = course?._id?.toString() ?? undefined;
+      if (course) {
+        const courseId = course?._id?.toString() ?? undefined;
 
-      const rating = courseRatings.find((r) => r._id.toString() === courseId);
+        const rating = courseRatings.find((r) => r._id.toString() === courseId);
 
-      const enrollment = courseEnrollments.find((e) => e._id === courseId);
+        const enrollment = courseEnrollments.find((e) => e._id === courseId);
 
-      course.averageRating = rating
-        ? parseFloat(rating.averageRating.toFixed(1))
-        : 0;
-      course.reviewCount = rating ? rating.reviewCount : 0;
-      course.enrollmentCount = enrollment ? enrollment.enrollmentCount : 0;
+        course.averageRating = rating
+          ? parseFloat(rating.averageRating.toFixed(1))
+          : 0;
+        course.reviewCount = rating ? rating.reviewCount : 0;
+        course.enrollmentCount = enrollment ? enrollment.enrollmentCount : 0;
+      } else {
+        element.course = [];
+      }
     });
 
     return cart;

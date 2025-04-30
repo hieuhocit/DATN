@@ -56,12 +56,19 @@ const router = createBrowserRouter([
         },
       },
       {
+        path: '/forgot-password',
+        lazy: async () => {
+          const { default: ForgotPasswordPage } = await import('@pages/ForgotPassword');
+          return { Component: ForgotPasswordPage };
+        },
+      },
+      {
         path: "/profile",
         lazy: async () => {
           const { default: Component } = await import("@pages/Profile");
           return { Component };
         },
-      },
+      }
     ],
   },
 ]);

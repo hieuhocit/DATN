@@ -50,11 +50,11 @@ const CartService = {
     cart.forEach((element: any) => {
       const course = element.course[0];
 
-      const rating = courseRatings.find(
-        (r) => r._id.toString() === course._id.toString()
-      );
+      const courseId = course?._id?.toString() ?? undefined;
 
-      const enrollment = courseEnrollments.find((e) => e._id === course._id);
+      const rating = courseRatings.find((r) => r._id.toString() === courseId);
+
+      const enrollment = courseEnrollments.find((e) => e._id === courseId);
 
       course.averageRating = rating
         ? parseFloat(rating.averageRating.toFixed(1))

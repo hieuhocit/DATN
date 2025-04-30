@@ -22,9 +22,9 @@ CartRoutes.post(
 );
 
 CartRoutes.delete(
-  "/cart/:id",
+  "/cart/:courseId",
   authMiddleware,
-  CartController.deleteCartItemById
+  CartController.deleteCartItemByCourseIdAndUserId
 );
 
 export default CartRoutes;

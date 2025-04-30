@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const CourseSchema = new mongoose.Schema(
   {
@@ -30,17 +30,17 @@ const CourseSchema = new mongoose.Schema(
     },
     instructorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Category',
+      ref: "Category",
       required: true,
     },
     level: {
       type: String,
-      enum: ['beginner', 'intermediate', 'expert', 'all'],
+      enum: ["beginner", "intermediate", "expert", "all"],
       required: true,
     },
     duration: {
@@ -72,20 +72,20 @@ const CourseSchema = new mongoose.Schema(
   }
 );
 
-CourseSchema.virtual('instructor', {
-  ref: 'User',
-  localField: 'instructorId',
-  foreignField: '_id',
+CourseSchema.virtual("instructor", {
+  ref: "User",
+  localField: "instructorId",
+  foreignField: "_id",
 });
 
-CourseSchema.virtual('category', {
-  ref: 'Category',
-  localField: 'categoryId',
-  foreignField: '_id',
+CourseSchema.virtual("category", {
+  ref: "Category",
+  localField: "categoryId",
+  foreignField: "_id",
 });
 
 export type CourseType = mongoose.InferSchemaType<typeof CourseSchema>;
 
-const Course = mongoose.model('Course', CourseSchema);
+const Course = mongoose.model("Course", CourseSchema);
 
 export default Course;

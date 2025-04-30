@@ -78,14 +78,14 @@ const CartController = {
       next(error);
     }
   },
-  deleteCartItemById: async (
+  deleteCartItemByCourseIdAndUserId: async (
     req: Request,
     res: Response,
     next: NextFunction
   ) => {
     const user = (req as RequestWithUser).user;
     try {
-      const { id } = req.params;
+      const { courseId } = req.params;
 
       const existedUser = await UserService.getUserByEmailWithoutPasswordHash(
         user.email
@@ -98,7 +98,10 @@ const CartController = {
         });
       }
 
-      const result = await CartService.deleteCartItemById(id, existedUser._id);
+      const result = await CartService.deleteCartItemByCourseIdAndUserId(
+        courseId,
+        existedUser._id
+      );
 
       if (!result) {
         throw serverResponse.createError({

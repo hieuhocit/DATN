@@ -35,7 +35,7 @@ export default function RootLayout() {
     async function fetchEnrollmentsAndSyncCart() {
       try {
         const enrollments = await getEnrollments();
-        dispatch(setEnrollments(enrollments));
+        dispatch(setEnrollments(enrollments ?? []));
       } catch (error) {
         console.error(error);
       }
@@ -52,7 +52,7 @@ export default function RootLayout() {
         const newCart = ((await getCart()) as any[])?.map(
           (item) => item.course?.[0]
         );
-        dispatch(replaceCart(newCart));
+        dispatch(replaceCart(newCart ?? []));
       } catch (error) {
         console.error(error);
       }

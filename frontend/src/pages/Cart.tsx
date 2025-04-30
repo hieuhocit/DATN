@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -17,6 +18,9 @@ import Checkout from "@/components/checkout/Checkout";
 import Section from "@/components/common/Section";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { coursesInCartSelector, removeCourseFromCart } from "@/features/cart";
+import { isLoggedInSelector } from "@/features/account";
+import { toast } from "react-toastify";
+import { removeFromCart } from "@/services/cartService";
 
 const Cart: React.FC = () => {
   const { themeMode } = useTheme();
@@ -24,10 +28,28 @@ const Cart: React.FC = () => {
   const dispatch = useAppDispatch();
   const courses = useAppSelector(coursesInCartSelector);
 
+  const isLoggedIn = useAppSelector(isLoggedInSelector);
+
   const totalPrice = courses.reduce((total, item) => total + item.price, 0);
 
-  const handleRemoveCourseFromCart = (courseId: string) => {
-    dispatch(removeCourseFromCart(courseId));
+  const handleRemoveCourseFromCart = async (courseId: string) => {
+    try {
+      if (isLoggedIn) {
+        const data = (await removeFromCart(courseId)) as any;
+        if (data.statusCode !== 200) {
+          toast.error(data.message);
+        } else {
+          dispatch(removeCourseFromCart(courseId));
+          toast.success("Xoá khoá học khỏi giỏ hàng thành công!");
+        }
+      } else {
+        dispatch(removeCourseFromCart(courseId));
+        toast.success("Xoá khoá học khỏi giỏ hàng thành công!");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Có lỗi xảy ra khi xoá khoá học khỏi giỏ hàng.");
+    }
   };
 
   const formatPrice = (price: number) => {

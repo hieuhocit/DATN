@@ -13,7 +13,16 @@ export const getCart = async () => {
 export const addToCart = async (courseId: string) => {
   try {
     const response = await axios.post("/cart", { courseId });
-    return response.data as CartItem;
+    return response;
+  } catch (error) {
+    return error;
+  }
+};
+
+export const removeFromCart = async (courseId: string) => {
+  try {
+    const response = await axios.delete(`/cart/${courseId}`);
+    return response;
   } catch (error) {
     return error;
   }
@@ -31,7 +40,7 @@ export const addMultipleToCart = async (
         signal: signal,
       }
     );
-    return response.data as CartItem[];
+    return response;
   } catch (error) {
     return error;
   }

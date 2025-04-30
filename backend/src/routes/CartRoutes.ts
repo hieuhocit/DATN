@@ -15,10 +15,16 @@ CartRoutes.get("/cart", authMiddleware, CartController.getCartByUserId);
 
 CartRoutes.post("/cart", authMiddleware, CartController.createCartItem);
 
-CartRoutes.delete(
-  "/cart/:id",
+CartRoutes.post(
+  "/cart/multiple",
   authMiddleware,
-  CartController.deleteCartItemById
+  CartController.addMultipleCoursesToCart
+);
+
+CartRoutes.delete(
+  "/cart/:courseId",
+  authMiddleware,
+  CartController.deleteCartItemByCourseIdAndUserId
 );
 
 export default CartRoutes;

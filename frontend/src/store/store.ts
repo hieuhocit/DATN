@@ -1,14 +1,16 @@
 // Redux
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore } from "@reduxjs/toolkit";
 
 // Reduces
-import { themeReducer } from '@features/theme/index';
-import { accountReducer } from '@features/account/index';
+import { themeReducer } from "@features/theme/index";
+import { accountReducer } from "@features/account/index";
+import { cartReducer } from "@features/cart/index";
 
 export const store = configureStore({
   reducer: {
     theme: themeReducer,
     account: accountReducer,
+    cart: cartReducer,
   },
 });
 

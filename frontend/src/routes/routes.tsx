@@ -39,16 +39,6 @@ const router = createBrowserRouter([
           return { Component };
         },
       },
-
-      {
-        path: "/course-details-page",
-        lazy: async () => {
-          const { default: Component } = await import(
-            "@/pages/course-details/CourseDetailPage.tsx"
-          );
-          return { Component };
-        },
-      },
       {
         path: "/courses/:courseId",
         lazy: async () => {
@@ -59,8 +49,7 @@ const router = createBrowserRouter([
         },
       },
       {
-        // path: '/learning/:courseSlug/:lessonId',
-        path: "/learning",
+        path: "/learning/:courseSlug",
         lazy: async () => {
           const { default: Component } = await import("@/pages/Learning");
           return { Component };
@@ -73,6 +62,13 @@ const router = createBrowserRouter([
           return { Component: ForgotPasswordPage };
         },
       },
+      {
+        path: "/profile",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/Profile");
+          return { Component };
+        },
+      }
     ],
   },
 ]);

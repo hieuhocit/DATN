@@ -22,12 +22,52 @@ import SchoolIcon from "@mui/icons-material/School";
 import PersonIcon from "@mui/icons-material/Person";
 import CategoryIcon from "@mui/icons-material/Category";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import MonitorIcon from "@mui/icons-material/Monitor";
+import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
 
 // React Router
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import { addCourseToCart, cartSelector } from "@/features/cart";
+import { enrollmentsSelector, isLoggedInSelector } from "@/features/account";
+import { addToCart } from "@/services/cartService";
+import { toast } from "react-toastify";
 
 export default function CourseDetails() {
   const { course, reviews, lessons } = useLoaderData();
+
+  const navigate = useNavigate();
+
+  const enrollments = useAppSelector(enrollmentsSelector);
+  const { courses } = useAppSelector(cartSelector);
+
+  const isLoggedIn = useAppSelector(isLoggedInSelector);
+
+  const dispatch = useAppDispatch();
+
+  const handleAddToCart = async () => {
+    if (isLoggedIn) {
+      const data = await addToCart(course._id);
+      if ((data as any).statusCode === 201) {
+        dispatch(addCourseToCart(course));
+        toast.success("Đã thêm vào giỏ hàng");
+      } else {
+        toast.error((data as any).message);
+        return;
+      }
+    } else {
+      dispatch(addCourseToCart(course));
+      toast.success("Đã thêm vào giỏ hàng");
+    }
+  };
+
+  const handleViewCourse = () => {
+    navigate(`/learning${course.slug}?lesson=${lessons[0]._id}`);
+  };
+
+  const handleGoToCart = () => {
+    navigate("/cart");
+  };
 
   const {
     title,
@@ -42,6 +82,14 @@ export default function CourseDetails() {
     requirements,
     whatYouWillLearn,
   } = course;
+
+  const isEnrolled = enrollments?.some(
+    (enrollment) => enrollment?.courseId?.toString() === course?._id
+  );
+
+  const isInCart = courses?.some(
+    (courseInCart) => courseInCart._id === course._id
+  );
 
   return (
     <>
@@ -132,17 +180,48 @@ export default function CourseDetails() {
                   </Typography>
                 )}
               </Stack>
-              <Button
-                variant="contained"
-                startIcon={<ShoppingCartIcon />}
-                sx={{
-                  width: { xs: "100%", sm: "auto" },
-                  minWidth: { xs: "100%", sm: 200 },
-                  mt: { xs: 2, sm: 0 },
-                }}
-              >
-                Thêm vào giỏ hàng
-              </Button>
+              {!isEnrolled && !isInCart && (
+                <Button
+                  onClick={handleAddToCart}
+                  variant="contained"
+                  startIcon={<ShoppingCartIcon />}
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    minWidth: { xs: "100%", sm: 200 },
+                    mt: { xs: 2, sm: 0 },
+                  }}
+                >
+                  Thêm vào giỏ hàng
+                </Button>
+              )}
+              {isEnrolled && (
+                <Button
+                  onClick={handleViewCourse}
+                  variant="contained"
+                  startIcon={<MonitorIcon />}
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    minWidth: { xs: "100%", sm: 200 },
+                    mt: { xs: 2, sm: 0 },
+                  }}
+                >
+                  Xem khoá học
+                </Button>
+              )}
+              {isInCart && (
+                <Button
+                  onClick={handleGoToCart}
+                  variant="contained"
+                  startIcon={<ShoppingCartCheckoutIcon />}
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    minWidth: { xs: "100%", sm: 200 },
+                    mt: { xs: 2, sm: 0 },
+                  }}
+                >
+                  Đến giỏ hàng
+                </Button>
+              )}
             </Stack>
           </Stack>
 

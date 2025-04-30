@@ -1,13 +1,11 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React from "react";
 import { useTheme } from "@/hooks/useTheme";
 
 // MUI Components
 import {
   Box,
   Typography,
-  Button,
   IconButton,
   Stack,
   Card,
@@ -16,89 +14,55 @@ import {
   Rating,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
 import Checkout from "@/components/checkout/Checkout";
 import Section from "@/components/common/Section";
-
-interface CartItem {
-  id: number;
-  title: string;
-  author: string;
-  rating: number;
-  reviews: number;
-  price: number;
-  image: string;
-}
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import { coursesInCartSelector, removeCourseFromCart } from "@/features/cart";
+import { isLoggedInSelector } from "@/features/account";
+import { toast } from "react-toastify";
+import { removeFromCart } from "@/services/cartService";
 
 const Cart: React.FC = () => {
-  const navigate = useNavigate();
   const { themeMode } = useTheme();
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      title: "Cách lừa người dùng mua kẹo KERA 1 viên kẹo = 1 vườn rau",
-      author: "Phạm Quang Linh Angola",
-      rating: 4.4,
-      reviews: 301,
-      price: 1999000,
-      image:
-        "https://iv1cdn.vnecdn.net/vnexpress/images/web/2025/04/05/quang-linh-vlogs-xin-loi-nhung-nguoi-da-tin-tuong-minh-1743825292.jpg?w=460&h=0&q=100&dpr=2&fit=crop&s=Nsy-SZHZvs7m4PEy4K9iiA",
-    },
-    {
-      id: 2,
-      title:
-        "Cách yêu 8 em cùng một lúc, cách chia thời gian yêu đương hiệu quả",
-      author: "Vi rút",
-      rating: 4.8,
-      reviews: 180,
-      price: 2819000,
-      image:
-        "https://media-cdn-v2.laodong.vn/storage/newsportal/2025/3/29/1483824/Kem.jpg",
-    },
-    {
-      id: 3,
-      title: "Cách lừa 16 tỷ mà không bị chửi",
-      author: "Anh Thoại",
-      rating: 4.8,
-      reviews: 180,
-      price: 3819000,
-      image:
-        "https://photo.znews.vn/w660/Uploaded/mdf_uswreo/2025_02_26/phamthoai20250224123338.jpg",
-    },
-  ]);
+  const dispatch = useAppDispatch();
+  const courses = useAppSelector(coursesInCartSelector);
 
-  const totalPrice = cartItems.reduce((total, item) => total + item.price, 0);
+  const isLoggedIn = useAppSelector(isLoggedInSelector);
 
-  const handleRemoveItem = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-    toast.success("Đã xóa khóa học khỏi giỏ hàng!");
-  };
+  const totalPrice = courses.reduce((total, item) => total + item.price, 0);
 
-  const handleCheckout = () => {
-    if (cartItems.length === 0) {
-      toast.error("Giỏ hàng của bạn đang trống!");
-      return;
+  const handleRemoveCourseFromCart = async (courseId: string) => {
+    try {
+      if (isLoggedIn) {
+        const data = (await removeFromCart(courseId)) as any;
+        if (data.statusCode !== 200) {
+          toast.error(data.message);
+        } else {
+          dispatch(removeCourseFromCart(courseId));
+          toast.success("Xoá khoá học khỏi giỏ hàng thành công!");
+        }
+      } else {
+        dispatch(removeCourseFromCart(courseId));
+        toast.success("Xoá khoá học khỏi giỏ hàng thành công!");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Có lỗi xảy ra khi xoá khoá học khỏi giỏ hàng.");
     }
-    toast.info("Đang chuyển hướng đến trang thanh toán...");
-    setTimeout(() => {
-      navigate("/checkout");
-    }, 1000);
   };
 
   const formatPrice = (price: number) => {
-    return price.toLocaleString("vi-VN", {
+    return price?.toLocaleString("vi-VN", {
       style: "currency",
       currency: "VND",
     });
   };
 
   return (
-    <Section sx={{ mt: "128px" }}>
+    <Section sx={{ mt: "128px", mb: "128px" }}>
       <Box
         sx={{
-          minHeight: "100vh",
-          p: 3,
           position: "relative",
         }}
       >
@@ -127,11 +91,11 @@ const Cart: React.FC = () => {
               mb: 3,
             }}
           >
-            {cartItems.length} khóa học trong giỏ hàng
+            {courses.length} khóa học trong giỏ hàng
           </Typography>
 
           <Stack spacing={2}>
-            {cartItems.length === 0 ? (
+            {courses.length === 0 ? (
               <Typography
                 variant="body1"
                 sx={{
@@ -141,9 +105,9 @@ const Cart: React.FC = () => {
                 Giỏ hàng của bạn đang trống.
               </Typography>
             ) : (
-              cartItems.map((item) => (
+              courses.map((item) => (
                 <Card
-                  key={item.id}
+                  key={item._id}
                   sx={{
                     display: "flex",
                     alignItems: "center",
@@ -163,7 +127,7 @@ const Cart: React.FC = () => {
                       borderRadius: 1,
                       mr: 2,
                     }}
-                    image={item.image}
+                    image={"/images/image-placeholder.png"}
                     alt={item.title}
                   />
 
@@ -185,12 +149,12 @@ const Cart: React.FC = () => {
                         mb: 1,
                       }}
                     >
-                      {item.author}
+                      {item.instructor?.[0].name}
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <Rating
-                        value={item.rating}
-                        precision={0.1}
+                        value={item.averageRating}
+                        precision={0.5}
                         readOnly
                         sx={{ color: "warning.main" }}
                       />
@@ -203,14 +167,14 @@ const Cart: React.FC = () => {
                               : "text.secondary",
                         }}
                       >
-                        ({item.reviews} xếp hạng)
+                        ({item.reviewCount} xếp hạng)
                       </Typography>
                     </Stack>
                   </CardContent>
 
                   <Stack alignItems="flex-end" spacing={1}>
                     <IconButton
-                      onClick={() => handleRemoveItem(item.id)}
+                      onClick={handleRemoveCourseFromCart.bind(null, item._id)}
                       sx={{
                         color: themeMode === "dark" ? "grey.400" : "grey.500",
                         "&:hover": { color: "error.main" },
@@ -233,7 +197,7 @@ const Cart: React.FC = () => {
             )}
           </Stack>
 
-          {cartItems.length > 0 && (
+          {courses.length > 0 && (
             <Stack
               direction="row"
               justifyContent="flex-end"
@@ -260,15 +224,7 @@ const Cart: React.FC = () => {
                   {formatPrice(totalPrice)}
                 </Typography>
               </Stack>
-              {/* <Button
-              variant="contained"
-              color="primary"
-              onClick={handleCheckout}
-              startIcon={<ShoppingCartCheckoutIcon />}
-              sx={{ px: 3, py: 1 }}
-            >
-              Tiến hành thanh toán
-            </Button> */}
+
               <Checkout />
             </Stack>
           )}

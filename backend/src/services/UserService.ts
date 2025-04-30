@@ -1,19 +1,19 @@
 // Models
-import User, { UserType } from '../models/User.js';
+import User, { UserType } from "../models/User.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 // Bcrypt
-import bcrypt from 'bcryptjs';
+import bcrypt from "bcryptjs";
 
-export type UserCreateInput = Pick<UserType, 'email' | 'name'> & {
+export type UserCreateInput = Pick<UserType, "email" | "name"> & {
   password: string;
-  provider: 'local' | 'google' | 'facebook';
-  role?: 'user' | 'instructor' | 'admin';
+  provider: "local" | "google" | "facebook";
+  role?: "user" | "instructor" | "admin";
   bio?: string;
   avatarUrl?: string;
 };
@@ -25,10 +25,10 @@ const UserService = {
     if (existedUser) {
       const providerMessages = {
         google:
-          'Tài khoản của bạn đã được kết nối với Google. Vui lòng đăng nhập bằng Google.',
+          "Tài khoản của bạn đã được kết nối với Google. Vui lòng đăng nhập bằng Google.",
         facebook:
-          'Tài khoản của bạn đã được kết nối với Facebook. Vui lòng đăng nhập bằng Facebook.',
-        default: 'Tài khoản đã tồn tại',
+          "Tài khoản của bạn đã được kết nối với Facebook. Vui lòng đăng nhập bằng Facebook.",
+        default: "Tài khoản đã tồn tại",
       };
 
       const provider =
@@ -42,8 +42,8 @@ const UserService = {
       });
     }
 
-    let passwordHash = '';
-    if (data.provider === 'local') {
+    let passwordHash = "";
+    if (data.provider === "local") {
       passwordHash = bcrypt.hashSync(data.password, 10);
     }
 
@@ -52,21 +52,21 @@ const UserService = {
       name: data.name,
       passwordHash,
       registerProvider: data.provider,
-      bio: data.bio || '',
-      role: data.role || 'user',
-      avatarUrl: data?.avatarUrl || '',
+      bio: data.bio || "",
+      role: data.role || "user",
+      avatarUrl: data?.avatarUrl || "",
     });
 
     return newUser;
   },
   getUserById: async function (_id: string) {
     try {
-      const user = await User.findOne({ _id }).select('-passwordHash');
+      const user = await User.findOne({ _id }).select("-passwordHash");
 
       if (!user) {
         throw serverResponse.createError({
           ...messages.NOT_FOUND,
-          message: 'User not found!',
+          message: "User not found!",
         });
       }
 
@@ -74,12 +74,12 @@ const UserService = {
     } catch (error) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'User not found!',
+        message: "User not found!",
       });
     }
   },
   getUserByEmailWithoutPasswordHash: async function (email: string) {
-    const user = await User.findOne({ email }).select('-passwordHash');
+    const user = await User.findOne({ email }).select("-passwordHash");
     return user;
   },
   getUserByEmailWithPasswordHash: async function (email: string) {
@@ -88,7 +88,7 @@ const UserService = {
   },
   getAllUsers: async function () {
     const users = await User.find()
-      .select('-passwordHash')
+      .select("-passwordHash")
       .sort({ createdAt: -1 });
     return users;
   },
@@ -99,7 +99,7 @@ const UserService = {
     } catch (error) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'User not found!',
+        message: "User not found!",
       });
     }
   },
@@ -107,7 +107,7 @@ const UserService = {
     const updatedData = Object.entries(data).reduce(
       (acc: any, [key, value]) => {
         if (value !== undefined) {
-          if (key === 'password') acc.passwordHash = bcrypt.hashSync(value, 10);
+          if (key === "password") acc.passwordHash = bcrypt.hashSync(value, 10);
           else acc[key] = value;
         }
         return acc;
@@ -122,11 +122,25 @@ const UserService = {
   },
   updateProfile: async function (
     email: string,
-    data: Pick<UserType, 'name' | 'bio' | 'avatarUrl'>
+    data: Pick<UserType, "name" | "bio" | "avatarUrl">
   ) {
     const user = await User.findOneAndUpdate({ email }, data, {
       new: true,
-    }).select('-passwordHash');
+    }).select("-passwordHash");
+    return user;
+  },
+  becomeInstructor: async function (email: string) {
+    const user = await User.findOneAndUpdate(
+      { email },
+      { role: "instructor" },
+      { new: true }
+    ).select("-passwordHash");
+    if (!user) {
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: "User not found!",
+      });
+    }
     return user;
   },
 };

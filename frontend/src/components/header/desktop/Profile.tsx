@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // MUI
 import Box from "@mui/material/Box";
 import { Avatar, Menu, MenuItem, Stack, Tooltip } from "@mui/material";
@@ -22,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { setAccountLoggedOut, userSelector } from "@/features/account";
 import { clearCart } from "@/features/cart";
+import { becomeInstructor } from "@/services/userService";
 
 export default function Profile() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -52,6 +54,18 @@ export default function Profile() {
     }
   };
 
+  const handleBecomeInstructor = async () => {
+    const data = (await becomeInstructor()) as any;
+
+    if (data.statusCode === 200) {
+      toast.success(data.message);
+      navigate("/");
+    } else {
+      toast.error(data.message);
+    }
+    handleClose();
+  };
+
   return (
     <Box>
       <Tooltip title="Tài khoản">
@@ -67,7 +81,9 @@ export default function Profile() {
           <MenuItem onClick={handleClose}>Giáo viên</MenuItem>
         )}
         {user?.role === "user" && (
-          <MenuItem onClick={handleClose}>Trở thành giảng viên</MenuItem>
+          <MenuItem onClick={handleBecomeInstructor}>
+            Trở thành giảng viên
+          </MenuItem>
         )}
         {user?.role === "admin" && (
           <MenuItem onClick={handleClose}>Quản trị</MenuItem>

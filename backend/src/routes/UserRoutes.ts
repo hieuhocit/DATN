@@ -1,60 +1,66 @@
 // Express
-import { Router } from 'express';
+import { Router } from "express";
 
 // Controllers
-import UserController from '../controllers/UserController.js';
+import UserController from "../controllers/UserController.js";
 
 // Auth
 import {
   authMiddleware,
   authorizationMiddleware,
-} from '../middlewares/authMiddleware.js';
+} from "../middlewares/authMiddleware.js";
 
 // Validation
-import { validateRegister } from '../middlewares/validationMiddleware.js';
+import { validateRegister } from "../middlewares/validationMiddleware.js";
 
 // Create router
 const UserRoutes = Router();
 
 // Profile
-UserRoutes.get('/users/me', authMiddleware, UserController.me);
-UserRoutes.put('/users/me', authMiddleware, UserController.updateProfile);
+UserRoutes.get("/users/me", authMiddleware, UserController.me);
+UserRoutes.put("/users/me", authMiddleware, UserController.updateProfile);
 
 // Users management
 UserRoutes.get(
-  '/users',
+  "/users",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin"]),
   UserController.getAllUsers
 );
 
-UserRoutes.post(
-  '/users',
+UserRoutes.get(
+  "/become-instructor",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  UserController.becomeInstructor
+);
+
+UserRoutes.post(
+  "/users",
+  authMiddleware,
+  authorizationMiddleware(["admin"]),
   validateRegister,
   UserController.createUser
 );
 
 UserRoutes.get(
-  '/users/:id',
+  "/users/:id",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin"]),
   UserController.getUserById
 );
 
 UserRoutes.put(
-  '/users/:id',
+  "/users/:id",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin"]),
   validateRegister,
   UserController.updateUserById
 );
 
 UserRoutes.delete(
-  '/users/:id',
+  "/users/:id",
   authMiddleware,
-  authorizationMiddleware(['admin']),
+  authorizationMiddleware(["admin"]),
   UserController.deleteUserById
 );
 

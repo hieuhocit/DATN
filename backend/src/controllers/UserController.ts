@@ -1,17 +1,17 @@
 // Express
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 // Services
-import UserService from '../services/UserService.js';
+import UserService from "../services/UserService.js";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Types
-import { RequestWithUser } from '../types/types.js';
+import { RequestWithUser } from "../types/types.js";
 
 const UserController = {
   me: async (req: Request, res: Response, next: NextFunction) => {
@@ -25,7 +25,7 @@ const UserController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Get user successfully!',
+            message: "Get user successfully!",
           },
           data
         )
@@ -48,7 +48,7 @@ const UserController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Update user successfully!',
+            message: "Update user successfully!",
           },
           data
         )
@@ -67,7 +67,7 @@ const UserController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Get user successfully!',
+            message: "Get user successfully!",
           },
           data
         )
@@ -84,7 +84,7 @@ const UserController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Get all users successfully!',
+            message: "Get all users successfully!",
           },
           data
         )
@@ -101,17 +101,17 @@ const UserController = {
         email,
         name,
         password,
-        bio: bio || '',
-        role: role || 'user',
-        provider: provider || 'local',
-        avatarUrl: avatarUrl || '',
+        bio: bio || "",
+        role: role || "user",
+        provider: provider || "local",
+        avatarUrl: avatarUrl || "",
       });
 
       res.status(messages.CREATED.statusCode).json(
         serverResponse.createSuccess(
           {
             ...messages.CREATED,
-            message: 'Create user successfully!',
+            message: "Create user successfully!",
           },
           data
         )
@@ -130,7 +130,7 @@ const UserController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Delete user successfully!',
+            message: "Delete user successfully!",
           },
           null
         )
@@ -148,17 +148,36 @@ const UserController = {
         email,
         name,
         password,
-        bio: bio || '',
-        role: role || 'user',
-        provider: provider || 'local',
-        avatarUrl: avatarUrl || '',
+        bio: bio || "",
+        role: role || "user",
+        provider: provider || "local",
+        avatarUrl: avatarUrl || "",
       });
 
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Update user successfully!',
+            message: "Update user successfully!",
+          },
+          data
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+  becomeInstructor: async (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as RequestWithUser).user;
+
+    try {
+      const data = await UserService.becomeInstructor(user.email);
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Bạn đã trở thành giảng viên!",
           },
           data
         )

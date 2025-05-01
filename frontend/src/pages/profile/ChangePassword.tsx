@@ -8,58 +8,54 @@ import {
   Box,
   Paper,
   Stack,
-  Link,
-
 } from "@mui/material";
 import Section from "@/components/common/Section";
 import { useTheme } from "@/hooks/useTheme";
-import { useAppSelector } from "@/hooks/useStore";
-import { accountSelector } from "@/features/account";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { resetPassword } from "@/services/passwordService";
+import { changePassword } from "@/services/passwordService";
 
 const PATTERNS = {
-    PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,24}$/,
+  PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,24}$/,
 };
 
 const ChangePassword: React.FC = () => {
   const { themeMode } = useTheme();
-  const { user } = useAppSelector(accountSelector);
   const navigate = useNavigate();
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
-
   const handleChangePassword = async () => {
-    if (!newPassword || newPassword.trim() === '') {
-        toast.error('Vui lòng nhập mật khẩu!');
-        return;
+    if (!newPassword || newPassword.trim() === "") {
+      toast.error("Vui lòng nhập mật khẩu!");
+      return;
     }
     if (!PATTERNS.PASSWORD.test(newPassword)) {
-        toast.error('Mật khẩu phải có 6-24 ký tự, bao gồm chữ hoa, chữ thường và ký tự đặc biệt!');
-        return;
+      toast.error(
+        "Mật khẩu phải có 6-24 ký tự, bao gồm chữ hoa, chữ thường và ký tự đặc biệt!"
+      );
+      return;
     }
-    if (!confirmNewPassword || confirmNewPassword.trim() === '') {
-        toast.error('Vui lòng nhập lại mật khẩu!');
-        return;
+    if (!confirmNewPassword || confirmNewPassword.trim() === "") {
+      toast.error("Vui lòng nhập lại mật khẩu!");
+      return;
     }
     if (confirmNewPassword !== newPassword) {
-        toast.error('Mật khẩu không khớp!');
-        return;
+      toast.error("Mật khẩu không khớp!");
+      return;
     }
 
     try {
-        const res = (await resetPassword(newPassword, oldPassword)) as any;
+      const res = (await changePassword(newPassword, oldPassword)) as any;
 
-        if (res.statusCode === 200) {
-          toast.success(res.message);
-          navigate("/profile", { replace: true });
-        } else {
-          toast.error(res?.data?.message);
-        }
+      if (res.statusCode === 200) {
+        toast.success(res.message);
+        navigate("/profile", { replace: true });
+      } else {
+        toast.error(res?.data?.message);
+      }
     } catch (error) {
       console.error("Lỗi đổi mật khẩu:", error);
       toast.error("Có lỗi xảy ra khi đổi mật khẩu.");
@@ -80,7 +76,12 @@ const ChangePassword: React.FC = () => {
             borderColor: themeMode === "dark" ? "grey.700" : "grey.200",
           }}
         >
-          <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: "bold" }}>
+          <Typography
+            variant="h4"
+            align="center"
+            gutterBottom
+            sx={{ fontWeight: "bold" }}
+          >
             Đổi mật khẩu
           </Typography>
 
@@ -109,7 +110,11 @@ const ChangePassword: React.FC = () => {
             />
 
             <Box display="flex" justifyContent="flex-end" gap={1}>
-              <Button variant="contained" color="primary" onClick={handleChangePassword}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleChangePassword}
+              >
                 Đổi mật khẩu
               </Button>
               <Button variant="outlined" onClick={handleCancel}>

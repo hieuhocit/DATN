@@ -1,10 +1,20 @@
 import axios from "@/configs/axiosConfig";
 
-export const resetPassword = async (newPassword:string,oldPassword:string) => {
+export const changePassword = async (
+  newPassword: string,
+  oldPassword: string
+) => {
   try {
-    const response = await axios.post("/change-password", {newPassword, oldPassword});
+    const response = await axios.post("/change-password", {
+      newPassword,
+      oldPassword,
+    });
     return response;
   } catch (error) {
+    console.error("Error resetting password:", error);
+    return error;
+  }
+};
 
 export const sendCodeToEmail = async (email: string) => {
   try {
@@ -15,7 +25,6 @@ export const sendCodeToEmail = async (email: string) => {
     return error;
   }
 };
-
 
 export const verifyCode = async (email: string, code: number) => {
   try {

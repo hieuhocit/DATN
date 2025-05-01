@@ -232,7 +232,7 @@ const AuthService = {
     if (!email || email.trim() === "") {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: "Email is required",
+        message: "Vui lòng nhập email!",
       });
     }
 
@@ -241,7 +241,16 @@ const AuthService = {
     if (!user) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: "Account not found!",
+        message: "Tài khoản không tồn tại!",
+      });
+    }
+
+    const provider = user.registerProvider;
+
+    if (provider !== "local") {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: "Tài khoản của bạn đã được liên kết với " + provider,
       });
     }
 
@@ -259,14 +268,14 @@ const AuthService = {
     if (!email || email.trim() === "") {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: "Email is required",
+        message: "Vui lòng nhập email!",
       });
     }
 
     if (!resetCode) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: "Reset code is required",
+        message: "Vui lòng nhập mã xác nhận!",
       });
     }
 
@@ -276,7 +285,7 @@ const AuthService = {
     if (!storedResetCode || +storedResetCode !== resetCode) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: "Invalid reset code or expired",
+        message: "Mã xác nhận không chính xác hoặc đã hết hạn!",
       });
     }
 
@@ -324,7 +333,16 @@ const AuthService = {
     if (!user) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: "Account not found!",
+        message: "Tài khoản không tồn tại!",
+      });
+    }
+
+    const provider = user.registerProvider;
+
+    if (provider !== "local") {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: "Tài khoản của bạn đã được liên kết với " + provider,
       });
     }
 
@@ -333,7 +351,7 @@ const AuthService = {
     if (!isPasswordMatch) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: "Old password is incorrect!",
+        message: "Mat khẩu cũ không chính xác!",
       });
     }
 

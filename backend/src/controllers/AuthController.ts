@@ -77,7 +77,7 @@ const AuthController = {
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess({
           ...messages.OK,
-          message: "Reset code has been sent to your email!",
+          message: "Mã xác nhận đã được gửi đến email của bạn!",
         })
       );
     } catch (error) {
@@ -94,7 +94,7 @@ const AuthController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: "Reset code verified!",
+            message: "Xác thực mã xác nhận thành công!",
           },
           { resetToken: result }
         )
@@ -112,7 +112,7 @@ const AuthController = {
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess({
           ...messages.OK,
-          message: "Password has been reset!",
+          message: "Đặt lại mật khẩu thành công!",
         })
       );
     } catch (error) {
@@ -134,7 +134,7 @@ const AuthController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: "Password has been changed!",
+            message: "Mật khẩu đã được thay đổi thành công!",
           },
           data
         )

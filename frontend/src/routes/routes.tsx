@@ -76,6 +76,13 @@ const router = createBrowserRouter([
           return { Component };
         },
       },
+      {
+        path: "/my-learning",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/PurchasedCourses");
+          return { Component };
+        },
+      },
     ],
   },
 ]);

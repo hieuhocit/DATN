@@ -68,7 +68,14 @@ const router = createBrowserRouter([
           const { default: Component } = await import("@pages/Profile");
           return { Component };
         },
-      }
+      },
+      {
+        path: "/change-password",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/profile/ChangePassword");
+          return { Component };
+        },
+      },
     ],
   },
 ]);

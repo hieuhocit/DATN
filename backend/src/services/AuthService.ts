@@ -245,6 +245,15 @@ const AuthService = {
       });
     }
 
+    const provider = user.registerProvider;
+
+    if (provider !== "local") {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: "Tài khoản của bạn đã được liên kết với " + provider,
+      });
+    }
+
     const resetCode = crypto.randomInt(100000, 999999);
 
     // Send reset code to email

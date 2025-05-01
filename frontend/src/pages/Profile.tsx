@@ -30,9 +30,7 @@ interface UserProfile {
 
 const Profile: React.FC = () => {
   const { themeMode } = useTheme();
-
   const { user } = useAppSelector(accountSelector);
-
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState<UserProfile>({
@@ -73,7 +71,7 @@ const Profile: React.FC = () => {
     const file = fileInputRef.current?.files?.[0];
 
     try {
-      let avatarUrl: string | null = null;
+      let avatarUrl: string | null= profile.avatar;
 
       if (file) {
         formData.append("type", "image");
@@ -125,6 +123,10 @@ const Profile: React.FC = () => {
       const objectUrl = URL.createObjectURL(file);
       setEditedProfile((prev) => ({ ...prev, avatar: objectUrl }));
     }
+  };
+
+  const handleNavigateToChangePassword = () => {
+    navigate("/change-password");
   };
 
   return (
@@ -236,13 +238,21 @@ const Profile: React.FC = () => {
                   </Button>
                 </>
               ) : (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleEdit}
-                >
-                  Chỉnh sửa
-                </Button>
+                <>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleEdit}
+                  >
+                    Chỉnh sửa
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={handleNavigateToChangePassword}
+                  >
+                    Đổi mật khẩu
+                  </Button>
+                </>
               )}
             </Box>
           </Stack>

@@ -68,7 +68,7 @@ export default function Dropdown({ categories }: DropdownProps) {
             flexShrink: 0,
           }}
         >
-          {categories.map((category) => (
+          {categories instanceof Array && categories?.map((category) => (
             <DropdownItem
               key={category._id}
               text={category.name}

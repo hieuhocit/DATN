@@ -8,7 +8,10 @@ import {
   Box,
   Paper,
   Stack,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Section from "@/components/common/Section";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "react-toastify";
@@ -26,6 +29,9 @@ const ChangePassword: React.FC = () => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChangePassword = async () => {
     if (!newPassword || newPassword.trim() === "") {
@@ -64,6 +70,20 @@ const ChangePassword: React.FC = () => {
 
   const handleCancel = () => navigate("/profile", { replace: true });
 
+  const handleTogglePassword = (field: string) => {
+    switch (field) {
+      case "old":
+        setShowOldPassword(!showOldPassword);
+        break;
+      case "new":
+        setShowNewPassword(!showNewPassword);
+        break;
+      case "confirm":
+        setShowConfirmPassword(!showConfirmPassword);
+        break;
+    }
+  };
+
   return (
     <Section sx={{ mt: "128px", mb: "128px" }}>
       <Container maxWidth="sm">
@@ -88,27 +108,61 @@ const ChangePassword: React.FC = () => {
           <Stack spacing={2}>
             <TextField
               label="Mật khẩu cũ"
-              type="password"
+              type={showOldPassword ? "text" : "password"}
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
               fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => handleTogglePassword("old")}
+                      edge="end"
+                    >
+                      {showOldPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               label="Mật khẩu mới"
-              type="password"
+              type={showNewPassword ? "text" : "password"}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => handleTogglePassword("new")}
+                      edge="end"
+                    >
+                      {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
-
             <TextField
               label="Nhập lại mật khẩu mới"
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               value={confirmNewPassword}
               onChange={(e) => setConfirmNewPassword(e.target.value)}
               fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => handleTogglePassword("confirm")}
+                      edge="end"
+                    >
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
-
             <Box display="flex" justifyContent="flex-end" gap={1}>
               <Button
                 variant="contained"

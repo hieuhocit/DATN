@@ -18,6 +18,8 @@ import CreditCardIcon from "@mui/icons-material/CreditCard";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { isLoggedInSelector } from "@/features/account";
 import { replaceCart } from "@/features/cart";
+import { getEnrollments } from "@/services/enrollmentService";
+import { setEnrollments } from "@/features/account/accountSlice";
 
 export default function Checkout() {
   const [bankCode, setBankCode] = useState("VNBANK");
@@ -58,6 +60,15 @@ export default function Checkout() {
       return;
     }
 
+    async function fetchEnrollmentsAndSyncCart() {
+      try {
+        const enrollments = await getEnrollments();
+        dispatch(setEnrollments(enrollments ?? []));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    await fetchEnrollmentsAndSyncCart();
     toast.success("Thanh toán thành công");
     dispatch(replaceCart([]));
     navigate("/");

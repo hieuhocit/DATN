@@ -38,6 +38,7 @@ export default function DesktopHeader() {
   return (
     <Stack direction={"row"} alignItems="center" gap={8} sx={{ width: "100%" }}>
       <Stack direction={"row"} spacing={3} alignItems="center">
+        <>
         {/* Logo */}
         <Link to={"/"}>
           <Box
@@ -58,7 +59,8 @@ export default function DesktopHeader() {
         </Link>
 
         {/* Categories */}
-        <Dropdown categories={(categories as Category[]) || []} />
+        {categories && <Dropdown categories={(categories as Category[]) || []} />}
+        </>
       </Stack>
 
       {/* Search */}

@@ -134,7 +134,7 @@ const AuthController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: "Password has been changed!",
+            message: "Mật khẩu đã được thay đổi thành công!",
           },
           data
         )

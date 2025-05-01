@@ -328,6 +328,15 @@ const AuthService = {
       });
     }
 
+    const provider = user.registerProvider;
+
+    if (provider !== "local") {
+      throw serverResponse.createError({
+        ...messages.BAD_REQUEST,
+        message: "Tài khoản của bạn đã được liên kết với " + provider,
+      });
+    }
+
     const isPasswordMatch = bcrypt.compareSync(oldPassword, user.passwordHash);
 
     if (!isPasswordMatch) {

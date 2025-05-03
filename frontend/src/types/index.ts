@@ -117,3 +117,61 @@ export interface CartItem {
   user: User[];
   course: Course[];
 }
+
+export interface Comment {
+  _id: string;
+  userId: string;
+  lessonId: string;
+  content: string;
+  parentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  user: User[];
+  lesson: Lesson[];
+  children: Comment[];
+}
+
+export interface LessonProgress {
+  _id: string;
+  userId: string;
+  lessonId: string;
+  isCompleted: boolean;
+  progress: number;
+  lastWatchPosition: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface Lesson {
+  _id: string;
+  title: string;
+  description: string;
+  courseId: string;
+  orderIndex: number;
+  videoUrl: string;
+  duration: number;
+  isFree: false;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  course: Course[];
+  comments: Comment[];
+  progress: LessonProgress[];
+}
+
+export interface Note {
+  _id: string;
+  userId: string;
+  lessonId: string;
+  courseId: string;
+  content: string;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  user: User[];
+  lesson: Lesson[];
+  course: Course[];
+}

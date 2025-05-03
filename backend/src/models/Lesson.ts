@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const LessonSchema = new mongoose.Schema(
   {
@@ -14,7 +14,7 @@ const LessonSchema = new mongoose.Schema(
     },
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Course',
+      ref: "Course",
       required: true,
     },
     orderIndex: {
@@ -46,14 +46,26 @@ const LessonSchema = new mongoose.Schema(
   }
 );
 
-LessonSchema.virtual('course', {
-  ref: 'Course',
-  localField: 'courseId',
-  foreignField: '_id',
+LessonSchema.virtual("course", {
+  ref: "Course",
+  localField: "courseId",
+  foreignField: "_id",
+});
+
+LessonSchema.virtual("comments", {
+  ref: "Comment",
+  localField: "_id",
+  foreignField: "lessonId",
+});
+
+LessonSchema.virtual("progress", {
+  ref: "LessonProgress",
+  localField: "_id",
+  foreignField: "lessonId",
 });
 
 export type LessonType = mongoose.InferSchemaType<typeof LessonSchema>;
 
-const Lesson = mongoose.model('Lesson', LessonSchema);
+const Lesson = mongoose.model("Lesson", LessonSchema);
 
 export default Lesson;

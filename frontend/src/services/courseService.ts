@@ -1,4 +1,12 @@
 import axios from "@/configs/axiosConfig";
+import { Course, Lesson, Note, Review } from "@/types";
+
+export interface CourseDetails {
+  course: Course;
+  reviews: Review[];
+  lessons: Lesson[];
+  notes: Note[];
+}
 
 export const get20PopularCourses = async () => {
   try {
@@ -24,5 +32,17 @@ export const getCourseById = async (courseId: string) => {
     return response.data;
   } catch (error) {
     return error;
+  }
+};
+
+export const getCourseBySlug = async (
+  courseSlug: string
+): Promise<CourseDetails | null | undefined> => {
+  try {
+    const response = await axios.get(`learning/${courseSlug}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching course by slug:", error);
+    return null;
   }
 };

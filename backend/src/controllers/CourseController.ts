@@ -11,6 +11,9 @@ import messages from "../configs/messagesConfig.js";
 
 // Server response
 import serverResponse from "../utils/helpers/responses.js";
+import NoteService from "../services/NoteService.js";
+import { RequestWithUser } from "../middlewares/authMiddleware.js";
+import UserService from "../services/UserService.js";
 
 const CourseController = {
   get20PopularCourses: async (
@@ -91,6 +94,51 @@ const CourseController = {
             course: course,
             reviews: reviews,
             lessons: lessons,
+          }
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+  getCourseBySlug: async (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as RequestWithUser).user;
+    try {
+      const { slug } = req.params;
+
+      const existedUser = await UserService.getUserByEmailWithPasswordHash(
+        user.email
+      );
+
+      if (!existedUser) {
+        res.status(messages.UNAUTHORIZED.statusCode).json(
+          serverResponse.createError({
+            ...messages.UNAUTHORIZED,
+            message: "Người dùng không tồn tại",
+          })
+        );
+        return;
+      }
+
+      const course = await CourseService.getCourseBySlug(slug);
+      const reviews = await ReviewService.getAllReviewsByCourseId(course._id);
+      const lessons = await LessonService.getAllLessonsByCourseId(course._id);
+      const notes = await NoteService.getAllNotesByCourseIdAndUserId(
+        course._id,
+        existedUser._id.toString()
+      );
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Lấy khoá học thành công",
+          },
+          {
+            course: course,
+            reviews: reviews,
+            lessons: lessons,
+            notes: notes,
           }
         )
       );

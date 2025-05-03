@@ -1,195 +1,193 @@
-// Comments.tsx
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Box,
   Typography,
-  Avatar,
-  IconButton,
-  Collapse,
   TextField,
   Button,
-} from '@mui/material';
-import ReplyIcon from '@mui/icons-material/Reply';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+  Avatar,
+  Stack,
+  useTheme,
+  alpha,
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import { useAppSelector } from "@/hooks/useStore";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
+import { accountSelector } from "@/features/account";
+import { Comment } from "@/types";
+import CommentItem from "./CommentItem";
+import { createComment } from "@/services/commentService";
+import { toast } from "react-toastify";
 
-interface Comment {
-  id: number;
-  userId: number;
-  name: string;
-  content: string;
-  parentId: number | null;
-  createdAt: string;
-}
-
-interface CommentsProps {
+interface CommentProps {
   comments: Comment[];
-  onComment: (content: string) => void;
-  onReply: (parentId: number, content: string) => void;
-  userId: number;
-  lessonId: number;
+  lessonId: string;
+  refetch: () => void;
 }
 
-const getRelativeTime = (date: string) => {
+export default function Comments({
+  comments,
+  refetch,
+  lessonId,
+}: CommentProps) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+  const currentUser = useAppSelector(accountSelector).user;
 
-  const commentDate = new Date(date);
+  const loading = false; // Simulate loading state
 
-  return commentDate.toLocaleString('vi-VN');
-};
+  // States
+  const [commentText, setCommentText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
 
-const Comment = ({ comment, replies, onReply }: { comment: Comment; replies: Comment[]; onReply: (parentId: number, content: string) => void }) => {
-  const [showReplies, setShowReplies] = useState(false);
-  const [replyOpen, setReplyOpen] = useState(false);
-  const [replyContent, setReplyContent] = useState('');
+  // Add a new comment
+  const handleAddComment = async () => {
+    if (!commentText.trim()) return;
 
-  const handleReplySubmit = () => {
-    if (replyContent.trim()) {
-      onReply(comment.id, replyContent);
-      setReplyContent('');
-      setReplyOpen(false);
+    try {
+      const res = await createComment({
+        lessonId: lessonId,
+        content: commentText,
+        parentId: null,
+      });
+
+      if (res.statusCode === 201) {
+        toast.success("Bình luận thành công!");
+        refetch();
+      } else {
+        toast.error("Đã có lỗi xảy ra.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Đã có lỗi xảy ra.");
     }
+
+    setCommentText("");
+  };
+
+  // Add a reply to a comment
+  const handleAddReply = async (parentId: string) => {
+    if (!replyText.trim()) return;
+
+    try {
+      const res = await createComment({
+        lessonId: lessonId,
+        content: replyText,
+        parentId: parentId,
+      });
+
+      if (res.statusCode === 201) {
+        toast.success("Bình luận thành công!");
+        refetch();
+      } else {
+        toast.error("Đã có lỗi xảy ra.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Đã có lỗi xảy ra.");
+    }
+
+    setReplyText("");
+    setReplyingTo(null);
+  };
+
+  // Format date to relative time (e.g., "2 days ago")
+  const formatRelativeTime = (dateString: string) => {
+    return formatDistanceToNow(new Date(dateString), {
+      addSuffix: true,
+      locale: vi,
+    });
+  };
+
+  // Count total comments (including children/replies)
+  const countAllComments = (comments: Comment[]): number => {
+    return comments?.reduce((total, comment) => {
+      return total + 1 + countAllComments(comment?.children || []);
+    }, 0);
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        gap: 2,
-        mb: 2,
-        pl: comment.parentId ? 4 : 0, // Chỉ thụt lề cho bình luận con
-      }}
-    >
-      <Avatar sx={{ width: 32, height: 32 }}>{comment.name[0]}</Avatar>
-      <Box sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="body2" fontWeight="bold">
-              {comment.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {getRelativeTime(comment.createdAt)}
-            </Typography>
-          </Box>
-          <IconButton size="small" onClick={() => setReplyOpen(!replyOpen)}>
-            <ReplyIcon fontSize="small" />
-          </IconButton>
-        </Box>
-        <Typography variant="body1" sx={{ mt: 0.5 }}>
-          {comment.content}
-        </Typography>
-        <Collapse in={replyOpen}>
-          <Box sx={{ mt: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
+    <Box sx={{ mt: 4, mb: 6 }}>
+      <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+        Thảo luận ({countAllComments(comments)})
+      </Typography>
+
+      {/* Add new comment */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Avatar
+            src={currentUser?.avatarUrl}
+            alt={currentUser?.name || "User"}
+            sx={{ width: 40, height: 40 }}
+          />
+          <Box sx={{ flexGrow: 1 }}>
             <TextField
               fullWidth
-              size="small"
-              placeholder="Viết trả lời..."
-              value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
+              multiline
+              rows={2}
+              placeholder="Thêm bình luận của bạn..."
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              sx={{
+                mb: 1,
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                  bgcolor: isDark ? alpha("#fff", 0.05) : alpha("#000", 0.03),
+                },
+              }}
             />
-            {replyContent.trim() && (
+            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
               <Button
                 variant="contained"
-                size="small"
-                onClick={handleReplySubmit}
+                disableElevation
+                endIcon={<SendIcon />}
+                onClick={handleAddComment}
+                disabled={!commentText.trim()}
               >
-                Gửi
+                Bình luận
               </Button>
-            )}
-          </Box>
-        </Collapse>
-        {replies.length > 0 && (
-          <Box sx={{ mt: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <IconButton size="small" onClick={() => setShowReplies(!showReplies)}>
-                {showReplies ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              </IconButton>
-              <Typography variant="body2" color="text.secondary">
-                {replies.length} trả lời
-              </Typography>
             </Box>
-            <Collapse in={showReplies}>
-              {replies.map((reply) => (
-                <Comment
-                  key={reply.id}
-                  comment={reply}
-                  replies={[]}
-                  onReply={onReply}
-                />
-              ))}
-            </Collapse>
           </Box>
-        )}
-      </Box>
-    </Box>
-  );
-};
-
-export default function Comments({ comments, onComment, onReply, userId, lessonId }: CommentsProps) {
-  const [newComment, setNewComment] = useState('');
-  const [isCommentInputOpen, setIsCommentInputOpen] = useState(false);
-
-  const parentComments = comments.filter((comment) => !comment.parentId);
-  const getReplies = (parentId: number) =>
-    comments.filter((comment) => comment.parentId === parentId);
-
-  const handleCommentSubmit = () => {
-    if (newComment.trim()) {
-      onComment(newComment);
-      setNewComment('');
-      setIsCommentInputOpen(false);
-    }
-  };
-
-  return (
-    <Box sx={{ mt: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6" fontWeight="bold">
-          {comments.length} bình luận
-        </Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => setIsCommentInputOpen(true)}
-        >
-          Gửi bình luận
-        </Button>
-      </Box>
-
-      <Collapse in={isCommentInputOpen}>
-        <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
-          <Avatar sx={{ width: 32, height: 32 }}>{'U'}</Avatar>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Nhập bình luận của bạn..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-          />
-          {newComment.trim() && (
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleCommentSubmit}
-            >
-              Gửi
-            </Button>
-          )}
         </Box>
-      </Collapse>
+      </Box>
 
-      {comments.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">
-          Chưa có bình luận nào. Hãy là người đầu tiên để lại bình luận!
-        </Typography>
+      {/* List of comments */}
+      {loading ? (
+        <Box sx={{ textAlign: "center", py: 4 }}>
+          <Typography color="text.secondary">Đang tải bình luận...</Typography>
+        </Box>
+      ) : comments.length === 0 ? (
+        <Box
+          sx={{
+            textAlign: "center",
+            py: 4,
+            bgcolor: isDark ? alpha("#fff", 0.03) : alpha("#000", 0.02),
+            borderRadius: 2,
+          }}
+        >
+          <Typography color="text.secondary">
+            Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
+          </Typography>
+        </Box>
       ) : (
-        parentComments.map((comment) => (
-          <Comment
-            key={comment.id}
-            comment={comment}
-            replies={getReplies(comment.id)}
-            onReply={onReply}
-          />
-        ))
+        <Stack spacing={2}>
+          {comments.map((comment) => (
+            <CommentItem
+              key={comment._id}
+              comment={comment}
+              isDark={isDark}
+              replyingTo={replyingTo}
+              replyText={replyText}
+              currentUser={currentUser}
+              onSetReplyingTo={setReplyingTo}
+              onSetReplyText={setReplyText}
+              onAddReply={handleAddReply}
+              formatRelativeTime={formatRelativeTime}
+              level={1}
+            />
+          ))}
+        </Stack>
       )}
     </Box>
   );

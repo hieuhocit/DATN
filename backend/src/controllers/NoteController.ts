@@ -171,10 +171,10 @@ const NoteController = {
         position,
       });
 
-      res.status(messages.CREATED.statusCode).json(
+      res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess(
           {
-            ...messages.CREATED,
+            ...messages.OK,
             message: "Ghi chú đã được cập nhật thành công",
           },
           note

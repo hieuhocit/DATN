@@ -62,7 +62,7 @@ export default function CourseDetails() {
   };
 
   const handleViewCourse = () => {
-    navigate(`/learning${course.slug}?lesson=${lessons[0]._id}`);
+    navigate(`/learning${course.slug}`);
   };
 
   const handleGoToCart = () => {

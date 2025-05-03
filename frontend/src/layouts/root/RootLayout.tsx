@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // react-router
-import { Outlet } from "react-router-dom";
+import { Outlet, ScrollRestoration } from "react-router-dom";
 
 // components
 import Header from "@/components/header/Header";
@@ -67,6 +67,7 @@ export default function RootLayout() {
     <>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+        <ScrollRestoration />
         <Header />
         <Outlet />
         <ToastContainer

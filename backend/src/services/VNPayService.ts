@@ -24,6 +24,8 @@ import CourseService from "./CourseService.js";
 
 // Types
 import { CartType } from "../models/Cart.js";
+import LessonService from "./LessonService.js";
+import LessonProgressService from "./LessonProgressService.js";
 
 type PaymentUrlType = {
   userId: CartType["userId"];
@@ -150,6 +152,18 @@ const VNPayService = {
         const course = await CourseService.getCourseById(
           cartItem.courseId.toString()
         );
+
+        const lessons = await LessonService.getAllLessonsByCourseId(
+          course._id.toString()
+        );
+
+        for await (const lesson of lessons) {
+          const lessonProgressData = {
+            userId: userId,
+            lessonId: lesson._id,
+          };
+          await LessonProgressService.createLessonProgress(lessonProgressData);
+        }
 
         const paymentItemData = {
           paymentId: payment._id,

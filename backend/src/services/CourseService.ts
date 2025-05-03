@@ -245,6 +245,59 @@ const CourseService = {
       });
     }
   },
+  getCourseBySlug: async function (slug: string) {
+    try {
+      let course: any = await Course.findOne({
+        slug: { $regex: new RegExp(slug, "i") },
+      }).populate({
+        path: "category instructor",
+      });
+
+      if (!course) {
+        throw serverResponse.createError({
+          ...messages.NOT_FOUND,
+          message: "Không tìm thấy khoá học",
+        });
+      }
+
+      const courseIds = [course?._id];
+
+      // Tính rating trung bình cho mỗi khóa học
+      const courseRatings = await Review.aggregate([
+        {
+          $match: { courseId: { $in: courseIds } },
+        },
+        {
+          $group: {
+            _id: "$courseId",
+            averageRating: { $avg: "$rating" },
+            reviewCount: { $sum: 1 },
+          },
+        },
+      ]);
+
+      // Thêm thông tin rating vào mỗi khóa học
+      const rating = courseRatings.find(
+        (r) => r._id.toString() === course._id.toString()
+      );
+
+      course = course.toObject();
+
+      course.averageRating = rating
+        ? parseFloat(rating.averageRating.toFixed(1))
+        : 0;
+
+      course.reviewCount = rating ? rating.reviewCount : 0;
+
+      return course;
+    } catch (error) {
+      // Handle error if id is not a valid ObjectId
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: "Không tìm thấy khoá học",
+      });
+    }
+  },
   createCourse: async function (data: CourseCreateInput) {
     const existedCourse = await Course.findOne({
       title: data.title,

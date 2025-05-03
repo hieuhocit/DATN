@@ -7,60 +7,58 @@ interface IProps {
   publicId: string;
   playerConfig?: Record<string, any>;
   sourceConfig?: Record<string, any>;
+  ref: React.RefObject<HTMLVideoElement | null>;
 }
 
 const VideoPlayer = ({
+  ref,
   publicId,
   playerConfig,
   sourceConfig,
   ...props
 }: IProps) => {
   const cloudinaryRef = useRef<Cloudinary | null>(null);
-  const playerRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     if (cloudinaryRef.current) return;
 
     cloudinaryRef.current = cloudinary;
 
-    const player: any = cloudinaryRef.current.videoPlayer(
-      playerRef.current as any,
-      {
-        ...playerConfig,
-      }
-    );
+    const player: any = cloudinaryRef.current.videoPlayer(ref.current as any, {
+      ...playerConfig,
+    });
 
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (!playerRef.current) return;
+      if (!ref.current) return;
       switch (event.key.toLowerCase()) {
         // Volume controls
         case "arrowup": {
           event.preventDefault();
-          player.volume(Math.min(playerRef.current.volume + 0.1, 1));
+          player.volume(Math.min(ref.current.volume + 0.1, 1));
           break;
         }
         case "arrowdown": {
           event.preventDefault();
-          player.volume(Math.max(playerRef.current.volume - 0.1, 0));
+          player.volume(Math.max(ref.current.volume - 0.1, 0));
           break;
         }
         // Seeking controls
         case "arrowleft": {
           event.preventDefault();
-          player.currentTime(Math.max(playerRef.current.currentTime - 10, 0));
+          player.currentTime(Math.max(ref.current.currentTime - 10, 0));
           break;
         }
         case "arrowright": {
           event.preventDefault();
           player.currentTime(
-            Math.min(playerRef.current.currentTime + 10, player.duration())
+            Math.min(ref.current.currentTime + 10, player.duration())
           );
           break;
         }
         // Play/Pause with Space
         case " ": {
           event.preventDefault();
-          if (playerRef.current.paused) {
+          if (ref.current.paused) {
             player.play();
           } else {
             player.pause();
@@ -95,9 +93,7 @@ const VideoPlayer = ({
     player.source(publicId, sourceConfig);
   }, []);
 
-  return (
-    <video ref={playerRef} className="cld-video-player cld-fluid" {...props} />
-  );
+  return <video ref={ref} className="cld-video-player cld-fluid" {...props} />;
 };
 
 export default VideoPlayer;

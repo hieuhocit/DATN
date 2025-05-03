@@ -1,19 +1,20 @@
 // Models
-import Lesson, { LessonType } from '../models/Lesson.js';
+import Lesson, { LessonType } from "../models/Lesson.js";
 
 // Slugify
-import slugify from 'slugify';
+import slugify from "slugify";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
+import CommentService from "./CommentService.js";
 
 // Types
 type LessonCreateInput = Pick<
   LessonType,
-  'title' | 'description' | 'courseId' | 'duration' | 'orderIndex' | 'videoUrl'
+  "title" | "description" | "courseId" | "duration" | "orderIndex" | "videoUrl"
 > & {
   isFree?: boolean;
 };
@@ -22,26 +23,36 @@ const LessonService = {
   getAllLessons: async function () {
     const lessons = await Lesson.find()
       .populate({
-        path: 'course',
+        path: "course",
       })
       .sort({ createdAt: -1 });
     return lessons;
   },
   getAllLessonsByCourseId: async function (courseId: string) {
-    const lessons = await Lesson.find({ courseId }).populate({
-      path: 'course',
-    });
+    const lessons = await Lesson.find({ courseId })
+      .populate({
+        path: "course comments progress",
+      })
+      .sort({ orderIndex: 1 });
+
+    for await (const lesson of lessons) {
+      const comments = await CommentService.getAllCommentsByLessonId(
+        lesson._id.toString()
+      );
+      (lesson as any).comments = comments;
+    }
+
     return lessons;
   },
   getLessonById: async function (id: string) {
     try {
       const lesson = await Lesson.findById(id).populate({
-        path: 'course',
+        path: "course",
       });
       if (!lesson) {
         throw serverResponse.createError({
           ...messages.NOT_FOUND,
-          message: 'Không tìm thấy bài học',
+          message: "Không tìm thấy bài học",
         });
       }
       return lesson;
@@ -49,7 +60,7 @@ const LessonService = {
       // Handle error if id is not a valid ObjectId
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'Không tìm thấy bài học',
+        message: "Không tìm thấy bài học",
       });
     }
   },
@@ -62,7 +73,7 @@ const LessonService = {
     if (existedLesson) {
       throw serverResponse.createError({
         ...messages.ALREADY_EXISTS,
-        message: 'Bài học đã tồn tại',
+        message: "Bài học đã tồn tại",
       });
     }
 
@@ -81,7 +92,7 @@ const LessonService = {
     } catch (error) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'Không tìm thấy bài học',
+        message: "Không tìm thấy bài học",
       });
     }
   },
@@ -98,7 +109,7 @@ const LessonService = {
     if (existedLesson) {
       throw serverResponse.createError({
         ...messages.ALREADY_EXISTS,
-        message: 'Bài học đã tồn tại',
+        message: "Bài học đã tồn tại",
       });
     }
 

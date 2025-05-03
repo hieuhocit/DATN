@@ -27,6 +27,11 @@ CourseRoutes.post(
 );
 
 CourseRoutes.get("/courses/:id", CourseController.getCourseById);
+CourseRoutes.get(
+  "/learning/:slug",
+  authMiddleware,
+  CourseController.getCourseBySlug
+);
 
 CourseRoutes.delete(
   "/courses/:id",

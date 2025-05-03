@@ -5,11 +5,8 @@ import { createBrowserRouter } from "react-router-dom";
 import RootLayout, { loader as rootLoader } from "@/layouts/root/index";
 
 // Pages
-import Home, { loader as homeLoader } from "@/pages/home";
+import Home from "@/pages/home";
 import DashboardLayout from "@/pages/dashboard/Layout";
-import UserPage from "@/pages/dashboard/user/User";
-
-
 
 const router = createBrowserRouter([
   {
@@ -60,9 +57,11 @@ const router = createBrowserRouter([
         },
       },
       {
-        path: '/forgot-password',
+        path: "/forgot-password",
         lazy: async () => {
-          const { default: ForgotPasswordPage } = await import('@pages/ForgotPassword');
+          const { default: ForgotPasswordPage } = await import(
+            "@pages/ForgotPassword"
+          );
           return { Component: ForgotPasswordPage };
         },
       },
@@ -76,19 +75,23 @@ const router = createBrowserRouter([
       {
         path: "/change-password",
         lazy: async () => {
-          const { default: Component } = await import("@pages/profile/ChangePassword");
+          const { default: Component } = await import(
+            "@pages/profile/ChangePassword"
+          );
           return { Component };
         },
       },
       {
         path: "/my-learning",
         lazy: async () => {
-          const { default: Component } = await import("@pages/PurchasedCourses");
+          const { default: Component } = await import(
+            "@pages/PurchasedCourses"
+          );
           return { Component };
         },
       },
       {
-        path: "/teacher",
+        path: "/instructor",
         lazy: async () => {
           const { default: Component } = await import("@pages/Teacher");
           return { Component };
@@ -97,12 +100,13 @@ const router = createBrowserRouter([
       {
         path: "/chat",
         lazy: async () => {
-          const { default: Component } = await import("@pages/chatGPT/ChatWidget");
+          const { default: Component } = await import(
+            "@pages/chatGPT/ChatWidget"
+          );
           return { Component };
         },
       },
     ],
-
   },
   {
     path: "/dashboard",
@@ -110,57 +114,36 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <>Dash board helo</>
-      }, {
+        element: <>Dash board helo</>,
+      },
+      {
         path: "user-management",
         lazy: async () => {
-          const { default: Component } = await import("@pages/dashboard/user/User");
+          const { default: Component } = await import(
+            "@pages/dashboard/user/User"
+          );
           return { Component };
         },
-      }, {
+      },
+      {
         path: "course-management",
         lazy: async () => {
-          const { default: Component } = await import("@pages/dashboard/course/Course");
+          const { default: Component } = await import(
+            "@pages/dashboard/course/Course"
+          );
           return { Component };
         },
-      }, {
-        path: "course-management",
-        lazy: async () => {
-          const { default: Component } = await import("@pages/dashboard/course/Course");
-          return { Component };
-        },
-      }, {
-        path: "course-management",
-        lazy: async () => {
-          const { default: Component } = await import("@pages/dashboard/course/Course");
-          return { Component };
-        },
-      },{
-        path: "course-management",
-        lazy: async () => {
-          const { default: Component } = await import("@pages/dashboard/course/Course");
-          return { Component };
-        },
-      },{
-        path: "course-management",
-        lazy: async () => {
-          const { default: Component } = await import("@pages/dashboard/course/Course");
-          return { Component };
-        },
-      },{
-        path: "course-management",
-        lazy: async () => {
-          const { default: Component } = await import("@pages/dashboard/course/Course");
-          return { Component };
-        },
-      },{
+      },
+      {
         path: "payment-management",
         lazy: async () => {
-          const { default: Component } = await import("@pages/dashboard/payment/Payment");
+          const { default: Component } = await import(
+            "@pages/dashboard/payment/Payment"
+          );
           return { Component };
         },
-      }
-    ]
+      },
+    ],
   },
 ]);
 

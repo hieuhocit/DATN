@@ -23,6 +23,7 @@ import { getEnrollments } from "@/services/enrollmentService";
 import { setEnrollments } from "@/features/account/accountSlice";
 import { getCart } from "@/services/cartService";
 import { replaceCart } from "@/features/cart";
+import ChatWidget from "@/pages/chatGPT/ChatWidget";
 
 export default function RootLayout() {
   const { themeMode } = useTheme();
@@ -83,6 +84,7 @@ export default function RootLayout() {
           theme={isDarkMode ? "dark" : "light"}
           transition={Bounce}
         />
+        <ChatWidget />
       </ThemeProvider>
     </>
   );

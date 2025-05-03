@@ -90,6 +90,13 @@ const router = createBrowserRouter([
           return { Component };
         },
       },
+      {
+        path: "/chat",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/chatGPT/ChatWidget");
+          return { Component };
+        },
+      },
     ],
   },
 ]);

@@ -30,6 +30,7 @@ import VNPayRoutes from "./routes/VNPayRoutes.js";
 import NotificationRoutes from "./routes/NotificationRoutes.js";
 import AIRoutes from "./routes/AIRoutes.js";
 import EnrollmentRoutes from "./routes/EnrollmentRoutes.js";
+import PaymentRoutes from "./routes/PaymentRoutes.js";
 
 // Configuring dotenv
 dotenv.config();
@@ -68,6 +69,7 @@ app.use("/api", VNPayRoutes);
 app.use("/api", NotificationRoutes);
 app.use("/api", AIRoutes);
 app.use("/api", EnrollmentRoutes);
+app.use("/api", PaymentRoutes);
 
 // Not found handler
 app.use(notFoundError);

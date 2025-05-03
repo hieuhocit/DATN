@@ -3,8 +3,9 @@ import { Category } from "@/types";
 
 export async function getCategories() {
   try {
-    const { data } = await axios.get("/categories");
-    return data as Category[];
+    const response = await axios.get("/categories");
+    const data = response.data as Category[] || [];
+    return data;
   } catch (error) {
     return error;
   }

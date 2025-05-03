@@ -100,7 +100,7 @@ export default function Slider({ courses }: Props) {
         <ArrowForwardIosIcon fontSize="large" />
       </IconButton>
       <Splide ref={splideRef} options={splideOptions}>
-        {courses?.map((course) => (
+        {courses && courses?.length > 0 && courses?.map((course) => (
           <SplideSlide key={course._id}>
             <Link
               style={{

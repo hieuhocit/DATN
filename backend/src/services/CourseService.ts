@@ -336,7 +336,14 @@ const CourseService = {
     id: string,
     data: CourseCreateInput & { isPublished?: boolean }
   ) {
-    const course = await this.getCourseById(id);
+    const course = await Course.findById(id);
+
+    if (!course) {
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: "Không tìm thấy khoá học",
+      });
+    }
 
     // Kiểm tra course đã tồn tại hay chưa (trừ course hiện tại _id: $ne: id)
     const existedCourse = await Course.findOne({

@@ -6,6 +6,10 @@ import RootLayout, { loader as rootLoader } from "@/layouts/root/index";
 
 // Pages
 import Home, { loader as homeLoader } from "@/pages/home";
+import DashboardLayout from "@/pages/dashboard/Layout";
+import UserPage from "@/pages/dashboard/user/User";
+
+
 
 const router = createBrowserRouter([
   {
@@ -91,6 +95,65 @@ const router = createBrowserRouter([
         },
       },
     ],
+
+  },
+  {
+    path: "/dashboard",
+    element: <DashboardLayout />,
+    children: [
+      {
+        index: true,
+        element: <>Dash board helo</>
+      }, {
+        path: "user-management",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/dashboard/user/User");
+          return { Component };
+        },
+      }, {
+        path: "course-management",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/dashboard/course/Course");
+          return { Component };
+        },
+      }, {
+        path: "course-management",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/dashboard/course/Course");
+          return { Component };
+        },
+      }, {
+        path: "course-management",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/dashboard/course/Course");
+          return { Component };
+        },
+      },{
+        path: "course-management",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/dashboard/course/Course");
+          return { Component };
+        },
+      },{
+        path: "course-management",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/dashboard/course/Course");
+          return { Component };
+        },
+      },{
+        path: "course-management",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/dashboard/course/Course");
+          return { Component };
+        },
+      },{
+        path: "payment-management",
+        lazy: async () => {
+          const { default: Component } = await import("@pages/dashboard/payment/Payment");
+          return { Component };
+        },
+      }
+    ]
   },
 ]);
 

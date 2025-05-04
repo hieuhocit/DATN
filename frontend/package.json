@@ -24,6 +24,7 @@
     "@types/react-facebook-login": "^4.1.11",
     "axios": "^1.8.4",
     "cloudinary-video-player": "^2.4.1",
+    "date-fns": "^4.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-facebook-login": "^4.1.1",

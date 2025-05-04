@@ -58,7 +58,7 @@ const CommentController = {
         userId: existedUser._id,
         lessonId,
         content,
-        parentId,
+        parentId: parentId || null,
       });
 
       res.status(messages.CREATED.statusCode).json(

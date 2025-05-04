@@ -95,6 +95,12 @@ PaymentSchema.virtual("user", {
   foreignField: "_id",
 });
 
+PaymentSchema.virtual("paymentItem", {
+  ref: "PaymentItem",
+  localField: "_id",
+  foreignField: "paymentId",
+});
+
 export type PaymentDetailsType = mongoose.InferSchemaType<
   typeof PaymentSchema
 >["paymentDetails"];

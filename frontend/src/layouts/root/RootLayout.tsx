@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // react-router
-import { Outlet } from "react-router-dom";
+import { Outlet, ScrollRestoration } from "react-router-dom";
 
 // components
 import Header from "@/components/header/Header";
@@ -23,6 +23,7 @@ import { getEnrollments } from "@/services/enrollmentService";
 import { setEnrollments } from "@/features/account/accountSlice";
 import { getCart } from "@/services/cartService";
 import { replaceCart } from "@/features/cart";
+import ChatWidget from "@/pages/chatGPT/ChatWidget";
 
 export default function RootLayout() {
   const { themeMode } = useTheme();
@@ -67,6 +68,7 @@ export default function RootLayout() {
     <>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+        <ScrollRestoration />
         <Header />
         <Outlet />
         <ToastContainer
@@ -82,6 +84,7 @@ export default function RootLayout() {
           theme={isDarkMode ? "dark" : "light"}
           transition={Bounce}
         />
+        <ChatWidget />
       </ThemeProvider>
     </>
   );

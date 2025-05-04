@@ -24,7 +24,32 @@ const CommentService = {
         lessonId: lessonId,
       })
         .populate({
-          path: "user lesson children",
+          path: "user",
+        })
+        .populate({
+          path: "lesson",
+        })
+        .populate({
+          path: "children",
+          populate: [
+            {
+              path: "user",
+            },
+            {
+              path: "lesson",
+            },
+            {
+              path: "children",
+              populate: [
+                {
+                  path: "user",
+                },
+                {
+                  path: "lesson",
+                },
+              ],
+            },
+          ],
         })
         .sort({ createdAt: -1 });
       return comments;

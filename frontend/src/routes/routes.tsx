@@ -93,9 +93,43 @@ const router = createBrowserRouter([
       {
         path: "/instructor",
         lazy: async () => {
-          const { default: Component } = await import("@/pages/Instructor");
+          const { default: Component } = await import(
+            "@/pages/instructor/Instructor"
+          );
           return { Component };
         },
+      },
+      {
+        path: "/search",
+        lazy: async () => {
+          const { default: Component } = await import(
+            "@/pages/SearchResultPage"
+          );
+          return { Component };
+        },
+      },
+      {
+        path: "/categories",
+        children: [
+          {
+            path: ":categorySlug1",
+            lazy: async () => {
+              const { default: Component } = await import("@/pages/Category");
+              return { Component };
+            },
+            children: [
+              {
+                path: ":categorySlug2",
+                lazy: async () => {
+                  const { default: Component } = await import(
+                    "@/pages/Category"
+                  );
+                  return { Component };
+                },
+              },
+            ],
+          },
+        ],
       },
     ],
   },

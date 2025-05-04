@@ -1,5 +1,5 @@
 import axios from "@/configs/axiosConfig";
-import { Category, Course, Lesson, Note, Review, User } from "@/types";
+import { Course, Lesson, Note, Review } from "@/types";
 
 export interface CourseDetails {
   course: Course;
@@ -47,16 +47,7 @@ export const getCourseBySlug = async (
   }
 };
 
-export interface ResponseSearchType extends Course {
-  category: Category[];
-  instructor: User[];
-  averageRating: number;
-  reviewCount: number;
-}
-
-export const getCoursesByQuery = async (
-  query: string
-): Promise<ResponseSearchType[]> => {
+export const getCoursesByQuery = async (query: string): Promise<Course[]> => {
   try {
     const response = await axios.get(`courses/search?query=${query}`);
     return response.data;
@@ -64,5 +55,17 @@ export const getCoursesByQuery = async (
     console.error("Error fetching courses by query:", error);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return [] as any;
+  }
+};
+
+export const getCoursesByCategoryId = async (
+  categoryId: string
+): Promise<Course[]> => {
+  try {
+    const response = await axios.get(`courses/categories/${categoryId}`);
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching courses by category ID:", error);
+    return [];
   }
 };

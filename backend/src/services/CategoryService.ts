@@ -1,19 +1,19 @@
 // Models
-import Category, { CategoryType } from '../models/Category.js';
+import Category, { CategoryType } from "../models/Category.js";
 
 // Slugify
-import slugify from 'slugify';
+import slugify from "slugify";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Mongoose
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-type CategoryCreateInput = Pick<CategoryType, 'name' | 'description'> & {
+type CategoryCreateInput = Pick<CategoryType, "name" | "description"> & {
   parentId?: string;
 };
 
@@ -31,15 +31,15 @@ const CategoryService = {
     if (existedCategory) {
       throw serverResponse.createError({
         ...messages.ALREADY_EXISTS,
-        message: 'Category already exists',
+        message: "Category already exists",
       });
     }
 
     let slug =
-      '/' +
+      "/" +
       (slugify as any)(data.name, {
         lower: true,
-        locale: 'vi',
+        locale: "vi",
       });
 
     if (parentCategory) {
@@ -53,13 +53,13 @@ const CategoryService = {
   getCategoryById: async function (id: string) {
     try {
       const category = await Category.findById(id).populate({
-        path: 'children',
+        path: "children",
       });
 
       if (!category) {
         throw serverResponse.createError({
           ...messages.NOT_FOUND,
-          message: 'Không tìm thấy danh mục',
+          message: "Không tìm thấy danh mục",
         });
       }
       return category;
@@ -67,14 +67,37 @@ const CategoryService = {
       // Handle error if id is not a valid ObjectId
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'Không tìm thấy danh mục',
+        message: "Không tìm thấy danh mục",
+      });
+    }
+  },
+  getCategoryBySlug: async function (slug: string) {
+    try {
+      const category = await Category.findOne({
+        slug: { $regex: new RegExp(`^${slug}`), $options: "i" },
+      }).populate({
+        path: "children",
+      });
+
+      if (!category) {
+        throw serverResponse.createError({
+          ...messages.NOT_FOUND,
+          message: "Không tìm thấy danh mục",
+        });
+      }
+      return category;
+    } catch (error) {
+      // Handle error if id is not a valid ObjectId
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: "Không tìm thấy danh mục",
       });
     }
   },
   getAllCategories: async function () {
     const categories = await Category.find({ parentId: null })
       .populate({
-        path: 'children',
+        path: "children",
       })
       .sort({ createdAt: -1 });
     return categories;
@@ -86,7 +109,7 @@ const CategoryService = {
     } catch (error) {
       throw serverResponse.createError({
         ...messages.NOT_FOUND,
-        message: 'Không tìm thấy danh mục',
+        message: "Không tìm thấy danh mục",
       });
     }
   },
@@ -94,7 +117,7 @@ const CategoryService = {
     if (data.parentId === id) {
       throw serverResponse.createError({
         ...messages.BAD_REQUEST,
-        message: 'Category cannot be children of itself',
+        message: "Category cannot be children of itself",
       });
     }
 
@@ -104,7 +127,7 @@ const CategoryService = {
       if (parentCategory.parentId?.toString() === id) {
         throw serverResponse.createError({
           ...messages.BAD_REQUEST,
-          message: 'Category parent cannot be children of its children.',
+          message: "Category parent cannot be children of its children.",
         });
       }
     }
@@ -120,13 +143,13 @@ const CategoryService = {
     if (existedCategory) {
       throw serverResponse.createError({
         ...messages.ALREADY_EXISTS,
-        message: 'Category already exists',
+        message: "Category already exists",
       });
     }
 
     const slug = (slugify as any)(data.name, {
       lower: true,
-      locale: 'vi',
+      locale: "vi",
     });
 
     category.name = data.name;

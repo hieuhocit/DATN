@@ -14,10 +14,8 @@ import {
 const CategoryRoutes = Router();
 
 // Routes
-CategoryRoutes.get(
-  "/categories",
-  CategoryController.getAllCategories
-);
+CategoryRoutes.get("/categories", CategoryController.getAllCategories);
+CategoryRoutes.get("/categories/slug", CategoryController.getCategoryBySlug);
 
 CategoryRoutes.post(
   "/categories",

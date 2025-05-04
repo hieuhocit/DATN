@@ -1,7 +1,7 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import CourseForm from "@/pages/instructor/CourseFormProps";
-import { categories, levels } from "@/pages/Instructor";
+import { categories, levels } from "@/pages/instructor/Instructor";
 
 interface CreateCourseTabProps {
   categories: typeof categories;

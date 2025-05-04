@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { categories, levels } from "@/pages/Instructor";
+import { categories, levels } from "@/pages/instructor/Instructor";
 
 interface Lesson {
   title: string;

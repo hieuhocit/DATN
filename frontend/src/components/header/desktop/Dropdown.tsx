@@ -68,15 +68,17 @@ export default function Dropdown({ categories }: DropdownProps) {
             flexShrink: 0,
           }}
         >
-          {categories instanceof Array && categories?.map((category) => (
-            <DropdownItem
-              key={category._id}
-              text={category.name}
-              link={`${category.slug}`}
-              isNested={!!category.children?.length}
-              onMouseEnter={() => handleMouseEnterCategory(category)}
-            />
-          ))}
+          {categories instanceof Array &&
+            categories?.map((category) => (
+              <DropdownItem
+                key={category._id}
+                text={category.name}
+                link={`categories${category.slug}`}
+                isNested={!!category.children?.length}
+                onMouseEnter={() => handleMouseEnterCategory(category)}
+                onClick={() => setOpen(false)}
+              />
+            ))}
         </Box>
         {currentCategory?.children && currentCategory.children.length > 0 && (
           <Box
@@ -91,7 +93,8 @@ export default function Dropdown({ categories }: DropdownProps) {
               <DropdownItem
                 key={category._id}
                 text={category.name}
-                link={`${category.slug}`}
+                link={`categories${category.slug}`}
+                onClick={() => setOpen(false)}
               />
             ))}
           </Box>
@@ -106,15 +109,18 @@ function DropdownItem({
   link,
   isNested = false,
   onMouseEnter,
+  onClick,
 }: {
   text: string;
   link: string;
   isNested?: boolean;
   onMouseEnter?: () => void;
+  onClick: () => void;
 }) {
   return (
     <Box
       onMouseEnter={onMouseEnter}
+      onClick={onClick}
       sx={{
         transition: "background-color 0.3s ease",
         "&:hover": {

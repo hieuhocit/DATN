@@ -4,9 +4,9 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import Section from "@/components/common/Section";
 import Typography from "@mui/material/Typography";
-import CustomTabPanel from "./instructor/CustomTabPanel";
-import CourseListTab from "./instructor/CourseListTab";
-import CreateCourseTab from "./instructor/CreateCourseTab";
+import CustomTabPanel from "./CustomTabPanel";
+import CourseListTab from "./CourseListTab";
+import CreateCourseTab from "./CreateCourseTab";
 import { Course } from "@/types";
 
 const coursesData: Course[] = [

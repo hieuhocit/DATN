@@ -275,6 +275,29 @@ const CourseController = {
       next(error);
     }
   },
+  getCoursesByCategoryIds: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { id } = req.params;
+
+      const courses = await CourseService.getCoursesByCategoryIds(id);
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Lấy khoá học theo danh mục thành công",
+          },
+          courses
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 export default CourseController;

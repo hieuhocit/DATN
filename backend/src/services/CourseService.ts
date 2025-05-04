@@ -14,6 +14,7 @@ import messages from "../configs/messagesConfig.js";
 
 // Mongoose
 import mongoose, { set } from "mongoose";
+import CategoryService from "./CategoryService.js";
 
 // Types
 type CourseCreateInput = Pick<
@@ -388,6 +389,69 @@ const CourseService = {
   findCoursesByQuery: async function (query: string) {
     let courses = await Course.find({
       title: { $regex: query, $options: "i" },
+      isPublished: true,
+    })
+      .populate("instructor category")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const courseIds = courses.map((course) => course._id);
+
+    // Tính rating trung bình cho mỗi khóa học
+    const courseRatings = await Review.aggregate([
+      {
+        $match: { courseId: { $in: courseIds } },
+      },
+      {
+        $group: {
+          _id: "$courseId",
+          averageRating: { $avg: "$rating" },
+          reviewCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Thêm thông tin rating vào mỗi khóa học
+    courses = courses.map((course: any) => {
+      const rating = courseRatings.find(
+        (r) => r._id.toString() === course._id.toString()
+      );
+
+      course.averageRating = rating
+        ? parseFloat(rating.averageRating.toFixed(1))
+        : 0;
+
+      course.reviewCount = rating ? rating.reviewCount : 0;
+
+      return course;
+    });
+
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(courses);
+      }, 1000);
+    });
+
+    return courses;
+  },
+  getCoursesByCategoryIds: async function (categoryId: string) {
+    const category = await CategoryService.getCategoryById(categoryId);
+
+    if (!category) {
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: "Không tìm thấy danh mục",
+      });
+    }
+
+    const categoryIds =
+      (category as any)?.children?.map((child: any) => child._id) || [];
+
+    categoryIds.push(categoryId);
+    if (category.parentId) categoryIds.push(category.parentId);
+
+    let courses = await Course.find({
+      categoryId: { $in: categoryIds },
       isPublished: true,
     })
       .populate("instructor category")

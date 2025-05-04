@@ -130,11 +130,12 @@ export default function SearchBar({ sx }: Props) {
   }
 
   function handleOnKeyDown(e: React.KeyboardEvent) {
-    if (e.key !== "Enter" || query.trim() === "") return;
+    if (e.key !== "Enter" || input.trim() === "") return;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setQuery(input);
     setShow(false);
     timeoutRef.current = null;
-    navigate(`/`);
+    navigate(`/search?query=${input}`);
   }
 
   function setInitialState() {
@@ -197,7 +198,15 @@ export default function SearchBar({ sx }: Props) {
           </Box>
         )}
         {!isLoading && data && data.length > 0 && (
-          <List sx={{ width: "100%", p: 0, bgcolor: "background.paper" }}>
+          <List
+            sx={{
+              width: "100%",
+              p: 0,
+              bgcolor: "background.paper",
+              maxHeight: "400px",
+              overflowY: "auto",
+            }}
+          >
             {data.map((item) => (
               <ListItemButton key={item._id}>
                 <SearchItem course={item} onClose={handleClose} />

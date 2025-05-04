@@ -20,12 +20,10 @@ import { OneLineTypography } from "../typography";
 
 // React
 import { useEffect, useRef, useState } from "react";
-import {
-  getCoursesByQuery,
-  ResponseSearchType,
-} from "@/services/courseService";
+import { getCoursesByQuery } from "@/services/courseService";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Course } from "@/types";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -220,7 +218,7 @@ export default function SearchBar({ sx }: Props) {
 }
 
 interface SearchItemProps {
-  course: ResponseSearchType;
+  course: Course;
   onClose: () => void;
 }
 

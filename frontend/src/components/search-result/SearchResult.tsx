@@ -1,6 +1,7 @@
 import { Course } from "@/types";
 import CourseCard from "../common/CourseCard";
 import { Box, Skeleton, Typography, Stack } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   isLoading: boolean;
@@ -8,6 +9,8 @@ interface Props {
 }
 
 export default function SearchResult({ isLoading, data }: Props) {
+  const navigate = useNavigate();
+
   if (isLoading) {
     return <SearchResultSkeleton />;
   }
@@ -15,6 +18,10 @@ export default function SearchResult({ isLoading, data }: Props) {
   if (!data || data.length === 0) {
     return <Typography variant="body1">Không tìm thấy khoá học.</Typography>;
   }
+
+  const handleCardClick = (courseId: string) => {
+    navigate(`/courses/${courseId}`);
+  };
 
   return (
     <Box
@@ -31,7 +38,11 @@ export default function SearchResult({ isLoading, data }: Props) {
       }}
     >
       {data &&
-        data.map((course) => <CourseCard key={course._id} course={course} />)}
+        data.map((course) => (
+          <Box key={course._id} onClick={() => handleCardClick(course._id)}>
+            <CourseCard course={course} />
+          </Box>
+        ))}
     </Box>
   );
 }

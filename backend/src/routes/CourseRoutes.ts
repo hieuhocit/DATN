@@ -15,6 +15,11 @@ const CourseRoutes = Router();
 
 // Routes
 CourseRoutes.get("/courses", authMiddleware, CourseController.getAllCourses);
+CourseRoutes.get(
+  "/courses/search",
+  authMiddleware,
+  CourseController.findCoursesByQuery
+);
 
 CourseRoutes.get("/courses/popular", CourseController.get20PopularCourses);
 CourseRoutes.get("/courses/newest", CourseController.get20NewestCourses);

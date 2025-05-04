@@ -13,7 +13,7 @@ import serverResponse from "../utils/helpers/responses.js";
 import messages from "../configs/messagesConfig.js";
 
 // Mongoose
-import mongoose from "mongoose";
+import mongoose, { set } from "mongoose";
 
 // Types
 type CourseCreateInput = Pick<
@@ -59,7 +59,7 @@ const CourseService = {
       // Query các khóa học theo IDs
       courses = await Course.find({
         _id: { $in: courseIds },
-        // isPublished: true,
+        isPublished: true,
       }).populate("instructor category");
 
       // Thêm số lượng đăng ký vào mỗi khóa học
@@ -76,7 +76,7 @@ const CourseService = {
     } else {
       // Lấy 20 khóa học mới nhất nếu không có đăng ký
       courses = await Course.find({
-        /* isPublished: true */
+        isPublished: true,
       })
         .populate("instructor category")
         .sort({ createdAt: -1 })
@@ -130,7 +130,7 @@ const CourseService = {
   get20NewestCourses: async function () {
     // Lấy 20 khóa học mới nhất nếu không có đăng ký
     let courses = await Course.find({
-      /* isPublished: true */
+      isPublished: true,
     })
       .populate("instructor category")
       .sort({ createdAt: -1 })
@@ -249,6 +249,7 @@ const CourseService = {
     try {
       let course: any = await Course.findOne({
         slug: { $regex: new RegExp(slug, "i") },
+        isPublished: true,
       }).populate({
         path: "category instructor",
       });
@@ -383,6 +384,54 @@ const CourseService = {
     await course.save();
 
     return course;
+  },
+  findCoursesByQuery: async function (query: string) {
+    let courses = await Course.find({
+      title: { $regex: query, $options: "i" },
+      isPublished: true,
+    })
+      .populate("instructor category")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const courseIds = courses.map((course) => course._id);
+
+    // Tính rating trung bình cho mỗi khóa học
+    const courseRatings = await Review.aggregate([
+      {
+        $match: { courseId: { $in: courseIds } },
+      },
+      {
+        $group: {
+          _id: "$courseId",
+          averageRating: { $avg: "$rating" },
+          reviewCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Thêm thông tin rating vào mỗi khóa học
+    courses = courses.map((course: any) => {
+      const rating = courseRatings.find(
+        (r) => r._id.toString() === course._id.toString()
+      );
+
+      course.averageRating = rating
+        ? parseFloat(rating.averageRating.toFixed(1))
+        : 0;
+
+      course.reviewCount = rating ? rating.reviewCount : 0;
+
+      return course;
+    });
+
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(courses);
+      }, 1000);
+    });
+
+    return courses;
   },
 };
 

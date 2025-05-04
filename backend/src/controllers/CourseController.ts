@@ -252,6 +252,29 @@ const CourseController = {
       next(error);
     }
   },
+  findCoursesByQuery: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { query } = req.query;
+
+      const courses = await CourseService.findCoursesByQuery(query as string);
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Tìm kiếm khoá học thành công",
+          },
+          courses
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 export default CourseController;

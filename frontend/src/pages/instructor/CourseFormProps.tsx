@@ -1,8 +1,18 @@
-import * as React from 'react';
-import { TextField, Button, FormControl, InputLabel, Select, MenuItem, IconButton, Box, Typography } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import { categories, levels } from '@pages/Teacher';
+import * as React from "react";
+import {
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  Box,
+  Typography,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import { categories, levels } from "@/pages/Instructor";
 
 interface Lesson {
   title: string;
@@ -31,21 +41,23 @@ interface CourseFormProps {
 
 export default function CourseForm({ categories, levels }: CourseFormProps) {
   const [courseFormData, setCourseFormData] = React.useState<CourseFormData>({
-    title: '',
-    description: '',
+    title: "",
+    description: "",
     price: 0,
     discountPrice: 0,
-    thumbnail: '',
+    thumbnail: "",
     categoryId: categories[0]._id,
     level: levels[0],
     duration: 0,
-    requirements: '',
-    whatYouWillLearn: '',
-    lessons: [{ title: '', description: '', videoUrl: '' }],
+    requirements: "",
+    whatYouWillLearn: "",
+    lessons: [{ title: "", description: "", videoUrl: "" }],
   });
 
   const handleCourseFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: any } }
+    e:
+      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      | { target: { name: string; value: any } }
   ) => {
     const { name, value } = e.target;
     setCourseFormData((prev) => ({ ...prev, [name]: value }));
@@ -66,7 +78,7 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
   const addLesson = () => {
     setCourseFormData((prev) => ({
       ...prev,
-      lessons: [...prev.lessons, { title: '', description: '', videoUrl: '' }],
+      lessons: [...prev.lessons, { title: "", description: "", videoUrl: "" }],
     }));
   };
 
@@ -79,8 +91,8 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
 
   const handleCourseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitted Course Data:', courseFormData);
-    alert('Course submitted successfully! Check console for details.');
+    console.log("Submitted Course Data:", courseFormData);
+    alert("Course submitted successfully! Check console for details.");
   };
 
   return (
@@ -203,13 +215,24 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
           Lessons
         </Typography>
         {courseFormData.lessons.map((lesson, index) => (
-          <Box key={index} sx={{ mb: 3, border: '1px solid #ddd', p: 2, borderRadius: '8px', position: 'relative' }}>
+          <Box
+            key={index}
+            sx={{
+              mb: 3,
+              border: "1px solid #ddd",
+              p: 2,
+              borderRadius: "8px",
+              position: "relative",
+            }}
+          >
             <TextField
               fullWidth
               label={`Tiêu đề Lesson ${index + 1}`}
               name="title"
               value={lesson.title}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleLessonChange(index, e)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleLessonChange(index, e)
+              }
               margin="normal"
               required
             />
@@ -218,7 +241,9 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
               label={`Mô tả Lesson ${index + 1}`}
               name="description"
               value={lesson.description}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleLessonChange(index, e)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleLessonChange(index, e)
+              }
               margin="normal"
               multiline
               rows={3}
@@ -229,14 +254,16 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
               label={`URL video Lesson ${index + 1}`}
               name="videoUrl"
               value={lesson.videoUrl}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleLessonChange(index, e)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleLessonChange(index, e)
+              }
               margin="normal"
               required
             />
             {courseFormData.lessons.length > 1 && (
               <IconButton
                 onClick={() => removeLesson(index)}
-                sx={{ position: 'absolute', top: 8, right: 8 }}
+                sx={{ position: "absolute", top: 8, right: 8 }}
               >
                 <DeleteIcon color="error" />
               </IconButton>
@@ -253,7 +280,13 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
         </Button>
       </Box>
 
-      <Button type="submit" variant="contained" color="primary" sx={{ mt: 3 }} fullWidth>
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        sx={{ mt: 3 }}
+        fullWidth
+      >
         Tạo Khóa Học
       </Button>
     </form>

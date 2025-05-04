@@ -23,7 +23,7 @@ import { getEnrollments } from "@/services/enrollmentService";
 import { setEnrollments } from "@/features/account/accountSlice";
 import { getCart } from "@/services/cartService";
 import { replaceCart } from "@/features/cart";
-import ChatWidget from "@/pages/chatGPT/ChatWidget";
+import ChatWidget from "@/components/chatbot/ChatWidget";
 
 export default function RootLayout() {
   const { themeMode } = useTheme();

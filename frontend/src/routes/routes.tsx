@@ -93,16 +93,7 @@ const router = createBrowserRouter([
       {
         path: "/instructor",
         lazy: async () => {
-          const { default: Component } = await import("@pages/Teacher");
-          return { Component };
-        },
-      },
-      {
-        path: "/chat",
-        lazy: async () => {
-          const { default: Component } = await import(
-            "@pages/chatGPT/ChatWidget"
-          );
+          const { default: Component } = await import("@/pages/Instructor");
           return { Component };
         },
       },

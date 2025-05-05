@@ -14,6 +14,7 @@ import {
   Paper,
   Chip,
   Button,
+  TextField,
 } from "@mui/material";
 
 // Icons
@@ -32,9 +33,17 @@ import { addCourseToCart, cartSelector } from "@/features/cart";
 import { enrollmentsSelector, isLoggedInSelector } from "@/features/account";
 import { addToCart } from "@/services/cartService";
 import { toast } from "react-toastify";
+import { useState } from "react";
+import { createReview } from "@/services/reviewService";
 
 export default function CourseDetails() {
   const { course, reviews, lessons } = useLoaderData();
+
+  // Add this inside your component before the return statement
+  const [rating, setRating] = useState<number>(0);
+  const [content, setContent] = useState<string>("");
+
+  const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
 
@@ -69,6 +78,38 @@ export default function CourseDetails() {
     navigate("/cart");
   };
 
+  // Add this function to handle review submission
+  const handleSubmitReview = async () => {
+    if (rating === 0 || !content.trim()) return;
+
+    try {
+      setSubmitting(true);
+
+      const response = (await createReview({
+        courseId: course._id,
+        rating: rating,
+        comment: content,
+      })) as any;
+
+      if (response.statusCode === 201) {
+        toast.success("Đánh giá của bạn đã được gửi thành công!");
+        setRating(0);
+        setContent("");
+        navigate(`/courses/${course._id}`, {
+          replace: true,
+          preventScrollReset: true,
+        });
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast.error("Có lỗi xảy ra khi gửi đánh giá.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const {
     title,
     description,
@@ -90,6 +131,12 @@ export default function CourseDetails() {
   const isInCart = courses?.some(
     (courseInCart) => courseInCart._id === course._id
   );
+
+  const sortedReviews = reviews.sort((a: any, b: any) => {
+    const dateA = new Date(a.createdAt);
+    const dateB = new Date(b.createdAt);
+    return dateB.getTime() - dateA.getTime(); // Sort in descending order
+  });
 
   return (
     <>
@@ -331,8 +378,75 @@ export default function CourseDetails() {
             <Typography variant="h5" fontWeight={600}>
               Đánh giá ({reviews.length})
             </Typography>
+
+            {/* Write Review Section */}
+            {isEnrolled && (
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  mb: 3,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 2,
+                }}
+              >
+                <Stack spacing={2}>
+                  <Typography variant="h6" fontWeight={600}>
+                    Viết đánh giá của bạn
+                  </Typography>
+
+                  <Box>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      Xếp hạng
+                    </Typography>
+                    <Rating
+                      name="review-rating"
+                      value={rating}
+                      precision={1}
+                      onChange={(_, newValue) => setRating(newValue || 0)}
+                      size="large"
+                    />
+                  </Box>
+
+                  <Box>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      Nhận xét của bạn
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      placeholder="Chia sẻ trải nghiệm học tập của bạn với khóa học này..."
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                        },
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "var(--toastify-color-info) !important",
+                        },
+                      }}
+                      disabled={submitting}
+                    />
+                  </Box>
+
+                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                    <Button
+                      variant="contained"
+                      disabled={rating === 0 || !content.trim()}
+                      onClick={handleSubmitReview}
+                      sx={{ minWidth: 120 }}
+                    >
+                      Gửi đánh giá
+                    </Button>
+                  </Box>
+                </Stack>
+              </Paper>
+            )}
             <Stack spacing={3}>
-              {reviews.map((review: any) => (
+              {sortedReviews.map((review: any) => (
                 <Paper key={review._id} sx={{ p: 2 }}>
                   <Stack spacing={2}>
                     <Stack direction="row" spacing={2} alignItems="center">

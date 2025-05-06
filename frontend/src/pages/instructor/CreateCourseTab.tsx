@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import CourseForm from './CourseFormProps';
 import { categories, levels } from './Instructor';
+import CourseForm from './CourseFormProps';
 
 interface CreateCourseTabProps {
   categories: typeof categories;
@@ -21,7 +21,6 @@ export default function CreateCourseTab({ categories, levels }: CreateCourseTabP
           mb: 4,
           textTransform: 'uppercase',
           letterSpacing: '2px',
-          background: 'default',
           py: 2,
           borderRadius: '12px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
@@ -29,7 +28,12 @@ export default function CreateCourseTab({ categories, levels }: CreateCourseTabP
       >
         Tạo Khóa Học Mới
       </Typography>
-      <CourseForm categories={categories} levels={levels} />
+      <CourseForm
+        categories={categories}
+        levels={levels}
+        courseToEdit={undefined}
+        onBack={undefined}
+      />
     </Box>
   );
 }

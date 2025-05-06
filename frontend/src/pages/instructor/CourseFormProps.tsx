@@ -14,7 +14,11 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { categories, levels } from "@/pages/instructor/Instructor";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Course } from '@/types';
+
+import { toast } from 'react-toastify';
+
 
 interface Lesson {
   title: string;
@@ -37,27 +41,44 @@ interface CourseFormData {
 }
 
 interface CourseFormProps {
-  categories: typeof categories;
-  levels: typeof levels;
+  categories: { _id: string; name: string }[];
+  levels: string[];
+  courseToEdit?: Course;
+  onBack?: () => void;
 }
 
-export default function CourseForm({ categories, levels }: CourseFormProps) {
+export default function CourseForm({ categories, levels, courseToEdit, onBack }: CourseFormProps) {
   const theme = useTheme();
 
-  const [courseFormData, setCourseFormData] = React.useState<CourseFormData>({
-    title: "",
-    description: "",
-    price: 0,
-    discountPrice: 0,
-    categoryId: categories[0]._id,
-    level: levels[0],
-    duration: 0,
-    requirements: "",
-    whatYouWillLearn: "",
-    lessons: [{ title: "", description: "" }],
+  const [courseFormData, setCourseFormData] = React.useState<CourseFormData>(() => {
+    if (courseToEdit) {
+      return {
+        title: courseToEdit.title,
+        description: courseToEdit.description,
+        price: courseToEdit.price || 0,
+        discountPrice: courseToEdit.discountPrice || 0,
+        categoryId: courseToEdit.categoryId,
+        level: courseToEdit.level === 'beginner' ? 'Sơ cấp' : courseToEdit.level === 'intermediate' ? 'Trung cấp' : 'Cao cấp',
+        duration: courseToEdit.duration || 0,
+        requirements: courseToEdit.requirements || '',
+        whatYouWillLearn: courseToEdit.whatYouWillLearn || '',
+        lessons: [{ title: '', description: '' }], // Cần điều chỉnh nếu có dữ liệu bài học
+      };
+    }
+    return {
+      title: "",
+      description: "",
+      price: 0,
+      discountPrice: 0,
+      categoryId: categories[0]._id,
+      level: levels[0],
+      duration: 0,
+      requirements: "",
+      whatYouWillLearn: "",
+      lessons: [{ title: "", description: "" }],
+    };
   });
 
-  // Cleanup object URLs on unmount
   React.useEffect(() => {
     return () => {
       if (courseFormData.thumbnailFile) {
@@ -120,9 +141,17 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
 
   const handleCourseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitted Course Data:", courseFormData);
-    alert("Course submitted successfully! Check console for details.");
+    console.log("Dữ liệu khóa học:", courseFormData);
+  
+    toast.success(courseToEdit ? "Khóa học đã được cập nhật!" : "Khóa học đã được tạo!", {
+      position: "top-right",
+      autoClose: 3000,
+      pauseOnHover: true,
+    });
+  
+    if (onBack) onBack();
   };
+  
 
   const getBgColor = () => (theme.palette.mode === "dark" ? "#1a1a1a" : "#ffffff");
   const getInputBg = () => (theme.palette.mode === "dark" ? "#2a2a2a" : "#f5f7fa");
@@ -141,6 +170,16 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
         transition: "box-shadow 0.3s ease",
       }}
     >
+      {onBack && (
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={onBack}
+          sx={{ mb: 3, textTransform: 'none', fontWeight: 500 }}
+          aria-label="Quay lại danh sách khóa học"
+        >
+          Quay lại
+        </Button>
+      )}
       <form onSubmit={handleCourseSubmit}>
         <Typography
           variant="h5"
@@ -151,10 +190,9 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
             textAlign: "center",
           }}
         >
-          Tạo Khóa Học Mới
+          {courseToEdit ? "Chỉnh sửa Khóa Học" : "Tạo Khóa Học Mới"}
         </Typography>
 
-        {/* Basic Info Section */}
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: theme.palette.text.primary }}>
           Thông tin cơ bản
         </Typography>
@@ -167,11 +205,7 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
             onChange={handleCourseFormChange}
             required
             variant="outlined"
-            sx={{
-              bgcolor: getInputBg(),
-              borderRadius: "8px",
-              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-            }}
+            sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
           />
           <TextField
             fullWidth
@@ -183,11 +217,7 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
             rows={4}
             required
             variant="outlined"
-            sx={{
-              bgcolor: getInputBg(),
-              borderRadius: "8px",
-              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-            }}
+            sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
           />
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
             <TextField
@@ -199,11 +229,7 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
               onChange={handleCourseFormChange}
               required
               variant="outlined"
-              sx={{
-                bgcolor: getInputBg(),
-                borderRadius: "8px",
-                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-              }}
+              sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
             />
             <TextField
               fullWidth
@@ -214,16 +240,11 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
               onChange={handleCourseFormChange}
               required
               variant="outlined"
-              sx={{
-                bgcolor: getInputBg(),
-                borderRadius: "8px",
-                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-              }}
+              sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
             />
           </Box>
         </Box>
 
-        {/* Thumbnail Upload */}
         <Box sx={{ mb: 3 }}>
           <input
             accept="image/*"
@@ -237,36 +258,22 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
             <Button
               variant="outlined"
               component="span"
-              sx={{
-                borderRadius: "8px",
-                textTransform: "none",
-                fontWeight: 500,
-                px: 3,
-                py: 1,
-                "&:hover": { bgcolor: theme.palette.action.hover },
-              }}
+              sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 500, px: 3, py: 1, "&:hover": { bgcolor: theme.palette.action.hover } }}
             >
               Tải lên hình ảnh khóa học
             </Button>
           </label>
-          {courseFormData.thumbnailFile && (
+          {(courseFormData.thumbnailFile || (courseToEdit && courseToEdit.thumbnail)) && (
             <Box sx={{ mt: 2, textAlign: "center" }}>
               <img
-                src={URL.createObjectURL(courseFormData.thumbnailFile)}
+                src={courseFormData.thumbnailFile ? URL.createObjectURL(courseFormData.thumbnailFile) : courseToEdit?.thumbnail}
                 alt="Thumbnail Preview"
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: 200,
-                  borderRadius: "8px",
-                  border: `1px solid ${theme.palette.divider}`,
-                  objectFit: "cover",
-                }}
+                style={{ maxWidth: "100%", maxHeight: 200, borderRadius: "8px", border: `1px solid ${theme.palette.divider}`, objectFit: "cover" }}
               />
             </Box>
           )}
         </Box>
 
-        {/* Category and Level */}
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2, mb: 3 }}>
           <FormControl fullWidth required>
             <InputLabel>Danh mục</InputLabel>
@@ -275,16 +282,10 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
               value={courseFormData.categoryId}
               onChange={handleCourseFormChange}
               label="Danh mục"
-              sx={{
-                bgcolor: getInputBg(),
-                borderRadius: "8px",
-                "& .MuiOutlinedInput-notchedOutline": { borderRadius: "8px" },
-              }}
+              sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-notchedOutline": { borderRadius: "8px" } }}
             >
               {categories.map((category) => (
-                <MenuItem key={category._id} value={category._id}>
-                  {category.name}
-                </MenuItem>
+                <MenuItem key={category._id} value={category._id}>{category.name}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -295,22 +296,15 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
               value={courseFormData.level}
               onChange={handleCourseFormChange}
               label="Cấp độ"
-              sx={{
-                bgcolor: getInputBg(),
-                borderRadius: "8px",
-                "& .MuiOutlinedInput-notchedOutline": { borderRadius: "8px" },
-              }}
+              sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-notchedOutline": { borderRadius: "8px" } }}
             >
               {levels.map((level) => (
-                <MenuItem key={level} value={level}>
-                  {level.charAt(0).toUpperCase() + level.slice(1)}
-                </MenuItem>
+                <MenuItem key={level} value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</MenuItem>
               ))}
             </Select>
           </FormControl>
         </Box>
 
-        {/* Duration, Requirements, and Learning Outcomes */}
         <Box sx={{ display: "grid", gap: 2, mb: 3 }}>
           <TextField
             fullWidth
@@ -321,11 +315,7 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
             onChange={handleCourseFormChange}
             required
             variant="outlined"
-            sx={{
-              bgcolor: getInputBg(),
-              borderRadius: "8px",
-              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-            }}
+            sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
           />
           <TextField
             fullWidth
@@ -337,11 +327,7 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
             rows={3}
             required
             variant="outlined"
-            sx={{
-              bgcolor: getInputBg(),
-              borderRadius: "8px",
-              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-            }}
+            sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
           />
           <TextField
             fullWidth
@@ -353,65 +339,43 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
             rows={4}
             required
             variant="outlined"
-            sx={{
-              bgcolor: getInputBg(),
-              borderRadius: "8px",
-              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-            }}
+            sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
           />
         </Box>
 
         <Divider sx={{ my: 4 }} />
 
-        {/* Lessons Section */}
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
           Nội dung bài học
         </Typography>
         {courseFormData.lessons.map((lesson, index) => (
           <Box
             key={index}
-            sx={{
-              mb: 3,
-              p: 3,
-              borderRadius: "12px",
-              border: `1px solid ${theme.palette.divider}`,
-              bgcolor: theme.palette.mode === "dark" ? "#222" : "#fafafa",
-              position: "relative",
-              transition: "all 0.3s ease",
-              "&:hover": { boxShadow: theme.shadows[2] },
-            }}
+            sx={{ mb: 3, p: 3, borderRadius: "12px", border: `1px solid ${theme.palette.divider}`, bgcolor: theme.palette.mode === "dark" ? "#222" : "#fafafa", position: "relative", transition: "all 0.3s ease", "&:hover": { boxShadow: theme.shadows[2] } }}
           >
             <TextField
               fullWidth
               label={`Tiêu đề Lesson ${index + 1}`}
               name="title"
               value={lesson.title}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleLessonChange(index, e)}
+              onChange={(e) => handleLessonChange(index, e)}
               margin="normal"
               required
               variant="outlined"
-              sx={{
-                bgcolor: getInputBg(),
-                borderRadius: "8px",
-                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-              }}
+              sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
             />
             <TextField
               fullWidth
               label={`Mô tả Lesson ${index + 1}`}
               name="description"
               value={lesson.description}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleLessonChange(index, e)}
+              onChange={(e) => handleLessonChange(index, e)}
               margin="normal"
               multiline
               rows={3}
               required
               variant="outlined"
-              sx={{
-                bgcolor: getInputBg(),
-                borderRadius: "8px",
-                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-              }}
+              sx={{ bgcolor: getInputBg(), borderRadius: "8px", "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
             />
             <Box sx={{ mt: 2 }}>
               <input
@@ -426,14 +390,7 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
                 <Button
                   variant="outlined"
                   component="span"
-                  sx={{
-                    borderRadius: "8px",
-                    textTransform: "none",
-                    fontWeight: 500,
-                    px: 3,
-                    py: 1,
-                    "&:hover": { bgcolor: theme.palette.action.hover },
-                  }}
+                  sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 500, px: 3, py: 1, "&:hover": { bgcolor: theme.palette.action.hover } }}
                 >
                   Tải lên video
                 </Button>
@@ -443,12 +400,7 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
                   <video
                     controls
                     src={URL.createObjectURL(lesson.videoFile)}
-                    style={{
-                      maxWidth: "100%",
-                      maxHeight: 200,
-                      borderRadius: "8px",
-                      border: `1px solid ${theme.palette.divider}`,
-                    }}
+                    style={{ maxWidth: "100%", maxHeight: 200, borderRadius: "8px", border: `1px solid ${theme.palette.divider}` }}
                   />
                 </Box>
               )}
@@ -456,13 +408,7 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
             {courseFormData.lessons.length > 1 && (
               <IconButton
                 onClick={() => removeLesson(index)}
-                sx={{
-                  position: "absolute",
-                  top: 12,
-                  right: 12,
-                  bgcolor: theme.palette.error.light,
-                  "&:hover": { bgcolor: theme.palette.error.main },
-                }}
+                sx={{ position: "absolute", top: 12, right: 12, bgcolor: theme.palette.error.light, "&:hover": { bgcolor: theme.palette.error.main } }}
                 aria-label={`Xóa lesson ${index + 1}`}
               >
                 <DeleteIcon sx={{ color: "#fff" }} />
@@ -475,38 +421,21 @@ export default function CourseForm({ categories, levels }: CourseFormProps) {
           variant="outlined"
           startIcon={<AddIcon />}
           onClick={addLesson}
-          sx={{
-            mt: 2,
-            borderRadius: "8px",
-            textTransform: "none",
-            fontWeight: 500,
-            px: 3,
-            py: 1,
-            "&:hover": { bgcolor: theme.palette.action.hover },
-          }}
+          sx={{ mt: 2, borderRadius: "8px", textTransform: "none", fontWeight: 500, px: 3, py: 1, "&:hover": { bgcolor: theme.palette.action.hover } }}
           aria-label="Thêm bài học mới"
         >
           Thêm bài học
         </Button>
 
-        {/* Submit Button */}
         <Button
           type="submit"
           variant="contained"
           color="primary"
-          sx={{
-            mt: 4,
-            borderRadius: "8px",
-            textTransform: "none",
-            fontWeight: 600,
-            py: 1.5,
-            fontSize: "1.1rem",
-            "&:hover": { bgcolor: theme.palette.primary.dark },
-          }}
+          sx={{ mt: 4, borderRadius: "8px", textTransform: "none", fontWeight: 600, py: 1.5, fontSize: "1.1rem", "&:hover": { bgcolor: theme.palette.primary.dark } }}
           fullWidth
-          aria-label="Tạo khóa học"
+          aria-label={courseToEdit ? "Cập nhật khóa học" : "Tạo khóa học"}
         >
-          Tạo Khóa Học
+          {courseToEdit ? "Cập nhật Khóa Học" : "Tạo Khóa Học"}
         </Button>
       </form>
     </Box>

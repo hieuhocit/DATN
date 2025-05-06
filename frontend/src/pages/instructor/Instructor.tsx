@@ -12,146 +12,6 @@ import { Course } from '@/types';
 
 const coursesData: Course[] = [
   {
-    _id: '6432faeca35f2a7f39c0614a',
-    title: 'JavaScript Cơ Bản Đến Nâng Cao',
-    slug: 'javascript-co-ban-den-nang-cao',
-    description:
-      'Khóa học toàn diện về JavaScript từ những khái niệm cơ bản nhất cho đến các kỹ thuật nâng cao như Promises, Async/Await, và DOM Manipulation.',
-    price: 599000,
-    discountPrice: 399000,
-    averageRating: 4,
-    thumbnail: 'https://example.com/images/javascript-course.jpg',
-    author: {
-      _id: '6432f506c0e05609b48cef5a',
-      email: 'tuan.nguyen@example.com',
-      name: 'Tuấn Nguyễn',
-      bio: 'Senior JavaScript Developer với hơn 8 năm kinh nghiệm tại các công ty công nghệ hàng đầu.',
-      avatarUrl: '',
-      role: 'instructor',
-      registerProvider: 'google',
-      createdAt: '2023-03-15T08:30:00.000Z',
-      updatedAt: '2023-09-28T15:45:22.000Z',
-      __v: 0,
-      accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-      refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-    },
-    categoryId: '64215a9e32c123afb23d4e12',
-    level: 'all',
-    duration: 2160,
-    requirements:
-      'Kiến thức cơ bản về HTML, CSS. Không cần kinh nghiệm JavaScript trước đó.',
-    whatYouWillLearn:
-      'Nắm vững nền tảng JavaScript, xây dựng ứng dụng web tương tác, hiểu rõ về ES6+, xử lý bất đồng bộ và áp dụng các design pattern phổ biến.',
-    isPublished: true,
-    createdAt: '2023-04-10T09:15:40.000Z',
-    updatedAt: '2023-10-05T11:20:32.000Z',
-  },
-  {
-    _id: '6438acf1b28e537a12d9b234',
-    title: 'ReactJS - Từ Zero đến Hero',
-    slug: 'reactjs-tu-zero-den-hero',
-    description:
-      'Làm chủ thư viện ReactJS và xây dựng các ứng dụng Single Page Application hiện đại với các kỹ thuật tối ưu hiệu suất.',
-    price: 799000,
-    discountPrice: 549000,
-    averageRating: 4.5,
-    thumbnail: 'https://example.com/images/reactjs-course.jpg',
-    author: {
-      _id: '6432f506c0e05609b48cef5a',
-      email: 'tuan.nguyen@example.com',
-      name: 'Tuấn Nguyễn',
-      bio: 'Senior JavaScript Developer với hơn 8 năm kinh nghiệm tại các công ty công nghệ hàng đầu.',
-      avatarUrl: '',
-      role: 'instructor',
-      registerProvider: 'google',
-      createdAt: '2023-03-15T08:30:00.000Z',
-      updatedAt: '2023-09-28T15:45:22.000Z',
-      __v: 0,
-      accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-      refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-    },
-    categoryId: '64215a9e32c123afb23d4e13',
-    level: 'intermediate',
-    duration: 1800,
-    requirements:
-      'Kiến thức cơ bản về JavaScript, HTML, CSS. Hiểu biết về ES6+ là một lợi thế.',
-    whatYouWillLearn:
-      'Xây dựng ứng dụng React từ đầu, quản lý state với Redux, tối ưu hiệu suất, tích hợp React Router, và triển khai ứng dụng thực tế.',
-    isPublished: true,
-    createdAt: '2023-05-12T14:30:25.000Z',
-    updatedAt: '2023-10-18T09:45:12.000Z',
-  },
-  {
-    _id: '6442bdf3e7291abfc85d7c9e',
-    title: 'Python cho Data Science và Machine Learning',
-    slug: 'python-cho-data-science-va-machine-learning',
-    description:
-      'Học cách sử dụng Python và các thư viện như NumPy, Pandas, Matplotlib, Scikit-Learn để phân tích dữ liệu và xây dựng mô hình học máy.',
-    price: 1299000,
-    discountPrice: 899000,
-    averageRating: 3.5,
-    thumbnail: 'https://example.com/images/python-data-science.jpg',
-    author: {
-      _id: '643821f5d9e7afc3b217a8b2',
-      email: 'linh.tran@example.com',
-      name: 'Linh Trần',
-      bio: 'Data Scientist với hơn 5 năm kinh nghiệm trong lĩnh vực phân tích dữ liệu và AI.',
-      avatarUrl: '',
-      role: 'instructor',
-      registerProvider: 'local',
-      createdAt: '2023-02-28T10:20:15.000Z',
-      updatedAt: '2023-09-15T16:30:45.000Z',
-      __v: 0,
-      accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-      refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-    },
-    categoryId: '64215a9e32c123afb23d4e14',
-    level: 'intermediate',
-    duration: 2520,
-    requirements:
-      'Kiến thức cơ bản về lập trình. Không cần kinh nghiệm Python trước đó, nhưng hiểu biết về thống kê cơ bản là một lợi thế.',
-    whatYouWillLearn:
-      'Nắm vững Python cho phân tích dữ liệu, trực quan hóa dữ liệu với Matplotlib và Seaborn, phân tích dữ liệu với Pandas, và xây dựng mô hình học máy với Scikit-Learn.',
-    isPublished: true,
-    createdAt: '2023-06-05T11:45:30.000Z',
-    updatedAt: '2023-10-22T08:15:40.000Z',
-  },
-  {
-    _id: '644af1c8723b9def45e8a123',
-    title: 'UI/UX Design Masterclass',
-    slug: 'ui-ux-design-masterclass',
-    description:
-      'Khóa học toàn diện về thiết kế giao diện người dùng (UI) và trải nghiệm người dùng (UX) với Figma, Adobe XD và các công cụ thiết kế hiện đại.',
-    price: 899000,
-    discountPrice: 699000,
-    averageRating: 5,
-    thumbnail: 'https://example.com/images/uiux-masterclass.jpg',
-    author: {
-      _id: '6439c2d7f8e24b5a13c7d9e2',
-      email: 'minh.le@example.com',
-      name: 'Minh Lê',
-      bio: 'UI/UX Designer với hơn 7 năm kinh nghiệm, đã làm việc với nhiều startup và doanh nghiệp lớn.',
-      avatarUrl: '',
-      role: 'instructor',
-      registerProvider: 'facebook',
-      createdAt: '2023-03-10T09:25:35.000Z',
-      updatedAt: '2023-09-20T14:30:15.000Z',
-      __v: 0,
-      accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-      refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-    },
-    categoryId: '64215a9e32c123afb23d4e15',
-    level: 'beginner',
-    duration: 1440,
-    requirements:
-      'Không cần kinh nghiệm thiết kế trước đó. Nên có máy tính với cấu hình đủ để chạy Figma hoặc Adobe XD.',
-    whatYouWillLearn:
-      'Nguyên tắc thiết kế UI/UX, sử dụng thành thạo Figma và Adobe XD, tạo prototype tương tác, thực hiện nghiên cứu người dùng, và xây dựng portfolio thiết kế.',
-    isPublished: true,
-    createdAt: '2023-04-25T16:40:20.000Z',
-    updatedAt: '2023-10-12T10:35:50.000Z',
-  },
-  {
     _id: '6451cf82a97def34b28e5f7a',
     title: 'Node.js và Express - Xây dựng RESTful API',
     slug: 'nodejs-va-express-xay-dung-restful-api',
@@ -346,8 +206,8 @@ export default function Teacher() {
       },
     }}
   >
-    <Tab label="Khóa học đã tạo" {...a11yProps(0)} />
-    <Tab label="Tạo khóa học" {...a11yProps(1)} />
+    <Tab label="KHÓA HỌC ĐÃ TẠO" {...a11yProps(0)} />
+    <Tab label="TẠO KHÓA HỌC" {...a11yProps(1)} />
   </Tabs>
 </Box>
 

@@ -1,10 +1,9 @@
 import axios from "@/configs/axiosConfig";
-import { CartItem } from "@/types";
 
 export const getCart = async () => {
   try {
     const response = await axios.get("/cart");
-    return response.data as CartItem[];
+    return response.data;
   } catch (error) {
     console.error("Error", error);
   }

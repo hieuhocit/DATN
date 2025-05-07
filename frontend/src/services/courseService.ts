@@ -35,9 +35,7 @@ export const getCourseById = async (courseId: string) => {
   }
 };
 
-export const getCourseBySlug = async (
-  courseSlug: string
-): Promise<CourseDetails | undefined> => {
+export const getCourseBySlug = async (courseSlug: string) => {
   try {
     const response = await axios.get(`learning/${courseSlug}`);
     return response.data;
@@ -46,7 +44,7 @@ export const getCourseBySlug = async (
   }
 };
 
-export const getCoursesByQuery = async (query: string): Promise<Course[]> => {
+export const getCoursesByQuery = async (query: string) => {
   try {
     const response = await axios.get(`courses/search?query=${query}`);
     return response.data;
@@ -57,12 +55,10 @@ export const getCoursesByQuery = async (query: string): Promise<Course[]> => {
   }
 };
 
-export const getCoursesByCategoryId = async (
-  categoryId: string
-): Promise<Course[]> => {
+export const getCoursesByCategoryId = async (categoryId: string) => {
   try {
     const response = await axios.get(`courses/categories/${categoryId}`);
-    return response.data || [];
+    return response.data;
   } catch (error) {
     console.error("Error fetching courses by category ID:", error);
     return [];

@@ -6,6 +6,6 @@ export const getEnrollments = async () => {
     const response = await axios.get("/enrollments");
     return response.data as Enrollment[];
   } catch (error) {
-    return error;
+    console.error(error);
   }
 };

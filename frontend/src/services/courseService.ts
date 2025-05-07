@@ -13,7 +13,7 @@ export const get20PopularCourses = async () => {
     const response = await axios.get("courses/popular");
     return response.data;
   } catch (error) {
-    return error;
+    console.error(error);
   }
 };
 
@@ -22,7 +22,7 @@ export const get20NewestCourses = async () => {
     const response = await axios.get("courses/newest");
     return response.data;
   } catch (error) {
-    return error;
+    console.error(error);
   }
 };
 
@@ -31,19 +31,18 @@ export const getCourseById = async (courseId: string) => {
     const response = await axios.get(`courses/${courseId}`);
     return response.data;
   } catch (error) {
-    return error;
+    console.error(error);
   }
 };
 
 export const getCourseBySlug = async (
   courseSlug: string
-): Promise<CourseDetails | null | undefined> => {
+): Promise<CourseDetails | undefined> => {
   try {
     const response = await axios.get(`learning/${courseSlug}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching course by slug:", error);
-    return null;
   }
 };
 

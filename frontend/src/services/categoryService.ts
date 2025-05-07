@@ -7,7 +7,7 @@ export async function getCategories() {
     const data = (response.data as Category[]) || [];
     return data;
   } catch (error) {
-    return error;
+    console.error(error);
   }
 }
 
@@ -22,6 +22,5 @@ export async function getCategoryBySlug(
     return data;
   } catch (error) {
     console.error(error);
-    return undefined;
   }
 }

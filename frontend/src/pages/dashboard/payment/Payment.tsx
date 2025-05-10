@@ -161,7 +161,7 @@ import {
     const columns: GridColDef[] = [
       { field: 'id', headerName: 'ID', width: 70 },
       { field: 'amount', headerName: 'Số tiền (VNĐ)', flex: 1 },
-      { field: 'vnp_Amount', headerName: 'VNPay Số tiền', flex: 1 },
+      // { field: 'vnp_Amount', headerName: 'VNPay Số tiền', flex: 1 },
       { field: 'paymentMethod', headerName: 'Phương thức', flex: 1 },
       { field: 'transactionId', headerName: 'Mã giao dịch', flex: 1 },
       { field: 'vnp_OrderInfo', headerName: 'Thông tin đơn hàng', flex: 1 },

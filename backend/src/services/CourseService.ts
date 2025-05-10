@@ -1,5 +1,6 @@
 // Models
 import Course, { CourseType } from "../models/Course.js";
+import User from "../models/User.js";
 import Enrollment from "../models/Enrollment.js";
 import Review from "../models/Review.js";
 
@@ -13,7 +14,9 @@ import serverResponse from "../utils/helpers/responses.js";
 import messages from "../configs/messagesConfig.js";
 
 // Mongoose
-import mongoose from "mongoose";
+import CategoryService from "./CategoryService.js";
+import NotificationService from "./NotificationService.js";
+import { sendNotification } from "../socket/socket-io.js";
 
 // Types
 type CourseCreateInput = Pick<
@@ -59,7 +62,7 @@ const CourseService = {
       // Query các khóa học theo IDs
       courses = await Course.find({
         _id: { $in: courseIds },
-        // isPublished: true,
+        isPublished: true,
       }).populate("instructor category");
 
       // Thêm số lượng đăng ký vào mỗi khóa học
@@ -76,7 +79,7 @@ const CourseService = {
     } else {
       // Lấy 20 khóa học mới nhất nếu không có đăng ký
       courses = await Course.find({
-        /* isPublished: true */
+        isPublished: true,
       })
         .populate("instructor category")
         .sort({ createdAt: -1 })
@@ -130,7 +133,7 @@ const CourseService = {
   get20NewestCourses: async function () {
     // Lấy 20 khóa học mới nhất nếu không có đăng ký
     let courses = await Course.find({
-      /* isPublished: true */
+      isPublished: true,
     })
       .populate("instructor category")
       .sort({ createdAt: -1 })
@@ -249,6 +252,7 @@ const CourseService = {
     try {
       let course: any = await Course.findOne({
         slug: { $regex: new RegExp(slug, "i") },
+        isPublished: true,
       }).populate({
         path: "category instructor",
       });
@@ -334,7 +338,7 @@ const CourseService = {
   },
   updateCourseById: async function (
     id: string,
-    data: CourseCreateInput & { isPublished?: boolean }
+    data: CourseCreateInput & { isPublished?: boolean; userName: string }
   ) {
     const course = await Course.findById(id);
 
@@ -349,7 +353,7 @@ const CourseService = {
     const existedCourse = await Course.findOne({
       title: data.title,
       _id: { $ne: id },
-    });
+    }).populate("instructor");
 
     if (existedCourse) {
       throw serverResponse.createError({
@@ -382,7 +386,145 @@ const CourseService = {
 
     await course.save();
 
+    const enrollments = await Enrollment.find({
+      courseId: id,
+    }).populate("user");
+
+    for await (const enrollment of enrollments) {
+      const user = await User.findById(enrollment.userId);
+
+      if (user) {
+        const notification = await NotificationService.createNotification({
+          userId: user._id,
+          title: `Khoá học ${course.title} đã được cập nhật`,
+          message: `Cập nhật bởi ${data.userName}`,
+          referenceUrl: `/learning${course.slug}`,
+          to: "user",
+        });
+
+        sendNotification(user.email, notification);
+      }
+    }
+
     return course;
+  },
+  findCoursesByQuery: async function (query: string) {
+    let courses = await Course.find({
+      title: { $regex: query, $options: "i" },
+      isPublished: true,
+    })
+      .populate("instructor category")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const courseIds = courses.map((course) => course._id);
+
+    // Tính rating trung bình cho mỗi khóa học
+    const courseRatings = await Review.aggregate([
+      {
+        $match: { courseId: { $in: courseIds } },
+      },
+      {
+        $group: {
+          _id: "$courseId",
+          averageRating: { $avg: "$rating" },
+          reviewCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Thêm thông tin rating vào mỗi khóa học
+    courses = courses.map((course: any) => {
+      const rating = courseRatings.find(
+        (r) => r._id.toString() === course._id.toString()
+      );
+
+      course.averageRating = rating
+        ? parseFloat(rating.averageRating.toFixed(1))
+        : 0;
+
+      course.reviewCount = rating ? rating.reviewCount : 0;
+
+      return course;
+    });
+
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(courses);
+      }, 1000);
+    });
+
+    return courses;
+  },
+  getCoursesByCategoryIds: async function (categoryId: string) {
+    const category = await CategoryService.getCategoryById(categoryId);
+
+    if (!category) {
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: "Không tìm thấy danh mục",
+      });
+    }
+
+    const categoryIds =
+      (category as any)?.children?.map((child: any) => child._id) || [];
+
+    categoryIds.push(categoryId);
+    if (category.parentId) categoryIds.push(category.parentId);
+
+    let courses = await Course.find({
+      categoryId: { $in: categoryIds },
+      isPublished: true,
+    })
+      .populate("instructor category")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const courseIds = courses.map((course) => course._id);
+
+    // Tính rating trung bình cho mỗi khóa học
+    const courseRatings = await Review.aggregate([
+      {
+        $match: { courseId: { $in: courseIds } },
+      },
+      {
+        $group: {
+          _id: "$courseId",
+          averageRating: { $avg: "$rating" },
+          reviewCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Thêm thông tin rating vào mỗi khóa học
+    courses = courses.map((course: any) => {
+      const rating = courseRatings.find(
+        (r) => r._id.toString() === course._id.toString()
+      );
+
+      course.averageRating = rating
+        ? parseFloat(rating.averageRating.toFixed(1))
+        : 0;
+
+      course.reviewCount = rating ? rating.reviewCount : 0;
+
+      return course;
+    });
+
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(courses);
+      }, 1000);
+    });
+
+    return courses;
+  },
+  getCoursesByInstructorId: async function (instructorId: string) {
+    const courses = await Course.find({
+      instructorId,
+    }).populate("instructor category");
+
+    return courses;
   },
 };
 

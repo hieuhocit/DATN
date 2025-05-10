@@ -122,7 +122,10 @@ const CourseController = {
 
       const course = await CourseService.getCourseBySlug(slug);
       const reviews = await ReviewService.getAllReviewsByCourseId(course._id);
-      const lessons = await LessonService.getAllLessonsByCourseId(course._id);
+      const lessons = await LessonService.getAllLessonsByCourseId(
+        course._id,
+        existedUser._id.toString()
+      );
       const notes = await NoteService.getAllNotesByCourseIdAndUserId(
         course._id,
         existedUser._id.toString()
@@ -208,6 +211,22 @@ const CourseController = {
   },
   updateCourseById: async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const user = (req as RequestWithUser).user;
+
+      const existedUser = await UserService.getUserByEmailWithPasswordHash(
+        user.email
+      );
+
+      if (!existedUser) {
+        res.status(messages.UNAUTHORIZED.statusCode).json(
+          serverResponse.createError({
+            ...messages.UNAUTHORIZED,
+            message: "Người dùng không tồn tại",
+          })
+        );
+        return;
+      }
+
       const { id } = req.params;
       const {
         title,
@@ -237,6 +256,7 @@ const CourseController = {
         requirements,
         whatYouWillLearn,
         isPublished,
+        userName: existedUser.name,
       });
 
       res.status(messages.OK.statusCode).json(
@@ -246,6 +266,52 @@ const CourseController = {
             message: "Khoá học đã được cập nhật thành công",
           },
           course
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+  findCoursesByQuery: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { query } = req.query;
+
+      const courses = await CourseService.findCoursesByQuery(query as string);
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Tìm kiếm khoá học thành công",
+          },
+          courses
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+  getCoursesByCategoryIds: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { id } = req.params;
+
+      const courses = await CourseService.getCoursesByCategoryIds(id);
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Lấy khoá học theo danh mục thành công",
+          },
+          courses
         )
       );
     } catch (error) {

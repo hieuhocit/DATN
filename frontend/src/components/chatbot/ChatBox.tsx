@@ -1,13 +1,7 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  IconButton,
-  Paper,
-  Divider,
-} from "@mui/material";
+import { Box, Typography, IconButton, Paper, Divider } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { Message } from "@pages/chatGPT/type";
+import { Message } from "@/components/chatbot/type";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import { chatWithAI } from "@services/chatServices";
@@ -50,9 +44,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ onClose }) => {
     } catch (error) {
       botMsg.content = "Xin lỗi, có lỗi xảy ra khi kết nối đến AI.";
     } finally {
-      setMessages((prev) =>
-        prev.map((m) => (m.id === botMsg.id ? botMsg : m))
-      );
+      setMessages((prev) => prev.map((m) => (m.id === botMsg.id ? botMsg : m)));
       setIsLoading(false);
     }
   };

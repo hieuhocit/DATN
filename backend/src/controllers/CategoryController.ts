@@ -1,14 +1,14 @@
 // Types
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from "express";
 
 // Services
-import CategoryService from '../services/CategoryService.js';
+import CategoryService from "../services/CategoryService.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 const CategoryController = {
   createCategory: async (req: Request, res: Response, next: NextFunction) => {
@@ -25,7 +25,7 @@ const CategoryController = {
         serverResponse.createSuccess(
           {
             ...messages.CREATED,
-            message: 'Category created successfully',
+            message: "Category created successfully",
           },
           category
         )
@@ -44,7 +44,30 @@ const CategoryController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Get category successfully',
+            message: "Get category successfully",
+          },
+          category
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+  getCategoryBySlug: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { query } = req.query;
+      console.log(query);
+      const category = await CategoryService.getCategoryBySlug(query as string);
+
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Get category successfully",
           },
           category
         )
@@ -61,7 +84,7 @@ const CategoryController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Get all categories successfully',
+            message: "Get all categories successfully",
           },
           categories
         )
@@ -84,7 +107,7 @@ const CategoryController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Xoá danh mục thành công',
+            message: "Xoá danh mục thành công",
           },
           null
         )
@@ -112,7 +135,7 @@ const CategoryController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Câp nhật danh mục thành công',
+            message: "Câp nhật danh mục thành công",
           },
           category
         )

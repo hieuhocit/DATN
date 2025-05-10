@@ -71,7 +71,7 @@ const Profile: React.FC = () => {
     const file = fileInputRef.current?.files?.[0];
 
     try {
-      let avatarUrl: string | null= profile.avatar;
+      let avatarUrl: string | null = profile.avatar;
 
       if (file) {
         formData.append("type", "image");
@@ -79,7 +79,7 @@ const Profile: React.FC = () => {
 
         const res = await uploadFileToCloudinary(formData);
 
-        avatarUrl = res?.secure_url || null;
+        avatarUrl = res?.data?.secure_url || null;
       }
 
       const data = {
@@ -166,7 +166,9 @@ const Profile: React.FC = () => {
                   : profile.avatar || undefined
               }
               sx={{ width: 120, height: 120 }}
-            />
+            >
+              <Typography variant="h3">{profile.name[0]}</Typography>
+            </Avatar>
             {isEditing && (
               <IconButton
                 color="primary"

@@ -85,7 +85,7 @@ const router = createBrowserRouter([
         path: "/my-learning",
         lazy: async () => {
           const { default: Component } = await import(
-            "@pages/PurchasedCourses"
+            "@/pages/my-learning/MyLearning"
           );
           return { Component };
         },
@@ -93,18 +93,43 @@ const router = createBrowserRouter([
       {
         path: "/instructor",
         lazy: async () => {
-          const { default: Component } = await import("@pages/Teacher");
+          const { default: Component } = await import(
+            "@/pages/instructor/Instructor"
+          );
           return { Component };
         },
       },
       {
-        path: "/chat",
+        path: "/search",
         lazy: async () => {
           const { default: Component } = await import(
-            "@pages/chatGPT/ChatWidget"
+            "@/pages/SearchResultPage"
           );
           return { Component };
         },
+      },
+      {
+        path: "/categories",
+        children: [
+          {
+            path: ":categorySlug1",
+            lazy: async () => {
+              const { default: Component } = await import("@/pages/Category");
+              return { Component };
+            },
+            children: [
+              {
+                path: ":categorySlug2",
+                lazy: async () => {
+                  const { default: Component } = await import(
+                    "@/pages/Category"
+                  );
+                  return { Component };
+                },
+              },
+            ],
+          },
+        ],
       },
     ],
   },

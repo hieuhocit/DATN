@@ -23,7 +23,7 @@ export type Course = {
   thumbnail: string;
   instructorId: string;
   categoryId: string;
-  level: string;
+  level: "beginner" | "intermediate" | "expert" | "all";
   duration: number;
   requirements: string;
   whatYouWillLearn: string;
@@ -174,4 +174,18 @@ export interface Note {
   user: User[];
   lesson: Lesson[];
   course: Course[];
+}
+
+export interface Notification {
+  _id: string;
+  userId: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  referenceUrl: string;
+  to: User["role"];
+  createdAt: string;
+  updatedAt: string;
+  __v: 0;
+  user: User[];
 }

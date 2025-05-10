@@ -520,9 +520,59 @@ const CourseService = {
     return courses;
   },
   getCoursesByInstructorId: async function (instructorId: string) {
-    const courses = await Course.find({
+    let courses = await Course.find({
       instructorId,
-    }).populate("instructor category");
+    })
+      .populate("instructor category")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const courseIds = courses.map((course) => course._id);
+
+    // Tính rating trung bình cho mỗi khóa học
+    const courseRatings = await Review.aggregate([
+      {
+        $match: { courseId: { $in: courseIds } },
+      },
+      {
+        $group: {
+          _id: "$courseId",
+          averageRating: { $avg: "$rating" },
+          reviewCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Tính số lượng đăng ký cho mỗi khóa học
+    const courseEnrollments = await Enrollment.aggregate([
+      {
+        $group: {
+          _id: "$courseId",
+          enrollmentCount: { $sum: 1 },
+        },
+      },
+      { $sort: { enrollmentCount: -1 } },
+      { $limit: 20 },
+    ]);
+
+    // Thêm thông tin rating vào mỗi khóa học
+    courses = courses.map((course: any) => {
+      const rating = courseRatings.find(
+        (r) => r._id.toString() === course._id.toString()
+      );
+
+      const enrollment = courseEnrollments.find(
+        (e) => e._id.toString() === course._id.toString()
+      );
+
+      course.averageRating = rating
+        ? parseFloat(rating.averageRating.toFixed(1))
+        : 0;
+      course.reviewCount = rating ? rating.reviewCount : 0;
+      course.enrollmentCount = enrollment ? enrollment.enrollmentCount : 0;
+
+      return course;
+    });
 
     return courses;
   },

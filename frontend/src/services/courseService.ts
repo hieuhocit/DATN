@@ -64,3 +64,13 @@ export const getCoursesByCategoryId = async (categoryId: string) => {
     return [];
   }
 };
+
+export const getCoursesByInstructor = async () => {
+  try {
+    const response = await axios.get("courses/instructor");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching courses by instructor:", error);
+    return [];
+  }
+};

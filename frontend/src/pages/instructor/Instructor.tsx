@@ -7,17 +7,21 @@ import Typography from "@mui/material/Typography";
 import CustomTabPanel from "./CustomTabPanel";
 import CourseListTab from "./CourseListTab";
 import CreateCourseTab from "./CreateCourseTab";
+import { useCoursesByInstructor } from "@/hooks/useCouses";
 
 export default function Teacher() {
   const [value, setValue] = React.useState(0);
+  const { coursesByInstructor } = useCoursesByInstructor();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
+  console.log("coursesByInstructor", coursesByInstructor);
+
   return (
-    <Section sx={{ mt: "90px", mb: "64px" }}>
-      <Box sx={{ width: "100%", maxWidth: "1200px", mx: "auto" }}>
+    <Section sx={{ mt: "128px", mb: "64px" }}>
+      <Box>
         <Typography
           variant="h3"
           align="center"
@@ -29,17 +33,6 @@ export default function Teacher() {
             textTransform: "uppercase",
             letterSpacing: "3px",
             position: "relative",
-            "&:after": {
-              content: '""',
-              width: "60px",
-              height: "4px",
-              bgcolor: "#1976d2",
-              position: "absolute",
-              bottom: "-16px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              borderRadius: "2px",
-            },
           }}
         >
           Dành cho Giáo viên
@@ -49,8 +42,6 @@ export default function Teacher() {
           sx={{
             borderRadius: "12px",
             bgcolor: "default",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-            p: 1,
           }}
         >
           <Tabs
@@ -86,10 +77,10 @@ export default function Teacher() {
         </Box>
 
         <CustomTabPanel value={value} index={0}>
-          <CourseListTab courses={coursesData} />
+          <CourseListTab courses={coursesByInstructor} />
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
-          <CreateCourseTab categories={categories} levels={levels} />
+          <CreateCourseTab />
         </CustomTabPanel>
       </Box>
     </Section>

@@ -38,8 +38,6 @@ export default function DesktopHeader() {
 
   const categories = res?.data || [];
 
-  console.log(categories);
-
   return (
     <Stack direction={"row"} alignItems="center" gap={8} sx={{ width: "100%" }}>
       <Stack direction={"row"} spacing={3} alignItems="center">

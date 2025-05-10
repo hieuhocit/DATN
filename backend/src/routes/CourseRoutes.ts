@@ -21,6 +21,13 @@ CourseRoutes.get(
   CourseController.getCoursesByCategoryIds
 );
 
+CourseRoutes.get(
+  "/courses/instructor",
+  authMiddleware,
+  authorizationMiddleware(["admin", "instructor"]),
+  CourseController.getCoursesByInstructorId
+);
+
 CourseRoutes.get("/courses/popular", CourseController.get20PopularCourses);
 CourseRoutes.get("/courses/newest", CourseController.get20NewestCourses);
 

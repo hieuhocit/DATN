@@ -16,3 +16,16 @@ export const LEVELS = [
     value: "all",
   },
 ];
+
+export const LEVEL_VN = {
+  beginner: "Người mới",
+  intermediate: "Trung cấp",
+  expert: "Nâng cao",
+  all: "Tất cả",
+}
+
+export const ROLE_VN = {
+  user: 'Học viên',
+  instructor: 'Giảng viên',
+  admin: 'Quản trị viên',
+}

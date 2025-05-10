@@ -74,7 +74,7 @@ export default function SideBar({
           {/* Dashboard Link */}
           <ListItem
             component={NavLink}
-            to="/dashboard/statistical"
+            to="/dashboard"
             end
             onClick={handleCloseSideBar}
             sx={{

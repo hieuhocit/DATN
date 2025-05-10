@@ -138,7 +138,7 @@ const router = createBrowserRouter([
     element: <DashboardLayout />,
     children: [
       {
-        path: "statistical",
+        index: true,
         lazy: async () => {
           const { default: Component } = await import(
             "@pages/dashboard/statistical/Statistical"

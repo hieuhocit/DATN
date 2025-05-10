@@ -10,6 +10,7 @@ import { Course } from '@/types';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { toast } from 'react-toastify';
+import { LEVEL_VN } from '@/utils/constants';
 
 
 export default function CourseTable() {
@@ -159,12 +160,15 @@ export default function CourseTable() {
       field: 'price',
       headerName: 'Giá',
       width: 120,
-      valueFormatter: ({ value }) =>
-        value !== undefined && value !== null
+      renderCell: (params) => {
+        const value = params.value;
+        const string = value !== undefined && value !== null
           ? `${(value as number).toLocaleString()} đ`
-          : 'Chưa có',
+          : 'Chưa có'
+        return <span>{string}</span>;
+      }
     },
-    { field: 'level', headerName: 'Trình độ', width: 120 },
+    { field: 'level', headerName: 'Trình độ', width: 120, renderCell: (params) => LEVEL_VN[params.value as keyof typeof LEVEL_VN  ] || 'Chưa có' },
     {
       field: 'duration',
       headerName: 'Thời lượng',

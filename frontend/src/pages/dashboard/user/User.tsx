@@ -22,6 +22,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { toast } from 'react-toastify';
+import { ROLE_VN } from '@/utils/constants';
 
 // Kiểu cho từng user
 type UserList = {
@@ -126,16 +127,16 @@ export default function UserTable() {
 
     const userData = editUser
       ? {
-          email: editUser.email,
-          name: editForm.name,
-          bio: editForm.bio,
-          role: editForm.role,
-          avatarUrl: editUser.avatarUrl || '',
-        }
+        email: editUser.email,
+        name: editForm.name,
+        bio: editForm.bio,
+        role: editForm.role,
+        avatarUrl: editUser.avatarUrl || '',
+      }
       : {
-          ...addForm,
-          avatarUrl: addForm.avatarUrl || '',
-        };
+        ...addForm,
+        avatarUrl: addForm.avatarUrl || '',
+      };
 
     try {
       const res = await fetch(url, {
@@ -212,7 +213,7 @@ export default function UserTable() {
     },
     { field: 'name', headerName: 'Tên', flex: 1 },
     { field: 'email', headerName: 'Email', flex: 1 },
-    { field: 'role', headerName: 'Vai trò', width: 120 },
+    { field: 'role', headerName: 'Vai trò', width: 120, renderCell: (params) => <span>{ROLE_VN[params.value as keyof typeof ROLE_VN]}</span> },
     { field: 'provider', headerName: 'Provider', width: 120 },
     { field: 'bio', headerName: 'Tiểu sử', flex: 1 },
     { field: 'createdAt', headerName: 'Ngày tạo', width: 150 },

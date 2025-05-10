@@ -7,6 +7,7 @@ import Typography from "@mui/material/Typography";
 import CustomTabPanel from "./CustomTabPanel";
 import CourseListTab from "./CourseListTab";
 import CreateCourseTab from "./CreateCourseTab";
+import EarningsStats from "./EarningsStats";
 import { useCoursesByInstructor } from "@/hooks/useCouses";
 
 export default function Teacher() {
@@ -55,7 +56,7 @@ export default function Teacher() {
                 fontSize: "1rem",
                 textTransform: "none",
                 color: "#616161",
-                px: 4,
+                px: 3,
                 py: 1.5,
                 borderRadius: "8px",
                 transition: "all 0.3s ease",
@@ -73,6 +74,7 @@ export default function Teacher() {
           >
             <Tab label="Khóa học đã tạo" {...a11yProps(0)} />
             <Tab label="Tạo khóa học" {...a11yProps(1)} />
+            <Tab label="Thống kê " {...a11yProps(2)} />
           </Tabs>
         </Box>
 
@@ -81,6 +83,9 @@ export default function Teacher() {
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           <CreateCourseTab />
+        </CustomTabPanel>
+        <CustomTabPanel value={value} index={2}>
+          <EarningsStats courses={coursesByInstructor} />
         </CustomTabPanel>
       </Box>
     </Section>

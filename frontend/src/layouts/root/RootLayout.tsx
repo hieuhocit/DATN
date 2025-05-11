@@ -26,7 +26,11 @@ import { replaceCart } from "@/features/cart";
 import ChatWidget from "@/components/chatbot/ChatWidget";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 
-export default function RootLayout() {
+export default function RootLayout({
+  children,
+}: {
+  children?: React.ReactNode;
+}) {
   const { themeMode } = useTheme();
   const dispatch = useAppDispatch();
   const isLoggedIn = useAppSelector(isLoggedInSelector);
@@ -72,7 +76,7 @@ export default function RootLayout() {
           <CssBaseline />
           <ScrollRestoration />
           <Header />
-          <Outlet />
+          {children ? children : <Outlet />}
           <ToastContainer
             position="top-right"
             autoClose={3000}

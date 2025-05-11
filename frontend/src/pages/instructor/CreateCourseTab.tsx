@@ -1,5 +1,5 @@
 import Box from "@mui/material/Box";
-import CourseForm from "./CourseFormProps";
+import CourseForm from "./CourseForm";
 
 export default function CreateCourseTab() {
   return (

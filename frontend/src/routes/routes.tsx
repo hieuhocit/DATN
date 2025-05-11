@@ -1,60 +1,126 @@
 // React router
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 
 // Layouts
 import RootLayout, { loader as rootLoader } from "@/layouts/root/index";
 
 // Pages
 import Home from "@/pages/home";
+import ErrorPage from "@/pages/ErrorPage";
 import DashboardLayout from "@/pages/dashboard/Layout";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import ProtectedAdminRoute from "@/components/ProtectedAdminRoute";
+import ProtectedInstructorRoute from "@/components/ProtectedInstructorRoute";
+import ProtectedLearningRoute from "@/components/ProtectedLearningRoute";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
     loader: rootLoader,
+    errorElement: (
+      <RootLayout>
+        <ErrorPage />
+      </RootLayout>
+    ),
     children: [
       {
         index: true,
         element: <Home />,
-        // loader: homeLoader,
       },
       {
-        path: "/login",
-        lazy: async () => {
-          const { default: Component } = await import("@pages/Login");
-          return { Component };
-        },
+        element: (
+          <ProtectedRoute>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: "/login",
+            lazy: async () => {
+              const { default: Component } = await import("@pages/Login");
+              return { Component };
+            },
+          },
+          {
+            path: "/sign-up",
+            lazy: async () => {
+              const { default: Component } = await import("@pages/SignUp");
+              return { Component };
+            },
+          },
+          {
+            path: "/cart",
+            lazy: async () => {
+              const { default: Component } = await import("@pages/Cart");
+              return { Component };
+            },
+          },
+          {
+            element: (
+              <ProtectedLearningRoute>
+                <Outlet />
+              </ProtectedLearningRoute>
+            ),
+            children: [
+              {
+                path: "/learning/:courseSlug",
+                lazy: async () => {
+                  const { default: Component } = await import(
+                    "@/pages/Learning"
+                  );
+                  return { Component };
+                },
+              },
+            ],
+          },
+
+          {
+            path: "/profile",
+            lazy: async () => {
+              const { default: Component } = await import("@pages/Profile");
+              return { Component };
+            },
+          },
+          {
+            path: "/change-password",
+            lazy: async () => {
+              const { default: Component } = await import(
+                "@pages/profile/ChangePassword"
+              );
+              return { Component };
+            },
+          },
+          {
+            path: "/my-learning",
+            lazy: async () => {
+              const { default: Component } = await import(
+                "@/pages/my-learning/MyLearning"
+              );
+              return { Component };
+            },
+          },
+        ],
       },
       {
-        path: "/sign-up",
-        lazy: async () => {
-          const { default: Component } = await import("@pages/SignUp");
-          return { Component };
-        },
-      },
-      {
-        path: "/cart",
-        lazy: async () => {
-          const { default: Component } = await import("@pages/Cart");
-          return { Component };
-        },
-      },
-      {
-        path: "/courses/:courseId",
-        lazy: async () => {
-          const { default: Component, loader } = await import(
-            "@/pages/course-details"
-          );
-          return { Component, loader };
-        },
-      },
-      {
-        path: "/learning/:courseSlug",
-        lazy: async () => {
-          const { default: Component } = await import("@/pages/Learning");
-          return { Component };
-        },
+        element: (
+          <ProtectedRoute>
+            <ProtectedInstructorRoute>
+              <Outlet />
+            </ProtectedInstructorRoute>
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: "/instructor",
+            lazy: async () => {
+              const { default: Component } = await import(
+                "@/pages/instructor/Instructor"
+              );
+              return { Component };
+            },
+          },
+        ],
       },
       {
         path: "/forgot-password",
@@ -66,37 +132,12 @@ const router = createBrowserRouter([
         },
       },
       {
-        path: "/profile",
+        path: "/courses/:courseId",
         lazy: async () => {
-          const { default: Component } = await import("@pages/Profile");
-          return { Component };
-        },
-      },
-      {
-        path: "/change-password",
-        lazy: async () => {
-          const { default: Component } = await import(
-            "@pages/profile/ChangePassword"
+          const { default: Component, loader } = await import(
+            "@/pages/course-details"
           );
-          return { Component };
-        },
-      },
-      {
-        path: "/my-learning",
-        lazy: async () => {
-          const { default: Component } = await import(
-            "@/pages/my-learning/MyLearning"
-          );
-          return { Component };
-        },
-      },
-      {
-        path: "/instructor",
-        lazy: async () => {
-          const { default: Component } = await import(
-            "@/pages/instructor/Instructor"
-          );
-          return { Component };
+          return { Component, loader };
         },
       },
       {
@@ -135,7 +176,19 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <DashboardLayout />,
+    element: (
+      <ProtectedRoute>
+        <ProtectedAdminRoute>
+          <DashboardLayout />
+        </ProtectedAdminRoute>
+      </ProtectedRoute>
+    ),
+    loader: rootLoader,
+    errorElement: (
+      <RootLayout>
+        <ErrorPage />
+      </RootLayout>
+    ),
     children: [
       {
         index: true,
@@ -174,6 +227,14 @@ const router = createBrowserRouter([
         },
       },
     ],
+  },
+  {
+    path: "*",
+    element: (
+      <RootLayout>
+        <ErrorPage />
+      </RootLayout>
+    ),
   },
 ]);
 

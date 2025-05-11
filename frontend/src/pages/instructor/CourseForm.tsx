@@ -55,7 +55,6 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
   });
 
   const categories = res?.data ? flattenCategories(res.data) : [];
-  console.log(categories);
 
   const [courseFormData, setCourseFormData] = React.useState<CourseFormData>(
     () => {

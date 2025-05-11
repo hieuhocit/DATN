@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // Components
 import Image from "../../components/common/Image";
 import {
@@ -7,69 +6,27 @@ import {
 } from "../../components/typography";
 
 // Icons
-import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
-import MonitorIcon from "@mui/icons-material/Monitor";
-import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 // MUI
 import { Box, Button, Rating, Stack, Tooltip, Typography } from "@mui/material";
 
 // Types
 import { Course } from "@/types";
-import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
-import { addCourseToCart, cartSelector } from "@/features/cart";
-import {
-  enrollmentsSelector,
-  isLoggedInSelector,
-  userSelector,
-} from "@/features/account";
-import { Link } from "react-router-dom";
-import { addToCart } from "@/services/cartService";
-import { toast } from "react-toastify";
+import { useAppSelector } from "@/hooks/useStore";
+import { userSelector } from "@/features/account";
 type Props = {
   course: Course;
+  onDelete: (courseId: string) => void;
+  onEdit: (course: Course) => void;
 };
 
-export default function Card({ course }: Props) {
-  const enrollments = useAppSelector(enrollmentsSelector);
-
-  const isLoggedIn = useAppSelector(isLoggedInSelector);
+export default function Card({ course, onDelete, onEdit }: Props) {
   const user = useAppSelector(userSelector);
-
-  const { courses } = useAppSelector(cartSelector);
-
-  const dispatch = useAppDispatch();
-
-  const handleAddToCart = async (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isLoggedIn) {
-      const data = await addToCart(course._id);
-      if ((data as any).statusCode === 201) {
-        dispatch(addCourseToCart(course));
-        toast.success("Đã thêm vào giỏ hàng");
-      } else {
-        toast.error((data as any).message);
-        return;
-      }
-    } else {
-      dispatch(addCourseToCart(course));
-      toast.success("Đã thêm vào giỏ hàng");
-    }
-  };
-
-  const isEnrolled = enrollments?.some(
-    (enrollment) => enrollment?.courseId?.toString() === course?._id
-  );
-
-  const isInCart = courses?.some(
-    (courseInCart) => courseInCart._id === course._id
-  );
 
   return (
     <Tooltip
-      title="Xem chi tiết"
+      title=""
       sx={{ cursor: "pointer", pb: 1 }}
       followCursor
       PopperProps={{
@@ -82,6 +39,7 @@ export default function Card({ course }: Props) {
           },
         ],
       }}
+      onClick={onEdit.bind(null, course)}
     >
       <Stack direction={"column"} width={"100%"} gap={"4px"}>
         <Box
@@ -144,31 +102,28 @@ export default function Card({ course }: Props) {
               </Typography>
             )}
           </Box>
-          {user?.role !== "admin" && !isEnrolled && !isInCart && (
-            <Button onClick={handleAddToCart} variant="text" sx={{ gap: 1 }}>
-              <AddShoppingCartIcon />
-              <Typography>Giỏ hàng</Typography>
-            </Button>
-          )}
-          {isEnrolled && user?.role !== "admin" && (
-            <Link
-              to={`/learning${course.slug}`}
-              style={{ textDecoration: "none" }}
-            >
-              <Button variant="text" sx={{ gap: 1 }}>
-                <MonitorIcon />
-                <Typography>Xem khoá học</Typography>
+          <Box>
+            {["admin", "instructor"].includes(user?.role ?? "") && (
+              <Button
+                onClick={onEdit.bind(null, course)}
+                variant="text"
+                sx={{ gap: 0 }}
+              >
+                <EditIcon />
+                <Typography>Sửa</Typography>
               </Button>
-            </Link>
-          )}
-          {isInCart && user?.role !== "admin" && (
-            <Link to={`/cart`} style={{ textDecoration: "none" }}>
-              <Button variant="text" sx={{ gap: 1 }}>
-                <ShoppingCartCheckoutIcon />
-                <Typography>Đến giỏ hàng</Typography>
+            )}
+            {["admin", "instructor"].includes(user?.role ?? "") && (
+              <Button
+                onClick={onDelete.bind(null, course._id)}
+                variant="text"
+                sx={{ gap: 0, color: "red" }}
+              >
+                <DeleteIcon />
+                <Typography>Xoá</Typography>
               </Button>
-            </Link>
-          )}
+            )}
+          </Box>
         </Stack>
       </Stack>
     </Tooltip>

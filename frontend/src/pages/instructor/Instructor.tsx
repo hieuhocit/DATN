@@ -18,8 +18,6 @@ export default function Teacher() {
     setValue(newValue);
   };
 
-  console.log("coursesByInstructor", coursesByInstructor);
-
   return (
     <Section sx={{ mt: "128px", mb: "64px" }}>
       <Box>

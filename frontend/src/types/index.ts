@@ -24,7 +24,7 @@ export type Course = {
   instructorId: string;
   categoryId: string;
   level: "beginner" | "intermediate" | "expert" | "all";
-  duration: number;
+  duration: number | null;
   requirements: string;
   whatYouWillLearn: string;
   isPublished: boolean;
@@ -151,6 +151,7 @@ export interface Lesson {
   courseId: string;
   orderIndex: number;
   videoUrl: string;
+  publicId: string;
   duration: number;
   isFree: false;
   createdAt: string;

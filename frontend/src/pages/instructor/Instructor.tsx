@@ -12,7 +12,8 @@ import { useCoursesByInstructor } from "@/hooks/useCouses";
 
 export default function Teacher() {
   const [value, setValue] = React.useState(0);
-  const { coursesByInstructor } = useCoursesByInstructor();
+  const { coursesByInstructor, refetch: fetchCoursesByInstructor } =
+    useCoursesByInstructor();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -77,10 +78,13 @@ export default function Teacher() {
         </Box>
 
         <CustomTabPanel value={value} index={0}>
-          <CourseListTab courses={coursesByInstructor} />
+          <CourseListTab
+            courses={coursesByInstructor}
+            fetchCourses={fetchCoursesByInstructor}
+          />
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
-          <CreateCourseTab />
+          <CreateCourseTab fetchCourses={fetchCoursesByInstructor} />
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
           <EarningsStats courses={coursesByInstructor} />

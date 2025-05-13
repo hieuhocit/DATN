@@ -8,6 +8,59 @@ export interface CourseDetails {
   notes: Note[];
 }
 
+export interface ICreateCourseData {
+  title: string;
+  description: string;
+  price: number;
+  thumbnail: string;
+  instructorId: string;
+  categoryId: string;
+  level: Course["level"];
+  requirements: string;
+  whatYouWillLearn: string;
+}
+
+export interface IUpdateCourseData extends ICreateCourseData {
+  isPublished?: boolean;
+}
+
+export interface ICreateCourseResponse {
+  statusCode: number;
+  statusText: string;
+  message: string;
+  data: Course;
+}
+
+export const deleteCourse = async (courseId: string) => {
+  try {
+    const response = await axios.delete(`courses/${courseId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting course:", error);
+  }
+};
+
+export const createCourse = async (data: ICreateCourseData) => {
+  try {
+    const response = await axios.post("courses", data);
+    return response.data as ICreateCourseResponse;
+  } catch (error) {
+    console.error("Error creating course:", error);
+  }
+};
+
+export const updateCourse = async (
+  courseId: string,
+  data: IUpdateCourseData
+) => {
+  try {
+    const response = await axios.put(`courses/${courseId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating course:", error);
+  }
+};
+
 export const get20PopularCourses = async () => {
   try {
     const response = await axios.get("courses/popular");
@@ -27,6 +80,7 @@ export const get20NewestCourses = async () => {
 };
 
 export const getCourseById = async (courseId: string) => {
+  if (!courseId) return;
   try {
     const response = await axios.get(`courses/${courseId}`);
     return response.data;

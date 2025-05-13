@@ -26,7 +26,7 @@ const CourseSchema = new mongoose.Schema(
     },
     thumbnail: {
       type: String,
-      required: true,
+      default: null,
     },
     instructorId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -45,7 +45,7 @@ const CourseSchema = new mongoose.Schema(
     },
     duration: {
       type: Number,
-      required: true,
+      default: null,
     },
     requirements: {
       type: String,

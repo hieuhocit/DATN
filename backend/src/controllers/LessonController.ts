@@ -1,14 +1,14 @@
 // Types
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from "express";
 
 // Services
-import LessonService from '../services/LessonService.js';
+import LessonService from "../services/LessonService.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // Server response
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 const LessonController = {
   getAllLessons: async (req: Request, res: Response, next: NextFunction) => {
@@ -19,7 +19,7 @@ const LessonController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Lấy danh sách bài học thành công',
+            message: "Lấy danh sách bài học thành công",
           },
           lessons
         )
@@ -38,7 +38,7 @@ const LessonController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Lấy bài học thành công',
+            message: "Lấy bài học thành công",
           },
           lesson
         )
@@ -56,6 +56,7 @@ const LessonController = {
         duration,
         orderIndex,
         videoUrl,
+        publicId,
         isFree,
       } = req.body;
 
@@ -67,13 +68,14 @@ const LessonController = {
         orderIndex,
         videoUrl,
         isFree,
+        publicId,
       });
 
       res.status(messages.CREATED.statusCode).json(
         serverResponse.createSuccess(
           {
             ...messages.CREATED,
-            message: 'Bài học đã được tạo thành công',
+            message: "Bài học đã được tạo thành công",
           },
           lesson
         )
@@ -92,7 +94,7 @@ const LessonController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Bài học đã được xoá thành công',
+            message: "Bài học đã được xoá thành công",
           },
           null
         )
@@ -112,6 +114,7 @@ const LessonController = {
         videoUrl,
         duration,
         isFree,
+        publicId,
       } = req.body;
 
       const course = await LessonService.updateLessonById(id, {
@@ -122,13 +125,14 @@ const LessonController = {
         orderIndex,
         videoUrl,
         isFree,
+        publicId,
       });
 
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: 'Bài học đã được cập nhật thành công',
+            message: "Bài học đã được cập nhật thành công",
           },
           course
         )

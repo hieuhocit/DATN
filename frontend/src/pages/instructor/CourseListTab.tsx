@@ -2,14 +2,20 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { Course } from "@/types";
-import CourseForm from "./CourseForm";
+import CourseEditForm from "./CourseEditForm";
 import CourseCard from "./CourseCard";
+import { deleteCourse } from "@/services/courseService";
+import { toast } from "react-toastify";
 
 interface CourseListTabProps {
   courses: Course[];
+  fetchCourses: () => void;
 }
 
-export default function CourseListTab({ courses }: CourseListTabProps) {
+export default function CourseListTab({
+  courses,
+  fetchCourses,
+}: CourseListTabProps) {
   const [selectedCourse, setSelectedCourse] = React.useState<Course | null>(
     null
   );
@@ -22,15 +28,25 @@ export default function CourseListTab({ courses }: CourseListTabProps) {
     setSelectedCourse(null);
   };
 
-  const handleDeleteCourse = (courseId: string) => {
-    console.log("Delete course with ID:", courseId);
+  const handleDeleteCourse = async (courseId: string) => {
+    const res = await deleteCourse(courseId);
+    if (res.statusCode !== 200) {
+      toast.error(res.message);
+      return;
+    }
+    toast.success(res.message);
+    fetchCourses();
   };
 
   return (
     <Box sx={{ mt: 4 }}>
       {selectedCourse ? (
         <Box>
-          <CourseForm courseToEdit={selectedCourse} onBack={handleBackToList} />
+          <CourseEditForm
+            fetchCourses={fetchCourses}
+            courseId={selectedCourse._id}
+            onBack={handleBackToList}
+          />
         </Box>
       ) : (
         <Box>

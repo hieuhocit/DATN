@@ -15,7 +15,13 @@ import LessonProgress from "../models/LessonProgress.js";
 // Types
 type LessonCreateInput = Pick<
   LessonType,
-  "title" | "description" | "courseId" | "duration" | "orderIndex" | "videoUrl"
+  | "title"
+  | "description"
+  | "courseId"
+  | "duration"
+  | "orderIndex"
+  | "videoUrl"
+  | "publicId"
 > & {
   isFree?: boolean;
 };
@@ -127,6 +133,7 @@ const LessonService = {
     lesson.orderIndex = data.orderIndex;
     lesson.videoUrl = data.videoUrl;
     lesson.duration = data.duration;
+    lesson.publicId = data.publicId;
 
     if (data.isFree) lesson.isFree = data.isFree;
 

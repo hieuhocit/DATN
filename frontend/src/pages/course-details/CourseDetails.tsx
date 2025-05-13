@@ -25,7 +25,7 @@ import CategoryIcon from "@mui/icons-material/Category";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import MonitorIcon from "@mui/icons-material/Monitor";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
-
+import EditIcon from "@mui/icons-material/Edit";
 // React Router
 import { useLoaderData, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
@@ -39,6 +39,7 @@ import { addToCart } from "@/services/cartService";
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { createReview } from "@/services/reviewService";
+import { LEVEL_VN } from "../../utils/constants";
 
 export default function CourseDetails() {
   const { course, reviews, lessons } = useLoaderData();
@@ -80,6 +81,10 @@ export default function CourseDetails() {
 
   const handleGoToCart = () => {
     navigate("/cart");
+  };
+
+  const handleGoToInstructorPage = () => {
+    navigate(`/instructor`);
   };
 
   // Add this function to handle review submission
@@ -167,16 +172,22 @@ export default function CourseDetails() {
                 <Typography variant="h4" fontWeight={600}>
                   {title}
                 </Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Rating
-                    value={course.averageRating}
-                    precision={0.5}
-                    readOnly
-                  />
+                {course.reviewCount && course.reviewCount > 0 ? (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Rating
+                      value={course.averageRating}
+                      precision={0.5}
+                      readOnly
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      ({course.reviewCount} đánh giá)
+                    </Typography>
+                  </Stack>
+                ) : (
                   <Typography variant="body2" color="text.secondary">
-                    ({course.reviewCount} đánh giá)
+                    Chưa có đánh giá
                   </Typography>
-                </Stack>
+                )}
               </Stack>
 
               <Stack spacing={1}>
@@ -195,12 +206,7 @@ export default function CourseDetails() {
                 <Stack direction="row" spacing={1} alignItems="center">
                   <SchoolIcon fontSize="small" />
                   <Typography variant="body1">
-                    Cấp độ:{" "}
-                    {level === "beginner"
-                      ? "Người mới bắt đầu"
-                      : level === "intermediate"
-                      ? "Trung cấp"
-                      : "Nâng cao"}
+                    Cấp độ: {LEVEL_VN[level as keyof typeof LEVEL_VN] || ""}
                   </Typography>
                 </Stack>
                 <Stack direction="row" spacing={1} alignItems="center">
@@ -235,21 +241,24 @@ export default function CourseDetails() {
                   )
                 )}
               </Stack>
-              {user?.role !== "admin" && !isEnrolled && !isInCart && (
-                <Button
-                  onClick={handleAddToCart}
-                  variant="contained"
-                  startIcon={<ShoppingCartIcon />}
-                  sx={{
-                    width: { xs: "100%", sm: "auto" },
-                    minWidth: { xs: "100%", sm: 200 },
-                    mt: { xs: 2, sm: 0 },
-                  }}
-                >
-                  Thêm vào giỏ hàng
-                </Button>
-              )}
-              {user?.role !== "admin" && isEnrolled && (
+              {user?.role !== "admin" &&
+                !isEnrolled &&
+                !isInCart &&
+                !isAuthor && (
+                  <Button
+                    onClick={handleAddToCart}
+                    variant="contained"
+                    startIcon={<ShoppingCartIcon />}
+                    sx={{
+                      width: { xs: "100%", sm: "auto" },
+                      minWidth: { xs: "100%", sm: 200 },
+                      mt: { xs: 2, sm: 0 },
+                    }}
+                  >
+                    Thêm vào giỏ hàng
+                  </Button>
+                )}
+              {!isAuthor && user?.role !== "admin" && isEnrolled && (
                 <Button
                   onClick={handleViewCourse}
                   variant="contained"
@@ -275,6 +284,20 @@ export default function CourseDetails() {
                   }}
                 >
                   Đến giỏ hàng
+                </Button>
+              )}
+              {user?.role !== "admin" && isAuthor && (
+                <Button
+                  onClick={handleGoToInstructorPage}
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    minWidth: { xs: "100%", sm: 200 },
+                    mt: { xs: 2, sm: 0 },
+                  }}
+                >
+                  Chỉnh sửa khoá học
                 </Button>
               )}
             </Stack>
@@ -363,7 +386,7 @@ export default function CourseDetails() {
                         <Stack direction="row" spacing={1} alignItems="center">
                           <AccessTimeIcon fontSize="small" />
                           <Typography variant="body2">
-                            {lesson.duration} phút
+                            {getMinutesFromSeconds(lesson.duration)}
                           </Typography>
                         </Stack>
                         <Typography variant="body2" color="text.secondary">
@@ -485,4 +508,12 @@ export default function CourseDetails() {
       </Section>
     </>
   );
+}
+
+function getMinutesFromSeconds(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const secondsRemainder = Math.floor(seconds % 60);
+  return `${minutes < 10 ? "0" : ""}${minutes}:${
+    secondsRemainder < 10 ? "0" : ""
+  }${secondsRemainder}`;
 }

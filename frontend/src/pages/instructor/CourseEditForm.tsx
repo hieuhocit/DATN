@@ -15,16 +15,29 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Category, Course } from "@/types";
+import { Category, Course, Lesson } from "@/types";
 import { LEVELS } from "@/utils/constants";
-import { toast } from "react-toastify";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/services/categoryService";
+import { toast } from "react-toastify";
+import {
+  handleUploadThumbnailFile,
+  handleUploadVideoFile,
+} from "@/utils/course";
+import { ICreateCourseData, updateCourse } from "@/services/courseService";
+import { useAppSelector } from "@/hooks/useStore";
+import { userSelector } from "@/features/account";
+import {
+  createLesson,
+  deleteLesson,
+  ICreateLessonData,
+  updateLesson,
+} from "@/services/lessonService";
+import { useCourseById } from "@/hooks/useCouses";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CourseFormSkeleton from "@/components/skeletons/CourseFormSkeleton";
 
-interface Lesson {
-  title: string;
-  description: string;
+interface LessonData extends Partial<Lesson> {
   videoFile?: File;
 }
 
@@ -32,65 +45,75 @@ interface CourseFormData {
   title: string;
   description: string;
   price: number;
-  discountPrice: number;
   thumbnailFile?: File;
   categoryId: string;
   level: string;
-  duration: number;
   requirements: string;
   whatYouWillLearn: string;
-  lessons: Lesson[];
+  lessons: LessonData[];
 }
 
-interface CourseFormProps {
-  courseToEdit?: Course;
-  onBack?: () => void;
+interface CourseCreateFormProps {
+  courseId: string;
+  onBack: () => void;
+  fetchCourses: () => void;
 }
 
-export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
+export default function CourseEditForm({
+  courseId,
+  onBack,
+  fetchCourses,
+}: CourseCreateFormProps) {
+  const user = useAppSelector(userSelector);
   const theme = useTheme();
   const { data: res } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
 
+  const {
+    course,
+    lessons,
+    isLoading,
+    refetch: fetchCourseById,
+  } = useCourseById(courseId);
+
   const categories = res?.data ? flattenCategories(res.data) : [];
 
-  const [courseFormData, setCourseFormData] = React.useState<CourseFormData>(
-    () => {
-      if (courseToEdit) {
-        return {
-          title: courseToEdit.title,
-          description: courseToEdit.description,
-          price: courseToEdit.price || 0,
-          discountPrice: courseToEdit.discountPrice || 0,
-          categoryId: courseToEdit.categoryId,
-          level:
-            courseToEdit.level === "beginner"
-              ? "Sơ cấp"
-              : courseToEdit.level === "intermediate"
-              ? "Trung cấp"
-              : "Cao cấp",
-          duration: courseToEdit.duration || 0,
-          requirements: courseToEdit.requirements || "",
-          whatYouWillLearn: courseToEdit.whatYouWillLearn || "",
-          lessons: [{ title: "", description: "" }], // Cần điều chỉnh nếu có dữ liệu bài học
-        };
-      }
-      return {
+  const [deletedLessonIds, setDeletedLessonIds] = React.useState<string[]>([]);
+
+  const [isCreating, setIsCreating] = React.useState(false);
+
+  const [courseFormData, setCourseFormData] = React.useState<CourseFormData>({
+    title: "",
+    description: "",
+    price: 0,
+    categoryId: categories[0]._id,
+    level: LEVELS[0].value,
+    requirements: "",
+    whatYouWillLearn: "",
+    lessons: [
+      {
         title: "",
         description: "",
-        price: 0,
-        discountPrice: 0,
-        categoryId: categories[0]._id,
-        level: LEVELS[0].value,
-        duration: 0,
-        requirements: "",
-        whatYouWillLearn: "",
-        lessons: [{ title: "", description: "" }],
-      };
+      },
+    ],
+  });
+
+  React.useEffect(() => {
+    if (course && lessons) {
+      setCourseFormData({
+        title: course.title,
+        description: course.description,
+        price: course.price,
+        categoryId: course.categoryId,
+        level: course.level,
+        requirements: course.requirements,
+        whatYouWillLearn: course.whatYouWillLearn,
+        lessons: lessons,
+      });
     }
-  );
+  }, [course, lessons]);
 
   React.useEffect(() => {
     return () => {
@@ -151,32 +174,117 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
   };
 
   const removeLesson = (index: number) => {
+    const lesson = courseFormData.lessons[index];
+    const lessonId = lesson._id;
+    if (lessonId && !deletedLessonIds.includes(lessonId)) {
+      setDeletedLessonIds((prev) => [...prev, lessonId]);
+    }
+
     setCourseFormData((prev) => {
       const newLessons = prev.lessons.filter((_, i) => i !== index);
       return { ...prev, lessons: newLessons };
     });
   };
 
-  const handleCourseSubmit = (e: React.FormEvent) => {
+  const handleCourseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Dữ liệu khóa học:", courseFormData);
+    setIsCreating(true);
+    try {
+      const updatedCourseData: ICreateCourseData = {
+        title: courseFormData.title,
+        description: courseFormData.description,
+        price: courseFormData.price,
+        thumbnail: course?.thumbnail as string,
+        instructorId: user?._id as string,
+        categoryId: courseFormData.categoryId,
+        level: courseFormData.level as Course["level"],
+        requirements: courseFormData.requirements,
+        whatYouWillLearn: courseFormData.whatYouWillLearn,
+      };
 
-    toast.success(
-      courseToEdit ? "Khóa học đã được cập nhật!" : "Khóa học đã được tạo!",
-      {
-        position: "top-right",
-        autoClose: 3000,
-        pauseOnHover: true,
+      if (courseFormData.thumbnailFile) {
+        const data = await handleUploadThumbnailFile(
+          courseFormData.thumbnailFile as File
+        );
+
+        if (!data) {
+          toast.error("Tải hình ảnh khoá học thất bại");
+          return;
+        }
+        updatedCourseData.thumbnail = data.secure_url;
       }
-    );
 
-    if (onBack) onBack();
+      const isCourseInfoValid =
+        handleValidationCourseInformation(updatedCourseData);
+
+      if (!isCourseInfoValid) return;
+
+      const res = await updateCourse(course?._id as string, updatedCourseData);
+
+      if (res?.statusCode !== 200) {
+        toast.error(res?.message || "Cập nhật khóa học thất bại");
+        return;
+      }
+
+      const isLessonInfoValid = handleValidationLessonInformation(
+        courseFormData.lessons
+      );
+
+      if (!isLessonInfoValid) return;
+
+      let orderIndex = 1;
+      for await (const lesson of courseFormData.lessons) {
+        const updatedLessonData: ICreateLessonData = {
+          title: lesson.title as string,
+          description: lesson.description as string,
+          courseId: res.data._id,
+          duration: lesson.duration as number,
+          orderIndex: orderIndex++,
+          videoUrl: lesson.videoUrl as string,
+          publicId: lesson.publicId as string,
+        };
+
+        if (lesson.videoFile && lesson.videoFile instanceof File) {
+          const data = await handleUploadVideoFile(lesson.videoFile as File);
+
+          if (!data) {
+            toast.error("Tải video bài giảng thất bại");
+            return;
+          }
+
+          updatedLessonData.videoUrl = data.secure_url;
+          updatedLessonData.publicId = data.public_id;
+          updatedLessonData.duration = data.duration;
+        }
+
+        if (lesson._id) {
+          await updateLesson(lesson._id, updatedLessonData);
+        } else {
+          await createLesson(updatedLessonData);
+        }
+      }
+
+      for await (const lessonId of deletedLessonIds) {
+        await deleteLesson(lessonId);
+      }
+
+      await fetchCourseById();
+      await fetchCourses();
+      toast.success("Cập nhật khóa học thành công");
+    } catch (error) {
+      console.error("Error creating course:", error);
+      toast.error("Có lỗi xảy ra trong quá trình cập nhật khóa học");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const getBgColor = () =>
     theme.palette.mode === "dark" ? "#1a1a1a" : "#ffffff";
   const getInputBg = () =>
     theme.palette.mode === "dark" ? "#2a2a2a" : "#f5f7fa";
+
+  if (isLoading) return <CourseFormSkeleton />;
 
   return (
     <Box
@@ -192,16 +300,14 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
         transition: "box-shadow 0.3s ease",
       }}
     >
-      {onBack && (
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={onBack}
-          sx={{ mb: 3, textTransform: "none", fontWeight: 500 }}
-          aria-label="Quay lại danh sách khóa học"
-        >
-          Quay lại
-        </Button>
-      )}
+      <Button
+        startIcon={<ArrowBackIcon />}
+        onClick={onBack}
+        sx={{ mb: 3, textTransform: "none", fontWeight: 500 }}
+        aria-label="Quay lại danh sách khóa học"
+      >
+        Quay lại
+      </Button>
       <form onSubmit={handleCourseSubmit}>
         <Typography
           variant="h5"
@@ -212,7 +318,7 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
             textAlign: "center",
           }}
         >
-          {courseToEdit ? "Chỉnh sửa Khóa Học" : "Tạo Khóa Học Mới"}
+          Cập Nhật Khoá Học
         </Typography>
 
         <Typography
@@ -255,7 +361,7 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+              gridTemplateColumns: { xs: "1fr" },
               gap: 2,
             }}
           >
@@ -265,21 +371,6 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
               name="price"
               type="number"
               value={courseFormData.price}
-              onChange={handleCourseFormChange}
-              required
-              variant="outlined"
-              sx={{
-                bgcolor: getInputBg(),
-                borderRadius: "8px",
-                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Giá khuyến mãi (VND)"
-              name="discountPrice"
-              type="number"
-              value={courseFormData.discountPrice}
               onChange={handleCourseFormChange}
               required
               variant="outlined"
@@ -305,6 +396,7 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
             <Button
               variant="outlined"
               component="span"
+              disabled={isCreating}
               sx={{
                 borderRadius: "8px",
                 textTransform: "none",
@@ -317,26 +409,23 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
               Tải lên hình ảnh khóa học
             </Button>
           </label>
-          {(courseFormData.thumbnailFile ||
-            (courseToEdit && courseToEdit.thumbnail)) && (
-            <Box sx={{ mt: 2, textAlign: "center" }}>
-              <img
-                src={
-                  courseFormData.thumbnailFile
-                    ? URL.createObjectURL(courseFormData.thumbnailFile)
-                    : courseToEdit?.thumbnail
-                }
-                alt="Thumbnail Preview"
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: 200,
-                  borderRadius: "8px",
-                  border: `1px solid ${theme.palette.divider}`,
-                  objectFit: "cover",
-                }}
-              />
-            </Box>
-          )}
+          <Box sx={{ mt: 2, textAlign: "center" }}>
+            <img
+              src={
+                courseFormData.thumbnailFile
+                  ? URL.createObjectURL(courseFormData.thumbnailFile)
+                  : course?.thumbnail
+              }
+              alt="Thumbnail Preview"
+              style={{
+                maxWidth: "100%",
+                maxHeight: 200,
+                borderRadius: "8px",
+                border: `1px solid ${theme.palette.divider}`,
+                objectFit: "cover",
+              }}
+            />
+          </Box>
         </Box>
 
         <Box
@@ -390,21 +479,6 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
         </Box>
 
         <Box sx={{ display: "grid", gap: 2, mb: 3 }}>
-          <TextField
-            fullWidth
-            label="Thời lượng (phút)"
-            name="duration"
-            type="number"
-            value={courseFormData.duration}
-            onChange={handleCourseFormChange}
-            required
-            variant="outlined"
-            sx={{
-              bgcolor: getInputBg(),
-              borderRadius: "8px",
-              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-            }}
-          />
           <TextField
             fullWidth
             label="Yêu cầu đầu vào"
@@ -506,6 +580,7 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
                 <Button
                   variant="outlined"
                   component="span"
+                  disabled={isCreating}
                   sx={{
                     borderRadius: "8px",
                     textTransform: "none",
@@ -518,11 +593,15 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
                   Tải lên video
                 </Button>
               </label>
-              {lesson.videoFile && (
+              {(lesson.videoFile || lesson.videoUrl) && (
                 <Box sx={{ mt: 2, textAlign: "center" }}>
                   <video
                     controls
-                    src={URL.createObjectURL(lesson.videoFile)}
+                    src={
+                      lesson.videoFile
+                        ? URL.createObjectURL(lesson.videoFile)
+                        : lesson.videoUrl
+                    }
                     style={{
                       maxWidth: "100%",
                       maxHeight: 200,
@@ -555,6 +634,7 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
           variant="outlined"
           startIcon={<AddIcon />}
           onClick={addLesson}
+          disabled={isCreating}
           sx={{
             mt: 2,
             borderRadius: "8px",
@@ -570,7 +650,9 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
         </Button>
 
         <Button
-          type="submit"
+          loading={isCreating}
+          disabled={isCreating}
+          type={isCreating ? "button" : "submit"}
           variant="contained"
           color="primary"
           sx={{
@@ -583,9 +665,10 @@ export default function CourseForm({ courseToEdit, onBack }: CourseFormProps) {
             "&:hover": { bgcolor: theme.palette.primary.dark },
           }}
           fullWidth
-          aria-label={courseToEdit ? "Cập nhật khóa học" : "Tạo khóa học"}
+          aria-label="Tạo khóa học"
+          loadingPosition="end"
         >
-          {courseToEdit ? "Cập nhật Khóa Học" : "Tạo Khóa Học"}
+          Cập nhật khoá học
         </Button>
       </form>
     </Box>
@@ -602,4 +685,80 @@ export function flattenCategories(categories: Category[]): Category[] {
 
     return acc;
   }, []);
+}
+
+export function handleValidationLessonInformation(lessons: LessonData[]) {
+  for (let i = 0; i < lessons.length; i++) {
+    const lesson = lessons[i];
+
+    if (!lesson.title || lesson.title.trim() === "") {
+      toast.error(`Vui lòng nhập tiêu đề cho bài học ${i + 1}`);
+      return false;
+    }
+
+    if (!lesson.description || lesson.description.trim() === "") {
+      toast.error(`Vui lòng nhập mô tả cho bài học ${i + 1}`);
+      return false;
+    }
+
+    if (lesson.videoFile || lesson.videoUrl) {
+      continue;
+    } else {
+      toast.error(`Vui lòng tải lên video cho bài học ${i + 1}`);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function handleValidationCourseInformation(data: ICreateCourseData) {
+  if (!data.title || data.title.trim() === "") {
+    toast.error("Vui lòng nhập tiêu đề khóa học");
+    return false;
+  }
+
+  if (!data.description || data.description.trim() === "") {
+    toast.error("Vui lòng nhập mô tả khóa học");
+    return false;
+  }
+
+  if (!data.price || data.price <= 0) {
+    toast.error("Vui lòng nhập giá khóa học");
+    return false;
+  }
+
+  if (!data.thumbnail || data.thumbnail.trim() === "") {
+    toast.error("Vui lòng tải lên hình ảnh khóa học");
+    return false;
+  }
+
+  if (!data.categoryId || data.categoryId.trim() === "") {
+    toast.error("Vui lòng chọn danh mục khóa học");
+    return false;
+  }
+
+  if (!data.level || data.level.trim() === "") {
+    toast.error("Vui lòng chọn cấp độ khóa học");
+    return false;
+  }
+
+  if (
+    ["beginner", "intermediate", "expert", "all"].indexOf(data.level) === -1
+  ) {
+    toast.error("Cấp độ khóa học không hợp lệ");
+    return false;
+  }
+
+  if (!data.requirements || data.requirements.trim() === "") {
+    toast.error("Vui lòng nhập yêu cầu đầu vào");
+    return false;
+  }
+
+  if (!data.whatYouWillLearn || data.whatYouWillLearn.trim() === "") {
+    toast.error("Vui lòng nhập nội dung khóa học");
+    return false;
+  }
+
+  return true;
 }

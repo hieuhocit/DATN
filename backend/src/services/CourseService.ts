@@ -17,6 +17,7 @@ import messages from "../configs/messagesConfig.js";
 import CategoryService from "./CategoryService.js";
 import NotificationService from "./NotificationService.js";
 import { sendNotification } from "../socket/socket-io.js";
+import Lesson from "../models/Lesson.js";
 
 // Types
 type CourseCreateInput = Pick<
@@ -28,7 +29,6 @@ type CourseCreateInput = Pick<
   | "instructorId"
   | "categoryId"
   | "level"
-  | "duration"
   | "requirements"
   | "whatYouWillLearn"
 > & {
@@ -328,6 +328,9 @@ const CourseService = {
   deleteCourseById: async function (id: string) {
     try {
       await Course.findByIdAndDelete(id);
+      await Lesson.deleteMany({
+        courseId: id,
+      });
       return true;
     } catch (error) {
       throw serverResponse.createError({
@@ -338,7 +341,10 @@ const CourseService = {
   },
   updateCourseById: async function (
     id: string,
-    data: CourseCreateInput & { isPublished?: boolean; userName: string }
+    data: CourseCreateInput & {
+      isPublished?: boolean;
+      userName: string;
+    }
   ) {
     const course = await Course.findById(id);
 
@@ -378,7 +384,6 @@ const CourseService = {
     course.instructorId = data.instructorId;
     course.categoryId = data.categoryId;
     course.level = data.level;
-    course.duration = data.duration;
     course.requirements = data.requirements;
     course.whatYouWillLearn = data.whatYouWillLearn;
     course.slug = slug;

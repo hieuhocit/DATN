@@ -7,6 +7,8 @@ import { OneLineTypography, TwoLineTypography } from "../typography";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import MonitorIcon from "@mui/icons-material/Monitor";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
+import EditIcon from "@mui/icons-material/Edit";
+
 // MUI
 import { Box, Button, Rating, Stack, Tooltip, Typography } from "@mui/material";
 
@@ -64,6 +66,8 @@ export default function Card({ course }: Props) {
     (courseInCart) => courseInCart._id === course._id
   );
 
+  const isAuthor = user?._id === course?.instructorId;
+
   return (
     <Tooltip
       title="Xem chi tiết"
@@ -108,17 +112,28 @@ export default function Card({ course }: Props) {
         >
           {course.instructor?.[0]?.name}
         </OneLineTypography>
-        <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
-          <Typography sx={{ color: "#ff7b00", fontWeight: 600 }}>
-            {course?.averageRating}
-          </Typography>
-          <Rating
-            name="rating"
-            value={course?.averageRating}
-            precision={0.5}
-            size="small"
-            readOnly
-          />
+        <Stack direction={"row"} alignItems={"center"} gap={"8px"}>
+          {course?.reviewCount && course?.reviewCount > 0 ? (
+            <>
+              <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
+                <Typography sx={{ color: "#ff7b00", fontWeight: 600 }}>
+                  {course?.averageRating}
+                </Typography>
+                <Rating
+                  name="rating"
+                  value={course?.averageRating}
+                  precision={0.5}
+                  size="small"
+                  readOnly
+                />
+              </Stack>
+              <Typography fontSize={"0.85rem"} sx={{ opacity: 0.8 }}>
+                ({course?.reviewCount} đánh giá)
+              </Typography>
+            </>
+          ) : (
+            <Box height={"24px"}></Box>
+          )}
         </Stack>
         <Stack
           direction={"row"}
@@ -129,7 +144,7 @@ export default function Card({ course }: Props) {
             <Typography sx={{ fontSize: "1rem" }} fontWeight={600}>
               ₫{course.price}
             </Typography>
-            {course.discountPrice && (
+            {/* {course.discountPrice && (
               <Typography
                 sx={{
                   fontSize: "0.75rem",
@@ -139,15 +154,15 @@ export default function Card({ course }: Props) {
               >
                 ₫{course.discountPrice}
               </Typography>
-            )}
+            )} */}
           </Box>
-          {user?.role !== "admin" && !isEnrolled && !isInCart && (
+          {user?.role !== "admin" && !isEnrolled && !isInCart && !isAuthor && (
             <Button onClick={handleAddToCart} variant="text" sx={{ gap: 1 }}>
               <AddShoppingCartIcon />
               <Typography>Giỏ hàng</Typography>
             </Button>
           )}
-          {isEnrolled && user?.role !== "admin" && (
+          {isEnrolled && user?.role !== "admin" && !isAuthor && (
             <Link
               to={`/learning${course.slug}`}
               style={{ textDecoration: "none" }}
@@ -158,11 +173,19 @@ export default function Card({ course }: Props) {
               </Button>
             </Link>
           )}
-          {isInCart && user?.role !== "admin" && (
+          {!isAuthor && isInCart && user?.role !== "admin" && (
             <Link to={`/cart`} style={{ textDecoration: "none" }}>
               <Button variant="text" sx={{ gap: 1 }}>
                 <ShoppingCartCheckoutIcon />
                 <Typography>Đến giỏ hàng</Typography>
+              </Button>
+            </Link>
+          )}
+          {isAuthor && user?.role !== "admin" && (
+            <Link to={`/instructor`} style={{ textDecoration: "none" }}>
+              <Button variant="text" sx={{ gap: 1 }}>
+                <EditIcon />
+                <Typography>Sửa khoá học</Typography>
               </Button>
             </Link>
           )}

@@ -1,10 +1,16 @@
 import Box from "@mui/material/Box";
-import CourseForm from "./CourseForm";
+import CourseCreateForm from "./CourseCreateForm";
 
-export default function CreateCourseTab() {
+interface CreateCourseTabProps {
+  fetchCourses: () => void;
+}
+
+export default function CreateCourseTab({
+  fetchCourses,
+}: CreateCourseTabProps) {
   return (
     <Box sx={{ maxWidth: 800, mx: "auto", mt: 4, mb: 6 }}>
-      <CourseForm courseToEdit={undefined} onBack={undefined} />
+      <CourseCreateForm fetchCourses={fetchCourses} />
     </Box>
   );
 }

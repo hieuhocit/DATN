@@ -23,7 +23,6 @@ import { getEnrollments } from "@/services/enrollmentService";
 import { setEnrollments } from "@/features/account/accountSlice";
 import { getCart } from "@/services/cartService";
 import { replaceCart } from "@/features/cart";
-import ChatWidget from "@/components/chatbot/ChatWidget";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 
 export default function RootLayout({
@@ -90,7 +89,6 @@ export default function RootLayout({
             theme={isDarkMode ? "dark" : "light"}
             transition={Bounce}
           />
-          <ChatWidget />
         </ThemeProvider>
       </NotificationProvider>
     </>

@@ -8,6 +8,7 @@ import LessonNavigation from "../components/learning/LessonNavigation";
 import Notes from "@components/learning/Notes";
 import { useLearning } from "@/hooks/useLearning";
 import { useRef } from "react";
+import ChatWidget from "@/components/chatbot/ChatWidget";
 
 export default function LearningPage() {
   const playerRef = useRef<HTMLVideoElement | null>(null);
@@ -130,6 +131,7 @@ export default function LearningPage() {
           />
         )}
       </Box>
+      <ChatWidget />
     </Section>
   );
 }

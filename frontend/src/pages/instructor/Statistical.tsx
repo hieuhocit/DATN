@@ -19,17 +19,17 @@ import {
 /** utils */
 import { formatNumber } from "@/utils/formatNumber";
 import { useState } from "react";
-import { statsConfig } from "@/utils/enum/stats.enum";
-import { useStats } from "@/hooks/useStats";
-import { StatField } from "@/services/statisticsService";
+import { statsInstructorConfig } from "@/utils/enum/stats.enum";
+import { useStats } from "@/hooks/useIntructorStats";
+import { InstructorStatField } from "@/services/statisticsService";
 
 export default function Statistical() {
   const theme = useTheme();
   const { data: res } = useStats();
 
-  const [selectedStat, setSelectedStat] = useState<StatField>("user");
+  const [selectedStat, setSelectedStat] = useState<InstructorStatField>("user");
 
-  const handleStatClick = (field: StatField) => {
+  const handleStatClick = (field: InstructorStatField) => {
     setSelectedStat(field);
   };
 
@@ -40,12 +40,12 @@ export default function Statistical() {
   return (
     <Box p={2}>
       <Grid container spacing={2}>
-        {statsConfig.map((stat) => {
+        {statsInstructorConfig.map((stat) => {
           const { total, percent } = data[stat.field];
           const isPositive = percent >= 0;
 
           return (
-            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={stat.title}>
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={stat.title}>
               <Paper
                 elevation={3}
                 sx={{
@@ -110,8 +110,9 @@ export default function Statistical() {
             <Paper elevation={3} sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 {
-                  statsConfig.find((stat) => stat.field === selectedStat)
-                    ?.chartTitle
+                  statsInstructorConfig.find(
+                    (stat) => stat.field === selectedStat
+                  )?.chartTitle
                 }
               </Typography>
               <ResponsiveContainer width="100%" height={400}>
@@ -124,7 +125,7 @@ export default function Statistical() {
                       <stop
                         offset="5%"
                         stopColor={
-                          statsConfig.find(
+                          statsInstructorConfig.find(
                             (stat) => stat.field === selectedStat
                           )?.color
                         }
@@ -133,7 +134,7 @@ export default function Statistical() {
                       <stop
                         offset="95%"
                         stopColor={
-                          statsConfig.find(
+                          statsInstructorConfig.find(
                             (stat) => stat.field === selectedStat
                           )?.color
                         }
@@ -156,8 +157,9 @@ export default function Statistical() {
                     type="monotone"
                     dataKey="value"
                     stroke={
-                      statsConfig.find((stat) => stat.field === selectedStat)
-                        ?.color
+                      statsInstructorConfig.find(
+                        (stat) => stat.field === selectedStat
+                      )?.color
                     }
                     fillOpacity={1}
                     fill="url(#colorValue)"

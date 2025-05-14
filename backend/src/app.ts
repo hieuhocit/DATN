@@ -33,6 +33,7 @@ import NotificationRoutes from "./routes/NotificationRoutes.js";
 import AIRoutes from "./routes/AIRoutes.js";
 import EnrollmentRoutes from "./routes/EnrollmentRoutes.js";
 import PaymentRoutes from "./routes/PaymentRoutes.js";
+import StatisticsRoutes from "./routes/StatisticsRoutes.js";
 import { initSocket } from "./socket/socket-io.js";
 
 // Configuring dotenv
@@ -74,6 +75,7 @@ app.use("/api", NotificationRoutes);
 app.use("/api", AIRoutes);
 app.use("/api", EnrollmentRoutes);
 app.use("/api", PaymentRoutes);
+app.use("/api", StatisticsRoutes);
 
 // Not found handler
 app.use(notFoundError);

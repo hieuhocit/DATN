@@ -7,8 +7,8 @@ import Typography from "@mui/material/Typography";
 import CustomTabPanel from "./CustomTabPanel";
 import CourseListTab from "./CourseListTab";
 import CreateCourseTab from "./CreateCourseTab";
-import EarningsStats from "./EarningsStats";
 import { useCoursesByInstructor } from "@/hooks/useCouses";
+import Statistical from "./Statistical";
 
 export default function Teacher() {
   const [value, setValue] = React.useState(0);
@@ -87,7 +87,7 @@ export default function Teacher() {
           <CreateCourseTab fetchCourses={fetchCoursesByInstructor} />
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
-          <EarningsStats courses={coursesByInstructor} />
+          <Statistical />
         </CustomTabPanel>
       </Box>
     </Section>

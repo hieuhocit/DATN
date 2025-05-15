@@ -25,7 +25,7 @@ const NotificationService = {
         .populate({
           path: "user",
         })
-        .sort({ rating: -1 });
+        .sort({ createdAt: -1 });
       return notifications;
     } catch (error) {
       throw serverResponse.createError({
@@ -93,6 +93,34 @@ const NotificationService = {
 
     Object.assign(existedNotification, data);
     const notification = await existedNotification.save();
+    return notification;
+  },
+  maskNotificationAsRead: async function (id: string) {
+    const notification = await Notification.findById(id);
+
+    if (!notification) {
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: "Không tìm thấy thông báo",
+      });
+    }
+
+    notification.isRead = true;
+
+    const updatedNotification = await notification.save();
+
+    return updatedNotification;
+  },
+  deleteNotificationById: async function (id: string) {
+    const notification = await Notification.findByIdAndDelete(id);
+
+    if (!notification) {
+      throw serverResponse.createError({
+        ...messages.NOT_FOUND,
+        message: "Không tìm thấy thông báo",
+      });
+    }
+
     return notification;
   },
 };

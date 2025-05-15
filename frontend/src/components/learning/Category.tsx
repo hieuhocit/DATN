@@ -132,9 +132,7 @@ export default function Category({
               >
                 <ListItemText
                   primary={`${idx + 1}. ${lesson.title}`}
-                  secondary={`${Math.floor(lesson.duration / 60)}:${String(
-                    lesson.duration % 60
-                  ).padStart(2, "0")}`}
+                  secondary={getMinutesFromSeconds(lesson.duration)}
                 />
                 {lesson.progress[0]?.isCompleted && (
                   <CheckCircleIcon color="success" sx={{ mt: 1 }} />
@@ -147,4 +145,12 @@ export default function Category({
       </List>
     </Box>
   );
+}
+
+function getMinutesFromSeconds(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const secondsRemainder = Math.floor(seconds % 60);
+  return `${minutes < 10 ? "0" : ""}${minutes}:${
+    secondsRemainder < 10 ? "0" : ""
+  }${secondsRemainder}`;
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { isLoggedInSelector, userSelector } from "@/features/account";
 import { useAppSelector } from "@/hooks/useStore";
 import { Notification } from "@/types";
@@ -8,6 +7,10 @@ import io, { Socket } from "socket.io-client";
 export interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
+  onMarkAsRead: (notificationId: string) => void;
+  onDeleteNotification: (notificationId: string) => void;
+  onMarkAllAsRead: (notificationIds: string[]) => void;
+  onDeleteAllNotifications: (notificationIds: string[]) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
@@ -24,29 +27,28 @@ export const NotificationProvider = ({
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn || !user) return;
 
-    // Kết nối đến server
+    // Connect to the socket server
     const newSocket = io("http://localhost:3000", {
       withCredentials: true,
     });
 
-    newSocket.emit("register", user?.email);
+    newSocket.emit("register", user.email);
 
-    // Nhận thông báo ban đầu
+    // Reveive notifications when the user connects
     newSocket.on("notifications", (initialNotifications: Notification[]) => {
       setNotifications(initialNotifications);
-      setUnreadCount(initialNotifications.length);
+      setUnreadCount(
+        initialNotifications.filter((notification) => !notification.isRead)
+          .length
+      );
     });
 
-    // // Nhận thông báo mới
+    // Receive new notifications
     newSocket.on("new_notification", (notification: Notification) => {
       setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
-    });
-
-    newSocket.on("refresh_token", () => {
-      console.log("Refresh token event received");
     });
 
     setSocket(newSocket);
@@ -56,12 +58,82 @@ export const NotificationProvider = ({
     };
   }, [isLoggedIn]);
 
+  const handleMarkAsRead = (notificationId: string) => {
+    const notification = notifications.find(
+      (notification) => notification._id === notificationId
+    );
+
+    if (!notification || notification.isRead || !socket) return;
+
+    socket.emit("mask_notification_as_read", [notificationId]);
+
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification._id === notificationId
+          ? { ...notification, isRead: true }
+          : notification
+      )
+    );
+
+    setUnreadCount((prev) => prev - 1);
+  };
+
+  const handleDeleteNotification = (notificationId: string) => {
+    const notification = notifications.find(
+      (notification) => notification._id === notificationId
+    );
+
+    if (!notification || !socket) return;
+    socket.emit("delete_notification", [notificationId]);
+    setNotifications((prev) =>
+      prev.filter((notification) => notification._id !== notificationId)
+    );
+
+    if (!notification.isRead) setUnreadCount((prev) => prev - 1);
+  };
+
+  const handleMarkAllAsRead = (notificationIds: string[]) => {
+    if (!socket) return;
+    socket.emit("mask_notification_as_read", notificationIds);
+    setUnreadCount(0);
+    setNotifications((prev) =>
+      prev.map((notification) => {
+        if (notificationIds.includes(notification._id))
+          return {
+            ...notification,
+            isRead: true,
+          };
+        return notification;
+      })
+    );
+  };
+
+  const handleDeleteAllNotifications = (notificationIds: string[]) => {
+    if (!socket) return;
+
+    const notReadNotifications = notifications.filter(
+      (notification) =>
+        notificationIds.includes(notification._id) && !notification.isRead
+    );
+
+    socket.emit("delete_notification", notificationIds);
+    setNotifications((prev) =>
+      prev.filter((notification) => !notificationIds.includes(notification._id))
+    );
+
+    setUnreadCount((prev) => prev - notReadNotifications.length);
+  };
+
   return (
     <>
       <NotificationContext.Provider
         value={{
           notifications,
           unreadCount,
+          onMarkAsRead: handleMarkAsRead,
+          onDeleteNotification: handleDeleteNotification,
+          onMarkAllAsRead: handleMarkAllAsRead,
+          onDeleteAllNotifications: handleDeleteAllNotifications,
         }}
       >
         {children}

@@ -18,6 +18,11 @@ import CategoryService from "./CategoryService.js";
 import NotificationService from "./NotificationService.js";
 import { sendNotification } from "../socket/socket-io.js";
 import Lesson from "../models/Lesson.js";
+import {
+  sendNOtificationToAdmin,
+  sendNotificationToInstructor,
+  sendNotificationToStudents,
+} from "../utils/helpers/notification.js";
 
 // Types
 type CourseCreateInput = Pick<
@@ -302,7 +307,11 @@ const CourseService = {
       });
     }
   },
-  createCourse: async function (data: CourseCreateInput) {
+  createCourse: async function (
+    data: CourseCreateInput & {
+      userName: string;
+    }
+  ) {
     const existedCourse = await Course.findOne({
       title: data.title,
     });
@@ -322,6 +331,13 @@ const CourseService = {
       });
 
     const course = await Course.create({ ...data, slug });
+
+    if (course) {
+      sendNOtificationToAdmin({
+        title: `Khoá học ${course.title} đã được tạo`,
+        message: `Được tạo bởi ${data.userName}`,
+      });
+    }
 
     return course;
   },
@@ -387,7 +403,23 @@ const CourseService = {
     course.requirements = data.requirements;
     course.whatYouWillLearn = data.whatYouWillLearn;
     course.slug = slug;
-    if (data.isPublished !== undefined) course.isPublished = data.isPublished;
+
+    if (course.isPublished === false && data.isPublished === true) {
+      course.isPublished = data.isPublished;
+      sendNotificationToInstructor({
+        title: `Khoá học ${course.title} đã được xuất bản`,
+        message: `Xuất bản bởi ${data.userName}`,
+        instructorId: course.instructorId.toString(),
+        referenceUrl: `/courses/${course._id}`,
+      });
+
+      sendNotificationToStudents({
+        title: `Khoá học ${course.title} đã được xuất bản`,
+        message: `Được tạo bởi giảng viên mà bạn đã đăng ký, Xem ngay!`,
+        instructorId: course.instructorId.toString(),
+        referenceUrl: `/courses/${course._id}`,
+      });
+    }
 
     await course.save();
 

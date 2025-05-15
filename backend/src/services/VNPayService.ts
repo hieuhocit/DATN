@@ -26,6 +26,7 @@ import CourseService from "./CourseService.js";
 import { CartType } from "../models/Cart.js";
 import LessonService from "./LessonService.js";
 import LessonProgressService from "./LessonProgressService.js";
+import { sendNotificationToInstructor } from "../utils/helpers/notification.js";
 
 type PaymentUrlType = {
   userId: CartType["userId"];
@@ -184,6 +185,13 @@ const VNPayService = {
           course._id.toString(),
           userId
         );
+
+        sendNotificationToInstructor({
+          title: "Có học viên mới đăng ký khoá học",
+          message: `Có học viên mới đăng ký khoá học ${course.title}`,
+          instructorId: course.instructorId.toString(),
+          referenceUrl: `/instructor`,
+        });
       }
 
       return true;

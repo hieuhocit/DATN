@@ -286,6 +286,8 @@ export default function CourseEditForm({
 
   if (isLoading) return <CourseFormSkeleton />;
 
+  const isPublished = course?.isPublished;
+
   return (
     <Box
       sx={{
@@ -329,6 +331,7 @@ export default function CourseEditForm({
         </Typography>
         <Box sx={{ display: "grid", gap: 2, mb: 3 }}>
           <TextField
+            disabled={isPublished}
             fullWidth
             label="Tiêu đề khóa học"
             name="title"
@@ -343,6 +346,7 @@ export default function CourseEditForm({
             }}
           />
           <TextField
+            disabled={isPublished}
             fullWidth
             label="Mô tả khóa học"
             name="description"
@@ -366,6 +370,7 @@ export default function CourseEditForm({
             }}
           >
             <TextField
+              disabled={isPublished}
               fullWidth
               label="Giá (VND)"
               name="price"
@@ -384,31 +389,35 @@ export default function CourseEditForm({
         </Box>
 
         <Box sx={{ mb: 3 }}>
-          <input
-            accept="image/*"
-            id="thumbnail-upload"
-            type="file"
-            hidden
-            onChange={handleThumbnailUpload}
-            aria-label="Tải lên hình ảnh khóa học"
-          />
-          <label htmlFor="thumbnail-upload">
-            <Button
-              variant="outlined"
-              component="span"
-              disabled={isCreating}
-              sx={{
-                borderRadius: "8px",
-                textTransform: "none",
-                fontWeight: 500,
-                px: 3,
-                py: 1,
-                "&:hover": { bgcolor: theme.palette.action.hover },
-              }}
-            >
-              Tải lên hình ảnh khóa học
-            </Button>
-          </label>
+          {!isPublished && (
+            <>
+              <input
+                accept="image/*"
+                id="thumbnail-upload"
+                type="file"
+                hidden
+                onChange={handleThumbnailUpload}
+                aria-label="Tải lên hình ảnh khóa học"
+              />
+              <label htmlFor="thumbnail-upload">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  disabled={isCreating}
+                  sx={{
+                    borderRadius: "8px",
+                    textTransform: "none",
+                    fontWeight: 500,
+                    px: 3,
+                    py: 1,
+                    "&:hover": { bgcolor: theme.palette.action.hover },
+                  }}
+                >
+                  Tải lên hình ảnh khóa học
+                </Button>
+              </label>
+            </>
+          )}
           <Box sx={{ mt: 2, textAlign: "center" }}>
             <img
               src={
@@ -436,7 +445,7 @@ export default function CourseEditForm({
             mb: 3,
           }}
         >
-          <FormControl fullWidth required>
+          <FormControl disabled={isPublished} fullWidth required>
             <InputLabel>Danh mục</InputLabel>
             <Select
               name="categoryId"
@@ -456,7 +465,7 @@ export default function CourseEditForm({
               ))}
             </Select>
           </FormControl>
-          <FormControl fullWidth required>
+          <FormControl disabled={isPublished} fullWidth required>
             <InputLabel>Cấp độ</InputLabel>
             <Select
               name="level"
@@ -480,6 +489,7 @@ export default function CourseEditForm({
 
         <Box sx={{ display: "grid", gap: 2, mb: 3 }}>
           <TextField
+            disabled={isPublished}
             fullWidth
             label="Yêu cầu đầu vào"
             name="requirements"
@@ -496,6 +506,7 @@ export default function CourseEditForm({
             }}
           />
           <TextField
+            disabled={isPublished}
             fullWidth
             label="Bạn sẽ học được gì"
             name="whatYouWillLearn"
@@ -536,6 +547,7 @@ export default function CourseEditForm({
             }}
           >
             <TextField
+              disabled={isPublished}
               fullWidth
               label={`Tiêu đề Lesson ${index + 1}`}
               name="title"
@@ -551,6 +563,7 @@ export default function CourseEditForm({
               }}
             />
             <TextField
+              disabled={isPublished}
               fullWidth
               label={`Mô tả Lesson ${index + 1}`}
               name="description"
@@ -568,31 +581,35 @@ export default function CourseEditForm({
               }}
             />
             <Box sx={{ mt: 2 }}>
-              <input
-                accept="video/*"
-                id={`video-upload-${index}`}
-                type="file"
-                hidden
-                onChange={(e) => handleLessonVideoUpload(index, e)}
-                aria-label={`Tải lên video cho lesson ${index + 1}`}
-              />
-              <label htmlFor={`video-upload-${index}`}>
-                <Button
-                  variant="outlined"
-                  component="span"
-                  disabled={isCreating}
-                  sx={{
-                    borderRadius: "8px",
-                    textTransform: "none",
-                    fontWeight: 500,
-                    px: 3,
-                    py: 1,
-                    "&:hover": { bgcolor: theme.palette.action.hover },
-                  }}
-                >
-                  Tải lên video
-                </Button>
-              </label>
+              {!isPublished && (
+                <>
+                  <input
+                    accept="video/*"
+                    id={`video-upload-${index}`}
+                    type="file"
+                    hidden
+                    onChange={(e) => handleLessonVideoUpload(index, e)}
+                    aria-label={`Tải lên video cho lesson ${index + 1}`}
+                  />
+                  <label htmlFor={`video-upload-${index}`}>
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      disabled={isCreating}
+                      sx={{
+                        borderRadius: "8px",
+                        textTransform: "none",
+                        fontWeight: 500,
+                        px: 3,
+                        py: 1,
+                        "&:hover": { bgcolor: theme.palette.action.hover },
+                      }}
+                    >
+                      Tải lên video
+                    </Button>
+                  </label>
+                </>
+              )}
               {(lesson.videoFile || lesson.videoUrl) && (
                 <Box sx={{ mt: 2, textAlign: "center" }}>
                   <video
@@ -612,7 +629,7 @@ export default function CourseEditForm({
                 </Box>
               )}
             </Box>
-            {courseFormData.lessons.length > 1 && (
+            {!isPublished && courseFormData.lessons.length > 1 && (
               <IconButton
                 onClick={() => removeLesson(index)}
                 sx={{
@@ -630,46 +647,50 @@ export default function CourseEditForm({
           </Box>
         ))}
 
-        <Button
-          variant="outlined"
-          startIcon={<AddIcon />}
-          onClick={addLesson}
-          disabled={isCreating}
-          sx={{
-            mt: 2,
-            borderRadius: "8px",
-            textTransform: "none",
-            fontWeight: 500,
-            px: 3,
-            py: 1,
-            "&:hover": { bgcolor: theme.palette.action.hover },
-          }}
-          aria-label="Thêm bài học mới"
-        >
-          Thêm bài học
-        </Button>
+        {!isPublished && (
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={addLesson}
+            disabled={isCreating}
+            sx={{
+              mt: 2,
+              borderRadius: "8px",
+              textTransform: "none",
+              fontWeight: 500,
+              px: 3,
+              py: 1,
+              "&:hover": { bgcolor: theme.palette.action.hover },
+            }}
+            aria-label="Thêm bài học mới"
+          >
+            Thêm bài học
+          </Button>
+        )}
 
-        <Button
-          loading={isCreating}
-          disabled={isCreating}
-          type={isCreating ? "button" : "submit"}
-          variant="contained"
-          color="primary"
-          sx={{
-            mt: 4,
-            borderRadius: "8px",
-            textTransform: "none",
-            fontWeight: 600,
-            py: 1.5,
-            fontSize: "1.1rem",
-            "&:hover": { bgcolor: theme.palette.primary.dark },
-          }}
-          fullWidth
-          aria-label="Tạo khóa học"
-          loadingPosition="end"
-        >
-          Cập nhật khoá học
-        </Button>
+        {!isPublished && (
+          <Button
+            loading={isCreating}
+            disabled={isCreating}
+            type={isCreating ? "button" : "submit"}
+            variant="contained"
+            color="primary"
+            sx={{
+              mt: 4,
+              borderRadius: "8px",
+              textTransform: "none",
+              fontWeight: 600,
+              py: 1.5,
+              fontSize: "1.1rem",
+              "&:hover": { bgcolor: theme.palette.primary.dark },
+            }}
+            fullWidth
+            aria-label="Tạo khóa học"
+            loadingPosition="end"
+          >
+            Cập nhật khoá học
+          </Button>
+        )}
       </form>
     </Box>
   );

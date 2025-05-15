@@ -24,8 +24,24 @@ export function initSocket(server: http.Server) {
         await NotificationService.getAllNotificationsByUserId(
           user?._id?.toString() || ""
         );
+      console.log("User connected: ", email);
       socket.join(email);
       socket.emit("notifications", notifications);
+    });
+
+    socket.on(
+      "mask_notification_as_read",
+      async (notificationIds: string[]) => {
+        for await (const id of notificationIds) {
+          await NotificationService.maskNotificationAsRead(id);
+        }
+      }
+    );
+
+    socket.on("delete_notification", async (notificationIds: string[]) => {
+      for await (const id of notificationIds) {
+        await NotificationService.deleteNotificationById(id);
+      }
     });
   });
   return io;

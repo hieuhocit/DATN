@@ -151,6 +151,22 @@ const CourseController = {
   },
   createCourse: async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const user = (req as RequestWithUser).user;
+
+      const existedUser = await UserService.getUserByEmailWithPasswordHash(
+        user.email
+      );
+
+      if (!existedUser) {
+        res.status(messages.UNAUTHORIZED.statusCode).json(
+          serverResponse.createError({
+            ...messages.UNAUTHORIZED,
+            message: "Người dùng không tồn tại",
+          })
+        );
+        return;
+      }
+
       const {
         title,
         description,
@@ -173,6 +189,7 @@ const CourseController = {
         level,
         requirements,
         whatYouWillLearn,
+        userName: existedUser.name,
       });
 
       res.status(messages.CREATED.statusCode).json(

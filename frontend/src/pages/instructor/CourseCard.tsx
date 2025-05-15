@@ -58,7 +58,7 @@ export default function Card({ course, onDelete, onEdit }: Props) {
   return (
     <>
       <Tooltip
-        title=""
+        title={isPublished ? "Xem chi tiết" : ""}
         sx={{ cursor: "pointer", pb: 1 }}
         followCursor
         PopperProps={{
@@ -144,16 +144,17 @@ export default function Card({ course, onDelete, onEdit }: Props) {
             )} */}
             </Box>
             <Box>
-              {["admin", "instructor"].includes(user?.role ?? "") && (
-                <Button
-                  onClick={onEdit.bind(null, course)}
-                  variant="text"
-                  sx={{ gap: 0 }}
-                >
-                  <EditIcon />
-                  <Typography>Sửa</Typography>
-                </Button>
-              )}
+              {!isPublished &&
+                ["admin", "instructor"].includes(user?.role ?? "") && (
+                  <Button
+                    onClick={onEdit.bind(null, course)}
+                    variant="text"
+                    sx={{ gap: 0 }}
+                  >
+                    <EditIcon />
+                    <Typography>Sửa</Typography>
+                  </Button>
+                )}
               {!isPublished &&
                 ["admin", "instructor"].includes(user?.role ?? "") && (
                   <Button

@@ -17,30 +17,40 @@ import serverResponse from "../utils/helpers/responses.js";
 // Type
 import type { RequestWithUser } from "../middlewares/authMiddleware.js";
 
-const conversation: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-  {
-    role: "user",
-    content: "Xin chào chatbot của tôi!",
-  },
-  {
-    role: "assistant",
-    content:
-      "Xin chào! Tôi là chatbot có thể giải thích cho bạn từng bước một.",
-  },
-];
-
 const AIController = {
   chatWithAI: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = (req as RequestWithUser).user;
-      const message = req.body.message;
+      const { courseId, lessonId, message } = req.body;
 
-      conversation.push({
-        role: "user",
-        content: message,
+      const user = (req as RequestWithUser).user;
+
+      const existedUser = await UserService.getUserByEmailWithPasswordHash(
+        user.email
+      );
+
+      if (!existedUser) {
+        return serverResponse.createError({
+          ...messages.NOT_FOUND,
+          message: "Người dùng không tồn tại",
+        });
+      }
+
+      const result = await AIService.chatWithAI({
+        courseId,
+        lessonId,
+        userId: existedUser._id.toString(),
+        message,
       });
 
-      await AIService.chatWithAI(res, conversation);
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Trả lời thành công",
+          },
+          result
+        )
+      );
     } catch (error) {
       next(error);
     }

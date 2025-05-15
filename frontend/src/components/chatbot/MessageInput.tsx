@@ -5,6 +5,7 @@ import {
   InputBase,
   Paper,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 
@@ -22,39 +23,67 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading }) => {
     setText("");
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
-    <Box>
-      <Paper
-        component="form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmit();
-        }}
+    <Paper
+      component="form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit();
+      }}
+      elevation={0}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        px: 2,
+        py: 1,
+        borderRadius: 3,
+        bgcolor: "#F5F7FF",
+        border: "1px solid #E0E3FF",
+      }}
+    >
+      <InputBase
+        placeholder="Nhập câu hỏi của bạn..."
+        fullWidth
+        multiline
+        maxRows={3}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={handleKeyDown}
+        disabled={isLoading}
         sx={{
-          mt: 1,
-          display: "flex",
-          alignItems: "center",
-          px: 1,
-          py: 0.5,
+          fontSize: "0.95rem",
+          color: "#333",
         }}
-      >
-        <InputBase
-          placeholder="Nhập tin nhắn..."
-          fullWidth
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={isLoading}
-          sx={{ ml: 1, flex: 1 }}
-        />
-        <IconButton type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <CircularProgress size={20} thickness={4} />
-          ) : (
-            <SendIcon />
-          )}
-        </IconButton>
-      </Paper>
-    </Box>
+      />
+
+      <Box sx={{ display: "flex", gap: 0.5 }}>
+        <Tooltip title="Gửi tin nhắn">
+          <IconButton
+            type="submit"
+            disabled={isLoading || !text.trim()}
+            sx={{
+              color: text.trim() ? "#6366F1" : "#A0A0A0",
+              "&.Mui-disabled": {
+                color: "#CCCCCC",
+              },
+            }}
+          >
+            {isLoading ? (
+              <CircularProgress size={20} thickness={4} color="primary" />
+            ) : (
+              <SendIcon />
+            )}
+          </IconButton>
+        </Tooltip>
+      </Box>
+    </Paper>
   );
 };
 

@@ -28,7 +28,7 @@ export default function LearningPage() {
     handleClickJumpToLesson,
   } = useLearning();
 
-  if (isLoading) {
+  if (isLoading || !currentLesson) {
     return (
       <Box
         sx={{
@@ -146,7 +146,10 @@ export default function LearningPage() {
           />
         )}
       </Box>
-      <ChatWidget />
+      <ChatWidget
+        courseId={currentLesson?.courseId}
+        lessonId={currentLesson?._id}
+      />
     </Section>
   );
 }

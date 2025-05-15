@@ -1,43 +1,63 @@
-import React, { useState } from "react";
-import { Box, IconButton } from "@mui/material";
+import { useState } from "react";
+import { Box, Fade, IconButton, Badge } from "@mui/material";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import CloseIcon from "@mui/icons-material/Close";
 import ChatBox from "./ChatBox";
 
-const ChatWidget: React.FC = () => {
+interface ChatWidgetProps {
+  lessonId: string;
+  courseId: string;
+}
+
+export default function ChatWidget({ lessonId, courseId }: ChatWidgetProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <Box sx={{ position: "fixed", bottom: 16, right: 16, zIndex: 1300 }}>
-      {/* ChatBox hiển thị độc lập với vị trí của nút */}
-      {open && (
-        <Box sx={{ position: "absolute", bottom: 64, right: 0 }}>
-          <ChatBox onClose={() => setOpen(false)} />
+    <Box sx={{ position: "fixed", bottom: 24, right: 24, zIndex: 1300 }}>
+      <Fade in={open}>
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 70,
+            right: 0,
+            visibility: open ? "visible" : "hidden",
+            transition: "transform 0.3s ease",
+          }}
+        >
+          <ChatBox
+            onClose={() => setOpen(false)}
+            courseId={courseId}
+            lessonId={lessonId}
+          />
         </Box>
-      )}
-      {/* Nút IconButton cố định kích thước và vị trí */}
+      </Fade>
+
       <IconButton
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          setOpen(!open);
+        }}
         sx={{
-          bgcolor: "white",
-          boxShadow: 2,
-          p: 0,
-          width: 48,
-          height: 48,
-          "&:hover": { bgcolor: "grey.200" },
+          bgcolor: open ? "#6366F1" : "#ffffff",
+          color: open ? "#ffffff" : "#6366F1",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          p: 1.2,
+          width: 56,
+          height: 56,
+          transition: "all 0.2s ease",
+          "&:hover": {
+            bgcolor: open ? "#4F46E5" : "#F5F5F5",
+            transform: "translateY(-4px)",
+          },
         }}
       >
-        <img
-          src="https://png.pngtree.com/png-vector/20230316/ourmid/pngtree-admin-and-customer-service-job-vacancies-vector-png-image_6650726.png"
-          alt="AI"
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
-        />
+        <Badge color="error">
+          {open ? (
+            <CloseIcon fontSize="medium" />
+          ) : (
+            <ChatBubbleOutlineIcon fontSize="medium" />
+          )}
+        </Badge>
       </IconButton>
     </Box>
   );
-};
-
-export default ChatWidget;
+}

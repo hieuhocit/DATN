@@ -177,20 +177,25 @@ const CourseController = {
         level,
         requirements,
         whatYouWillLearn,
+        isPublished,
       } = req.body;
 
-      const course = await CourseService.createCourse({
-        title,
-        description,
-        price,
-        thumbnail,
-        instructorId,
-        categoryId,
-        level,
-        requirements,
-        whatYouWillLearn,
-        userName: existedUser.name,
-      });
+      const course = await CourseService.createCourse(
+        {
+          title,
+          description,
+          price,
+          thumbnail,
+          instructorId,
+          categoryId,
+          level,
+          requirements,
+          whatYouWillLearn,
+          userName: existedUser.name,
+          isPublished,
+        },
+        existedUser.role === "admin"
+      );
 
       res.status(messages.CREATED.statusCode).json(
         serverResponse.createSuccess(
@@ -256,19 +261,23 @@ const CourseController = {
         isPublished,
       } = req.body;
 
-      const course = await CourseService.updateCourseById(id, {
-        title,
-        description,
-        price,
-        thumbnail,
-        instructorId,
-        categoryId,
-        level,
-        requirements,
-        whatYouWillLearn,
-        isPublished,
-        userName: existedUser.name,
-      });
+      const course = await CourseService.updateCourseById(
+        id,
+        {
+          title,
+          description,
+          price,
+          thumbnail,
+          instructorId,
+          categoryId,
+          level,
+          requirements,
+          whatYouWillLearn,
+          isPublished,
+          userName: existedUser.name,
+        },
+        existedUser.role === "admin"
+      );
 
       res.status(messages.OK.statusCode).json(
         serverResponse.createSuccess(

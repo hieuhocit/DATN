@@ -88,7 +88,7 @@ export default function CourseEditForm({
     title: "",
     description: "",
     price: 0,
-    categoryId: categories[0]._id,
+    categoryId: categories[0]?._id,
     level: LEVELS[0].value,
     requirements: "",
     whatYouWillLearn: "",
@@ -99,6 +99,15 @@ export default function CourseEditForm({
       },
     ],
   });
+
+  React.useEffect(() => {
+    if (res?.data) {
+      setCourseFormData((prev) => ({
+        ...prev,
+        categoryId: res.data[0]._id,
+      }));
+    }
+  }, [res]);
 
   React.useEffect(() => {
     if (course && lessons) {
@@ -447,23 +456,25 @@ export default function CourseEditForm({
         >
           <FormControl disabled={isPublished} fullWidth required>
             <InputLabel>Danh mục</InputLabel>
-            <Select
-              name="categoryId"
-              value={courseFormData.categoryId}
-              onChange={handleCourseFormChange}
-              label="Danh mục"
-              sx={{
-                bgcolor: getInputBg(),
-                borderRadius: "8px",
-                "& .MuiOutlinedInput-notchedOutline": { borderRadius: "8px" },
-              }}
-            >
-              {categories.map((category) => (
-                <MenuItem key={category._id} value={category._id}>
-                  {category.name}
-                </MenuItem>
-              ))}
-            </Select>
+            {courseFormData.categoryId && (
+              <Select
+                name="categoryId"
+                value={courseFormData.categoryId}
+                onChange={handleCourseFormChange}
+                label="Danh mục"
+                sx={{
+                  bgcolor: getInputBg(),
+                  borderRadius: "8px",
+                  "& .MuiOutlinedInput-notchedOutline": { borderRadius: "8px" },
+                }}
+              >
+                {categories.map((category) => (
+                  <MenuItem key={category._id} value={category._id}>
+                    {category.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
           </FormControl>
           <FormControl disabled={isPublished} fullWidth required>
             <InputLabel>Cấp độ</InputLabel>

@@ -12,6 +12,9 @@ import {
   Typography,
   Divider,
   useTheme,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -46,6 +49,7 @@ interface CourseFormData {
   requirements: string;
   whatYouWillLearn: string;
   lessons: LessonData[];
+  isPublished: boolean;
 }
 
 interface CourseCreateFormProps {
@@ -70,7 +74,7 @@ export default function CourseCreateForm({
     title: "",
     description: "",
     price: 0,
-    categoryId: categories[0]._id,
+    categoryId: categories[0]?._id,
     level: LEVELS[0].value,
     requirements: "",
     whatYouWillLearn: "",
@@ -80,7 +84,17 @@ export default function CourseCreateForm({
         description: "",
       },
     ],
+    isPublished: false,
   });
+
+  React.useEffect(() => {
+    if (res?.data) {
+      setCourseFormData((prev) => ({
+        ...prev,
+        categoryId: res.data[0]._id,
+      }));
+    }
+  }, [res]);
 
   React.useEffect(() => {
     return () => {
@@ -173,6 +187,7 @@ export default function CourseCreateForm({
         level: courseFormData.level as Course["level"],
         requirements: courseFormData.requirements,
         whatYouWillLearn: courseFormData.whatYouWillLearn,
+        isPublished: courseFormData.isPublished,
       });
 
       if (res?.statusCode !== 201) {
@@ -225,6 +240,7 @@ export default function CourseCreateForm({
           description: "",
         },
       ],
+      isPublished: false,
     });
   };
 
@@ -240,7 +256,6 @@ export default function CourseCreateForm({
         borderRadius: "16px",
         boxShadow: theme.shadows[6],
         p: { xs: 3, sm: 5 },
-        maxWidth: 900,
         mx: "auto",
         mt: 4,
         "&:hover": { boxShadow: theme.shadows[8] },
@@ -587,6 +602,20 @@ export default function CourseCreateForm({
         >
           Thêm bài học
         </Button>
+
+        <FormGroup sx={{ mt: 6 }}>
+          <FormControlLabel
+            checked={courseFormData.isPublished}
+            onChange={(e: any) =>
+              setCourseFormData((prev) => ({
+                ...prev,
+                isPublished: e.target.checked,
+              }))
+            }
+            control={<Checkbox />}
+            label="Xuất bản khoá học"
+          />
+        </FormGroup>
 
         <Button
           loading={isCreating}

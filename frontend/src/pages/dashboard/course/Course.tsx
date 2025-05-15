@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/CourseTable.tsx
 import {
   Box,
@@ -9,13 +8,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
   DialogActions,
   DialogContentText,
   Tabs,
@@ -28,6 +20,8 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { toast } from "react-toastify";
 import { LEVEL_VN } from "@/utils/constants";
+import CourseCreateForm from "./CourseCreateForm";
+import CourseEditForm from "./CourseEditForm";
 
 export default function CourseTable() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -40,21 +34,6 @@ export default function CourseTable() {
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
-
-  const [newCourse, setNewCourse] = useState({
-    title: "",
-    description: "",
-    price: 0,
-    discountPrice: 0,
-    thumbnail: "",
-    instructorId: "",
-    categoryId: "",
-    level: "beginner",
-    duration: 0,
-    requirements: "",
-    whatYouWillLearn: "",
-    isPublished: true,
-  });
 
   const fetchCourses = async () => {
     try {
@@ -73,51 +52,6 @@ export default function CourseTable() {
   useEffect(() => {
     fetchCourses();
   }, []);
-
-  const handleSaveCourse = async () => {
-    const method = editingCourseId ? "PUT" : "POST";
-    const url = editingCourseId
-      ? `http://localhost:3000/api/courses/${editingCourseId}`
-      : "http://localhost:3000/api/courses";
-
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(newCourse),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`${method} lỗi: ${errorText}`);
-      }
-
-      toast.success(
-        `${editingCourseId ? "Cập nhật" : "Thêm"} khóa học thành công!`
-      );
-      setAddCourseOpen(false);
-      setEditingCourseId(null);
-      setNewCourse({
-        title: "",
-        description: "",
-        price: 0,
-        discountPrice: 0,
-        thumbnail: "",
-        instructorId: "",
-        categoryId: "",
-        level: "beginner",
-        duration: 0,
-        requirements: "",
-        whatYouWillLearn: "",
-        isPublished: true,
-      });
-      fetchCourses();
-    } catch (error) {
-      console.error("Lỗi khi lưu khóa học:", error);
-      alert("Đã xảy ra lỗi. Vui lòng thử lại.");
-    }
-  };
 
   const handleDeleteCourse = async () => {
     if (!courseToDelete) return;
@@ -149,25 +83,6 @@ export default function CourseTable() {
   const openDeleteDialog = (courseId: string) => {
     setCourseToDelete(courseId);
     setDeleteDialogOpen(true);
-  };
-
-  const openEditCourseDialog = (rowData: any) => {
-    setNewCourse({
-      title: rowData.title || "",
-      description: rowData.description || "",
-      price: rowData.price || 0,
-      discountPrice: rowData.discountPrice || 0,
-      thumbnail: rowData.thumbnail || "",
-      instructorId: rowData.instructorId || rowData.instructor?._id || "",
-      categoryId: rowData.categoryId || "",
-      level: rowData.level || "beginner",
-      duration: rowData.duration || 0,
-      requirements: rowData.requirements || "",
-      whatYouWillLearn: rowData.whatYouWillLearn || "",
-      isPublished: rowData.isPublished ?? true,
-    });
-    setEditingCourseId(rowData._id);
-    setAddCourseOpen(true);
   };
 
   const columns: GridColDef[] = [
@@ -207,44 +122,38 @@ export default function CourseTable() {
       renderCell: (params) =>
         params?.value ? `${getHours(params?.value as number)}` : "Chưa có",
     },
-    { field: "enrollment", headerName: "Học viên", width: 100 },
     {
-      field: "rating",
-      headerName: "Đánh giá",
-      width: 100,
-      valueFormatter: ({ value }) =>
-        value !== undefined && value !== null
-          ? (value as number).toFixed(1)
-          : "Chưa có",
-    },
-    {
-      field: "status",
+      field: "isPublished",
       headerName: "Trạng thái",
       width: 100,
-      valueFormatter: ({ value }) => (value === true ? "Đang mở" : "Đã đóng"), // Kiểm tra giá trị đúng kiểu boolean
+      renderCell: (params) =>
+        params?.value === true ? "Đã xuất bản" : "Chưa xuất bản",
     },
     {
       field: "actions",
       headerName: "Hành động",
-      width: 160,
+      width: 180,
       renderCell: (params) => (
         <>
           <Button
             variant="outlined"
             size="small"
-            onClick={() => openEditCourseDialog(params.row)}
+            onClick={() => setEditingCourseId(params.row._id)}
           >
             Sửa
           </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            color="error"
-            startIcon={<DeleteIcon />}
-            onClick={() => openDeleteDialog(params.row._id)}
-          >
-            Xóa
-          </Button>
+          {!params.row.isPublished && (
+            <Button
+              variant="outlined"
+              size="small"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={() => openDeleteDialog(params.row._id)}
+              sx={{ ml: 1 }}
+            >
+              Xóa
+            </Button>
+          )}
         </>
       ),
     },
@@ -252,7 +161,7 @@ export default function CourseTable() {
 
   const rows = courses.map((course) => ({
     ...course, // sao chép tất cả các thuộc tính của course vào đây
-    id: course._id, // dùng _id làm id luôn
+    id: course._id,
     courseId: course._id,
     thumbnail: course.thumbnail,
     title: course.title,
@@ -260,10 +169,9 @@ export default function CourseTable() {
     price: course.price || 0,
     level: course.level,
     duration: course.duration,
-    enrollment: course.enrollmentCount || 0,
-    rating: course.averageRating || 0,
-    status: course.isPublished ? "Đang mở" : "Đã đóng",
   }));
+
+  console.log(rows);
 
   // Tab quản lý khóa học
   const [tabValue, setTabValue] = useState(0);
@@ -292,21 +200,6 @@ export default function CourseTable() {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => {
-              setEditingCourseId(null);
-              setNewCourse({
-                title: "",
-                description: "",
-                price: 0,
-                discountPrice: 0,
-                thumbnail: "",
-                instructorId: "",
-                categoryId: "",
-                level: "beginner",
-                duration: 0,
-                requirements: "",
-                whatYouWillLearn: "",
-                isPublished: true,
-              });
               setAddCourseOpen(true);
             }}
           >
@@ -329,131 +222,26 @@ export default function CourseTable() {
         />
       </Paper>
 
-      {/* Dialog thêm/sửa khóa học */}
+      {/* Dialog thêm khóa học */}
       <Dialog
         open={addCourseOpen}
         onClose={() => setAddCourseOpen(false)}
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>
-          {editingCourseId ? "Chỉnh sửa khóa học" : "Thêm khóa học mới"}
-        </DialogTitle>
-        <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2} mt={1}>
-            <TextField
-              label="Tên khóa học"
-              value={newCourse.title}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, title: e.target.value })
-              }
-              fullWidth
-            />
-            <TextField
-              label="Mô tả"
-              multiline
-              minRows={3}
-              value={newCourse.description}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, description: e.target.value })
-              }
-              fullWidth
-            />
-            <TextField
-              label="Giá gốc (VNĐ)"
-              type="number"
-              value={newCourse.price}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, price: Number(e.target.value) })
-              }
-              fullWidth
-            />
-            <TextField
-              label="Giá khuyến mãi (VNĐ)"
-              type="number"
-              value={newCourse.discountPrice}
-              onChange={(e) =>
-                setNewCourse({
-                  ...newCourse,
-                  discountPrice: Number(e.target.value),
-                })
-              }
-              fullWidth
-            />
-            <TextField
-              label="URL Ảnh đại diện"
-              value={newCourse.thumbnail}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, thumbnail: e.target.value })
-              }
-              fullWidth
-            />
-            <FormControl fullWidth>
-              <InputLabel>Trình độ</InputLabel>
-              <Select
-                value={newCourse.level}
-                label="Trình độ"
-                onChange={(e) =>
-                  setNewCourse({ ...newCourse, level: e.target.value })
-                }
-              >
-                <MenuItem value="beginner">Cơ bản</MenuItem>
-                <MenuItem value="intermediate">Trung cấp</MenuItem>
-                <MenuItem value="advanced">Nâng cao</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              label="Thời lượng (phút)"
-              type="number"
-              value={newCourse.duration}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, duration: Number(e.target.value) })
-              }
-              fullWidth
-            />
-            <TextField
-              label="Yêu cầu trước khi học"
-              multiline
-              minRows={2}
-              value={newCourse.requirements}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, requirements: e.target.value })
-              }
-              fullWidth
-            />
-            <TextField
-              label="Bạn sẽ học được gì"
-              multiline
-              minRows={3}
-              value={newCourse.whatYouWillLearn}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, whatYouWillLearn: e.target.value })
-              }
-              fullWidth
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={newCourse.isPublished}
-                  onChange={(e) =>
-                    setNewCourse({
-                      ...newCourse,
-                      isPublished: e.target.checked,
-                    })
-                  }
-                />
-              }
-              label="Công khai khóa học"
-            />
-          </Box>
-        </DialogContent>
+        <CourseCreateForm fetchCourses={() => {}} />
+      </Dialog>
 
-        <DialogActions>
-          <Button onClick={() => setAddCourseOpen(false)}>Hủy</Button>
-          <Button variant="contained" onClick={handleSaveCourse}>
-            {editingCourseId ? "Cập nhật" : "Thêm"}
-          </Button>
-        </DialogActions>
+      <Dialog
+        open={!!editingCourseId}
+        onClose={() => setEditingCourseId(null)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <CourseEditForm
+          courseId={editingCourseId ?? ""}
+          fetchCourses={() => {}}
+        />
       </Dialog>
 
       {/* Dialog xác nhận xóa khóa học */}
@@ -487,6 +275,6 @@ export default function CourseTable() {
 
 export function getHours(duration: number) {
   const hours = Math.floor(duration / 60);
-  const minutes = duration % 60;
+  const minutes = Math.floor(duration % 60);
   return `${hours} giờ ${minutes} phút`;
 }

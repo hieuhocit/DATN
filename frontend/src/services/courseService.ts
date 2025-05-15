@@ -18,6 +18,7 @@ export interface ICreateCourseData {
   level: Course["level"];
   requirements: string;
   whatYouWillLearn: string;
+  isPublished?: boolean;
 }
 
 export interface IUpdateCourseData extends ICreateCourseData {

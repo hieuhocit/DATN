@@ -12,6 +12,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import ProtectedAdminRoute from "@/components/ProtectedAdminRoute";
 import ProtectedInstructorRoute from "@/components/ProtectedInstructorRoute";
 import ProtectedLearningRoute from "@/components/ProtectedLearningRoute";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const router = createBrowserRouter([
   {
@@ -177,11 +178,13 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: (
-      <ProtectedRoute>
-        <ProtectedAdminRoute>
-          <DashboardLayout />
-        </ProtectedAdminRoute>
-      </ProtectedRoute>
+      <NotificationProvider>
+        <ProtectedRoute>
+          <ProtectedAdminRoute>
+            <DashboardLayout />
+          </ProtectedAdminRoute>
+        </ProtectedRoute>
+      </NotificationProvider>
     ),
     loader: rootLoader,
     errorElement: (

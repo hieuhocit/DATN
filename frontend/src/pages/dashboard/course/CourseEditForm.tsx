@@ -12,10 +12,13 @@ import {
   Typography,
   Divider,
   useTheme,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { Category, Course } from "@/types";
+import { Category, Course, Lesson } from "@/types";
 import { LEVELS } from "@/utils/constants";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/services/categoryService";
@@ -24,15 +27,19 @@ import {
   handleUploadThumbnailFile,
   handleUploadVideoFile,
 } from "@/utils/course";
-import { createCourse } from "@/services/courseService";
+import { ICreateCourseData, updateCourse } from "@/services/courseService";
 import { useAppSelector } from "@/hooks/useStore";
 import { userSelector } from "@/features/account";
-import { createLesson } from "@/services/lessonService";
+import {
+  createLesson,
+  deleteLesson,
+  ICreateLessonData,
+  updateLesson,
+} from "@/services/lessonService";
+import { useCourseById } from "@/hooks/useCouses";
+import CourseFormSkeleton from "@/components/skeletons/CourseFormSkeleton";
 
-interface LessonData {
-  title: string;
-  description: string;
-  videoUrl?: string;
+interface LessonData extends Partial<Lesson> {
   videoFile?: File;
 }
 
@@ -46,13 +53,16 @@ interface CourseFormData {
   requirements: string;
   whatYouWillLearn: string;
   lessons: LessonData[];
+  isPublished: boolean;
 }
 
 interface CourseCreateFormProps {
+  courseId: string;
   fetchCourses: () => void;
 }
 
-export default function CourseCreateForm({
+export default function CourseEditForm({
+  courseId,
   fetchCourses,
 }: CourseCreateFormProps) {
   const user = useAppSelector(userSelector);
@@ -62,7 +72,16 @@ export default function CourseCreateForm({
     queryFn: getCategories,
   });
 
+  const {
+    course,
+    lessons,
+    isLoading,
+    refetch: fetchCourseById,
+  } = useCourseById(courseId);
+
   const categories = res?.data ? flattenCategories(res.data) : [];
+
+  const [deletedLessonIds, setDeletedLessonIds] = React.useState<string[]>([]);
 
   const [isCreating, setIsCreating] = React.useState(false);
 
@@ -70,7 +89,7 @@ export default function CourseCreateForm({
     title: "",
     description: "",
     price: 0,
-    categoryId: categories[0]._id,
+    categoryId: categories[0]?._id,
     level: LEVELS[0].value,
     requirements: "",
     whatYouWillLearn: "",
@@ -80,7 +99,33 @@ export default function CourseCreateForm({
         description: "",
       },
     ],
+    isPublished: false,
   });
+
+  React.useEffect(() => {
+    if (res?.data) {
+      setCourseFormData((prev) => ({
+        ...prev,
+        categoryId: res.data[0]._id,
+      }));
+    }
+  }, [res]);
+
+  React.useEffect(() => {
+    if (course && lessons) {
+      setCourseFormData({
+        title: course.title,
+        description: course.description,
+        price: course.price,
+        categoryId: course.categoryId,
+        level: course.level,
+        requirements: course.requirements,
+        whatYouWillLearn: course.whatYouWillLearn,
+        lessons: lessons,
+        isPublished: course.isPublished,
+      });
+    }
+  }, [course, lessons]);
 
   React.useEffect(() => {
     return () => {
@@ -141,6 +186,12 @@ export default function CourseCreateForm({
   };
 
   const removeLesson = (index: number) => {
+    const lesson = courseFormData.lessons[index];
+    const lessonId = lesson._id;
+    if (lessonId && !deletedLessonIds.includes(lessonId)) {
+      setDeletedLessonIds((prev) => [...prev, lessonId]);
+    }
+
     setCourseFormData((prev) => {
       const newLessons = prev.lessons.filter((_, i) => i !== index);
       return { ...prev, lessons: newLessons };
@@ -151,87 +202,102 @@ export default function CourseCreateForm({
     e.preventDefault();
     setIsCreating(true);
     try {
-      const isValid = handleValidationCourseInformation(courseFormData);
-      if (!isValid) return;
-
-      const data = await handleUploadThumbnailFile(
-        courseFormData.thumbnailFile as File
-      );
-
-      if (!data) {
-        toast.error("Tải hình ảnh khoá học thất bại");
-        return;
-      }
-
-      const res = await createCourse({
+      const updatedCourseData: ICreateCourseData = {
         title: courseFormData.title,
         description: courseFormData.description,
         price: courseFormData.price,
-        thumbnail: data.secure_url,
+        thumbnail: course?.thumbnail as string,
         instructorId: user?._id as string,
         categoryId: courseFormData.categoryId,
         level: courseFormData.level as Course["level"],
         requirements: courseFormData.requirements,
         whatYouWillLearn: courseFormData.whatYouWillLearn,
-      });
+        isPublished: courseFormData.isPublished,
+      };
 
-      if (res?.statusCode !== 201) {
-        toast.error(res?.message || "Tạo khóa học thất bại");
+      if (courseFormData.thumbnailFile) {
+        const data = await handleUploadThumbnailFile(
+          courseFormData.thumbnailFile as File
+        );
+
+        if (!data) {
+          toast.error("Tải hình ảnh khoá học thất bại");
+          return;
+        }
+        updatedCourseData.thumbnail = data.secure_url;
+      }
+
+      const isCourseInfoValid =
+        handleValidationCourseInformation(updatedCourseData);
+
+      if (!isCourseInfoValid) return;
+
+      const res = await updateCourse(course?._id as string, updatedCourseData);
+
+      if (res?.statusCode !== 200) {
+        toast.error(res?.message || "Cập nhật khóa học thất bại");
         return;
       }
 
+      const isLessonInfoValid = handleValidationLessonInformation(
+        courseFormData.lessons
+      );
+
+      if (!isLessonInfoValid) return;
+
       let orderIndex = 1;
       for await (const lesson of courseFormData.lessons) {
-        const data = await handleUploadVideoFile(lesson.videoFile as File);
+        const updatedLessonData: ICreateLessonData = {
+          title: lesson.title as string,
+          description: lesson.description as string,
+          courseId: res.data._id,
+          duration: lesson.duration as number,
+          orderIndex: orderIndex++,
+          videoUrl: lesson.videoUrl as string,
+          publicId: lesson.publicId as string,
+        };
 
-        if (!data) {
-          toast.error("Tải video bài giảng thất bại");
-          return;
+        if (lesson.videoFile && lesson.videoFile instanceof File) {
+          const data = await handleUploadVideoFile(lesson.videoFile as File);
+
+          if (!data) {
+            toast.error(`Tải video bài giảng ${orderIndex - 1} thất bại`);
+            return;
+          }
+
+          updatedLessonData.videoUrl = data.secure_url;
+          updatedLessonData.publicId = data.public_id;
+          updatedLessonData.duration = data.duration;
         }
 
-        await createLesson({
-          title: lesson.title,
-          description: lesson.description,
-          courseId: res.data._id,
-          duration: data.duration,
-          orderIndex: orderIndex++,
-          videoUrl: data.secure_url,
-          publicId: data.public_id,
-        });
+        if (lesson._id) {
+          await updateLesson(lesson._id, updatedLessonData);
+        } else {
+          await createLesson(updatedLessonData);
+        }
       }
-      handleResetForm();
-      toast.success("Tạo khóa học thành công");
-      fetchCourses();
+
+      for await (const lessonId of deletedLessonIds) {
+        await deleteLesson(lessonId);
+      }
+
+      await fetchCourseById();
+      await fetchCourses();
+      toast.success("Cập nhật khóa học thành công");
     } catch (error) {
       console.error("Error creating course:", error);
-      toast.error("Có lỗi xảy ra trong quá trình tạo khóa học");
+      toast.error("Có lỗi xảy ra trong quá trình cập nhật khóa học");
     } finally {
       setIsCreating(false);
     }
-  };
-
-  const handleResetForm = () => {
-    setCourseFormData({
-      title: "",
-      description: "",
-      price: 0,
-      categoryId: categories[0]._id,
-      level: LEVELS[0].value,
-      requirements: "",
-      whatYouWillLearn: "",
-      lessons: [
-        {
-          title: "",
-          description: "",
-        },
-      ],
-    });
   };
 
   const getBgColor = () =>
     theme.palette.mode === "dark" ? "#1a1a1a" : "#ffffff";
   const getInputBg = () =>
     theme.palette.mode === "dark" ? "#2a2a2a" : "#f5f7fa";
+
+  if (isLoading) return <CourseFormSkeleton />;
 
   return (
     <Box
@@ -240,7 +306,6 @@ export default function CourseCreateForm({
         borderRadius: "16px",
         boxShadow: theme.shadows[6],
         p: { xs: 3, sm: 5 },
-        maxWidth: 900,
         mx: "auto",
         mt: 4,
         "&:hover": { boxShadow: theme.shadows[8] },
@@ -257,7 +322,7 @@ export default function CourseCreateForm({
             textAlign: "center",
           }}
         >
-          Tạo Khóa Học Mới
+          Cập Nhật Khoá Học
         </Typography>
 
         <Typography
@@ -323,50 +388,50 @@ export default function CourseCreateForm({
         </Box>
 
         <Box sx={{ mb: 3 }}>
-          <input
-            accept="image/*"
-            id="thumbnail-upload"
-            type="file"
-            hidden
-            onChange={handleThumbnailUpload}
-            aria-label="Tải lên hình ảnh khóa học"
-          />
-          <label htmlFor="thumbnail-upload">
-            <Button
-              variant="outlined"
-              component="span"
-              disabled={isCreating}
-              sx={{
-                borderRadius: "8px",
-                textTransform: "none",
-                fontWeight: 500,
-                px: 3,
-                py: 1,
-                "&:hover": { bgcolor: theme.palette.action.hover },
-              }}
-            >
-              Tải lên hình ảnh khóa học
-            </Button>
-          </label>
-          {courseFormData.thumbnailFile && (
-            <Box sx={{ mt: 2, textAlign: "center" }}>
-              <img
-                src={
-                  courseFormData.thumbnailFile
-                    ? URL.createObjectURL(courseFormData.thumbnailFile)
-                    : ""
-                }
-                alt="Thumbnail Preview"
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: 200,
+          <>
+            <input
+              accept="image/*"
+              id="thumbnail-upload"
+              type="file"
+              hidden
+              onChange={handleThumbnailUpload}
+              aria-label="Tải lên hình ảnh khóa học"
+            />
+            <label htmlFor="thumbnail-upload">
+              <Button
+                variant="outlined"
+                component="span"
+                disabled={isCreating}
+                sx={{
                   borderRadius: "8px",
-                  border: `1px solid ${theme.palette.divider}`,
-                  objectFit: "cover",
+                  textTransform: "none",
+                  fontWeight: 500,
+                  px: 3,
+                  py: 1,
+                  "&:hover": { bgcolor: theme.palette.action.hover },
                 }}
-              />
-            </Box>
-          )}
+              >
+                Tải lên hình ảnh khóa học
+              </Button>
+            </label>
+          </>
+          <Box sx={{ mt: 2, textAlign: "center" }}>
+            <img
+              src={
+                courseFormData.thumbnailFile
+                  ? URL.createObjectURL(courseFormData.thumbnailFile)
+                  : course?.thumbnail
+              }
+              alt="Thumbnail Preview"
+              style={{
+                maxWidth: "100%",
+                maxHeight: 200,
+                borderRadius: "8px",
+                border: `1px solid ${theme.palette.divider}`,
+                objectFit: "cover",
+              }}
+            />
+          </Box>
         </Box>
 
         <Box
@@ -511,36 +576,42 @@ export default function CourseCreateForm({
               }}
             />
             <Box sx={{ mt: 2 }}>
-              <input
-                accept="video/*"
-                id={`video-upload-${index}`}
-                type="file"
-                hidden
-                onChange={(e) => handleLessonVideoUpload(index, e)}
-                aria-label={`Tải lên video cho lesson ${index + 1}`}
-              />
-              <label htmlFor={`video-upload-${index}`}>
-                <Button
-                  variant="outlined"
-                  component="span"
-                  disabled={isCreating}
-                  sx={{
-                    borderRadius: "8px",
-                    textTransform: "none",
-                    fontWeight: 500,
-                    px: 3,
-                    py: 1,
-                    "&:hover": { bgcolor: theme.palette.action.hover },
-                  }}
-                >
-                  Tải lên video
-                </Button>
-              </label>
-              {lesson.videoFile && (
+              <>
+                <input
+                  accept="video/*"
+                  id={`video-upload-${index}`}
+                  type="file"
+                  hidden
+                  onChange={(e) => handleLessonVideoUpload(index, e)}
+                  aria-label={`Tải lên video cho lesson ${index + 1}`}
+                />
+                <label htmlFor={`video-upload-${index}`}>
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    disabled={isCreating}
+                    sx={{
+                      borderRadius: "8px",
+                      textTransform: "none",
+                      fontWeight: 500,
+                      px: 3,
+                      py: 1,
+                      "&:hover": { bgcolor: theme.palette.action.hover },
+                    }}
+                  >
+                    Tải lên video
+                  </Button>
+                </label>
+              </>
+              {(lesson.videoFile || lesson.videoUrl) && (
                 <Box sx={{ mt: 2, textAlign: "center" }}>
                   <video
                     controls
-                    src={URL.createObjectURL(lesson.videoFile)}
+                    src={
+                      lesson.videoFile
+                        ? URL.createObjectURL(lesson.videoFile)
+                        : lesson.videoUrl
+                    }
                     style={{
                       maxWidth: "100%",
                       maxHeight: 200,
@@ -588,6 +659,22 @@ export default function CourseCreateForm({
           Thêm bài học
         </Button>
 
+        {!courseFormData.isPublished && (
+          <FormGroup sx={{ mt: 6 }}>
+            <FormControlLabel
+              checked={courseFormData.isPublished}
+              onChange={(e: any) =>
+                setCourseFormData((prev) => ({
+                  ...prev,
+                  isPublished: e.target.checked,
+                }))
+              }
+              control={<Checkbox />}
+              label="Xuất bản khoá học"
+            />
+          </FormGroup>
+        )}
+
         <Button
           loading={isCreating}
           disabled={isCreating}
@@ -607,7 +694,7 @@ export default function CourseCreateForm({
           aria-label="Tạo khóa học"
           loadingPosition="end"
         >
-          Tạo Khóa Học
+          Cập nhật khoá học
         </Button>
       </form>
     </Box>
@@ -626,19 +713,32 @@ export function flattenCategories(categories: Category[]): Category[] {
   }, []);
 }
 
-export interface CourseInformation {
-  title: string;
-  description: string;
-  price: number;
-  thumbnailFile?: File;
-  categoryId: string;
-  level: string;
-  requirements: string;
-  whatYouWillLearn: string;
-  lessons: LessonData[];
+export function handleValidationLessonInformation(lessons: LessonData[]) {
+  for (let i = 0; i < lessons.length; i++) {
+    const lesson = lessons[i];
+
+    if (!lesson.title || lesson.title.trim() === "") {
+      toast.error(`Vui lòng nhập tiêu đề cho bài học ${i + 1}`);
+      return false;
+    }
+
+    if (!lesson.description || lesson.description.trim() === "") {
+      toast.error(`Vui lòng nhập mô tả cho bài học ${i + 1}`);
+      return false;
+    }
+
+    if (lesson.videoFile || lesson.videoUrl) {
+      continue;
+    } else {
+      toast.error(`Vui lòng tải lên video cho bài học ${i + 1}`);
+      return false;
+    }
+  }
+
+  return true;
 }
 
-export function handleValidationCourseInformation(data: CourseInformation) {
+export function handleValidationCourseInformation(data: ICreateCourseData) {
   if (!data.title || data.title.trim() === "") {
     toast.error("Vui lòng nhập tiêu đề khóa học");
     return false;
@@ -654,7 +754,7 @@ export function handleValidationCourseInformation(data: CourseInformation) {
     return false;
   }
 
-  if (!data.thumbnailFile || data.thumbnailFile.size === 0) {
+  if (!data.thumbnail || data.thumbnail.trim() === "") {
     toast.error("Vui lòng tải lên hình ảnh khóa học");
     return false;
   }
@@ -684,30 +784,6 @@ export function handleValidationCourseInformation(data: CourseInformation) {
   if (!data.whatYouWillLearn || data.whatYouWillLearn.trim() === "") {
     toast.error("Vui lòng nhập nội dung khóa học");
     return false;
-  }
-
-  if (data.lessons.length === 0) {
-    toast.error("Vui lòng thêm ít nhất một bài học");
-    return false;
-  }
-
-  for (let i = 0; i < data.lessons.length; i++) {
-    const lesson = data.lessons[i];
-
-    if (!lesson.title || lesson.title.trim() === "") {
-      toast.error(`Vui lòng nhập tiêu đề cho bài học ${i + 1}`);
-      return false;
-    }
-
-    if (!lesson.description || lesson.description.trim() === "") {
-      toast.error(`Vui lòng nhập mô tả cho bài học ${i + 1}`);
-      return false;
-    }
-
-    if (!lesson.videoFile || lesson.videoFile.size === 0) {
-      toast.error(`Vui lòng tải lên video cho bài học ${i + 1}`);
-      return false;
-    }
   }
 
   return true;

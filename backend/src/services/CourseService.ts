@@ -310,7 +310,9 @@ const CourseService = {
   createCourse: async function (
     data: CourseCreateInput & {
       userName: string;
-    }
+      isPublished?: boolean;
+    },
+    isAdmin = false
   ) {
     const existedCourse = await Course.findOne({
       title: data.title,
@@ -329,6 +331,12 @@ const CourseService = {
         lower: true,
         locale: "vi",
       });
+
+    if (isAdmin) {
+      data.isPublished = data.isPublished || false;
+    } else {
+      data.isPublished = false;
+    }
 
     const course = await Course.create({ ...data, slug });
 
@@ -360,7 +368,8 @@ const CourseService = {
     data: CourseCreateInput & {
       isPublished?: boolean;
       userName: string;
-    }
+    },
+    isAdmin = false
   ) {
     const course = await Course.findById(id);
 
@@ -404,21 +413,23 @@ const CourseService = {
     course.whatYouWillLearn = data.whatYouWillLearn;
     course.slug = slug;
 
-    if (course.isPublished === false && data.isPublished === true) {
-      course.isPublished = data.isPublished;
-      sendNotificationToInstructor({
-        title: `Khoá học ${course.title} đã được xuất bản`,
-        message: `Xuất bản bởi ${data.userName}`,
-        instructorId: course.instructorId.toString(),
-        referenceUrl: `/courses/${course._id}`,
-      });
+    if (isAdmin && data.isPublished) {
+      if (course.isPublished === false && data.isPublished === true) {
+        sendNotificationToInstructor({
+          title: `Khoá học ${course.title} đã được xuất bản`,
+          message: `Xuất bản bởi ${data.userName}`,
+          instructorId: course.instructorId.toString(),
+          referenceUrl: `/courses/${course._id}`,
+        });
 
-      sendNotificationToStudents({
-        title: `Khoá học ${course.title} đã được xuất bản`,
-        message: `Được tạo bởi giảng viên mà bạn đã đăng ký, Xem ngay!`,
-        instructorId: course.instructorId.toString(),
-        referenceUrl: `/courses/${course._id}`,
-      });
+        sendNotificationToStudents({
+          title: `Khoá học ${course.title} đã được xuất bản`,
+          message: `Được tạo bởi giảng viên mà bạn đã đăng ký, Xem ngay!`,
+          instructorId: course.instructorId.toString(),
+          referenceUrl: `/courses/${course._id}`,
+        });
+      }
+      course.isPublished = data.isPublished;
     }
 
     await course.save();

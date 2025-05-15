@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box, CircularProgress, Stack } from "@mui/material";
 
 import Section from "@/components/common/Section";
 import VideoPlayer from "@components/learning/VideoPlayer";
@@ -22,27 +22,42 @@ export default function LearningPage() {
     notes,
     lessons,
     currentLessonIndex,
+    isLoading,
     handleClickNextLesson,
     handleClickPrevLesson,
     handleClickJumpToLesson,
   } = useLearning();
 
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Section sx={{ mt: "128px", mb: "128px", overflowX: "hidden" }}>
       <Box>
         <Stack direction={"row"} gap={2}>
-          <Box sx={{ flexGrow: 1 }}>
+          <Box key={currentLesson?._id} sx={{ flexGrow: 1 }}>
             <VideoPlayer
               handleClickNextLesson={handleClickNextLesson}
               lastWatchPosition={
-                currentLesson?.progress?.[0]?.lastWatchPosition
+                currentLesson?.progress?.[0]?.lastWatchPosition ?? 0
               }
-              progressId={currentLesson?.progress?.[0]?._id}
+              progressId={currentLesson?.progress?.[0]?._id ?? ""}
               refetch={refetch}
               ref={playerRef}
-              // publicId={currentLesson.videoUrl}
               // publicId={"videos/sskgoahpg0bmoshkfwuc"}
-              publicId={"videos/fqp5b3ks1bo8fzgy15la"}
+              publicId={currentLesson?.publicId ?? ""}
               playerConfig={{
                 profile: import.meta.env.VITE_CLOUDINARY_PROFILE,
                 cloud_name: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,

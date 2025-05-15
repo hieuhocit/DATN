@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getCourseBySlug } from "@/services/courseService";
+import { Comment, Lesson } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -9,7 +10,11 @@ export const useLearning = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(0);
 
-  const { data: res, refetch } = useQuery({
+  const {
+    data: res,
+    refetch,
+    isLoading,
+  } = useQuery({
     queryKey: ["learning", courseSlug],
     queryFn: () => getCourseBySlug(courseSlug as string),
   });
@@ -63,11 +68,14 @@ export const useLearning = () => {
     }
   };
 
-  const currentLesson = data?.lessons?.[currentLessonIndex];
-  const lessonId = currentLesson?._id;
-  const comments = currentLesson?.comments;
+  const currentLesson = data?.lessons?.[currentLessonIndex] as
+    | Lesson
+    | undefined;
+  const lessonId = currentLesson?._id as string | undefined;
+  const comments = currentLesson?.comments as Comment[] | undefined;
 
   return {
+    isLoading,
     data,
     refetch,
     currentLesson,

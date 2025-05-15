@@ -77,6 +77,7 @@ export default function Notification() {
 
   const handleGoToNotification = (notification: NotificationType) => {
     navigate(notification.referenceUrl);
+    onMarkAsRead(notification._id);
     handleClose();
   };
 

@@ -57,13 +57,19 @@ export const useLearning = () => {
     }
   };
 
-  const handleClickJumpToLesson = (lessonId: string) => {
+  const handleClickJumpToLesson = (lessonId: string, position?: number) => {
     const lessonIndex = data?.lessons.findIndex(
       (lesson: any) => lesson._id === lessonId
     );
 
-    if (lessonIndex !== undefined && lessonIndex !== currentLessonIndex) {
-      setSearchParams({ lesson: lessonId });
+    if (lessonIndex !== undefined) {
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.set("lesson", lessonId);
+      if (position) {
+        newSearchParams.set("position", position.toString());
+      }
+
+      setSearchParams(newSearchParams);
       setCurrentLessonIndex(lessonIndex);
     }
   };

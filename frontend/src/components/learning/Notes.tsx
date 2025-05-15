@@ -36,6 +36,7 @@ interface Props {
   lessonId: string;
   playerRef: React.RefObject<HTMLVideoElement | null>;
   refetch: () => void;
+  handleClickJumpToLesson: (lessonId: string, position: number) => void;
 }
 
 export default function Notes({
@@ -44,6 +45,7 @@ export default function Notes({
   lessonId,
   playerRef,
   refetch,
+  handleClickJumpToLesson,
 }: Props) {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
@@ -161,12 +163,12 @@ export default function Notes({
   };
 
   // Seek video to note position
-  const handleSeekToPosition = (position: number) => {
-    console.log(`Seeking to ${formatTime(position)}`);
-    if (playerRef.current) {
-      playerRef.current.currentTime = position;
-      toggleDrawer(false)();
-    }
+  const handleSeekToPosition = (lessonId: string, position: number) => {
+    // if (playerRef.current) {
+    //   playerRef.current.currentTime = position;
+    //   toggleDrawer(false)();
+    // }
+    handleClickJumpToLesson(lessonId, position);
   };
 
   const filteredNotes = notes.filter((note) => {
@@ -346,17 +348,32 @@ export default function Notes({
                           mb: 1,
                         }}
                       >
-                        <Tooltip title="Nhấn để tìm đến thời điểm này trong video">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => handleSeekToPosition(note.position)}
-                            startIcon={<TimerIcon />}
-                            sx={{ textTransform: "none", borderRadius: 4 }}
-                          >
-                            {formatTime(note.position)}
-                          </Button>
-                        </Tooltip>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Tooltip title="Nhấn để tìm đến thời điểm này trong video">
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() =>
+                                handleSeekToPosition(
+                                  note.lessonId,
+                                  note.position
+                                )
+                              }
+                              startIcon={<TimerIcon />}
+                              sx={{ textTransform: "none", borderRadius: 4 }}
+                            >
+                              {formatTime(note.position)}
+                            </Button>
+                          </Tooltip>
+                          {note?.lesson?.[0]?.title && (
+                            <>
+                              <Typography>-</Typography>
+                              <Typography fontWeight={600}>
+                                {note?.lesson?.[0]?.title}
+                              </Typography>
+                            </>
+                          )}
+                        </Stack>
 
                         <Stack direction="row" spacing={1}>
                           <IconButton

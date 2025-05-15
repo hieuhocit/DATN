@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import cloudinary, { Cloudinary } from "cloudinary-video-player";
 import "cloudinary-video-player/cld-video-player.min.css";
 import { updateProgressLesson } from "@/services/lessonService";
+import { useSearchParams } from "react-router-dom";
 
 interface IProps {
   publicId: string;
@@ -29,6 +30,8 @@ const VideoPlayer = ({
   const cloudinaryRef = useRef<Cloudinary | null>(null);
   const playerRef = useRef<HTMLVideoElement | null>(null);
   const idIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     if (cloudinaryRef.current) return;
@@ -108,11 +111,22 @@ const VideoPlayer = ({
   }, []);
 
   useEffect(() => {
+    const position = searchParams.get("position");
     const videoPlayer = playerRef.current;
     if (!videoPlayer || !lastWatchPosition) return;
+
+    if (position) {
+      const positionNumber = parseInt(position, 10);
+      if (positionNumber > 0) {
+        videoPlayer.currentTime = positionNumber;
+      } else {
+        videoPlayer.currentTime = lastWatchPosition;
+      }
+    } else {
+      videoPlayer.currentTime = lastWatchPosition;
+    }
     ref.current = videoPlayer;
-    videoPlayer.currentTime = lastWatchPosition;
-  }, [lastWatchPosition]);
+  }, [lastWatchPosition, searchParams, ref]);
 
   useEffect(() => {
     const videoPlayer = playerRef.current;
@@ -125,7 +139,6 @@ const VideoPlayer = ({
           const duration = videoPlayer.duration;
           const progress = Math.floor((currentTime / duration) * 100);
           const lastWatchPosition = Math.floor(currentTime);
-          console.log(progressId, lastWatchPosition);
           if (progressId) {
             await updateProgressLesson(progressId, {
               progress,

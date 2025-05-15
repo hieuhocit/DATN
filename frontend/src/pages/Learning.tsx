@@ -56,7 +56,6 @@ export default function LearningPage() {
               progressId={currentLesson?.progress?.[0]?._id ?? ""}
               refetch={refetch}
               ref={playerRef}
-              // publicId={"videos/sskgoahpg0bmoshkfwuc"}
               publicId={currentLesson?.publicId ?? ""}
               playerConfig={{
                 profile: import.meta.env.VITE_CLOUDINARY_PROFILE,
@@ -130,6 +129,7 @@ export default function LearningPage() {
                   courseId={data.course._id}
                   playerRef={playerRef}
                   refetch={refetch}
+                  handleClickJumpToLesson={handleClickJumpToLesson}
                 />
               )}
             </Box>

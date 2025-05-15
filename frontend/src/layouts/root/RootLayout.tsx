@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // react-router
 import { Outlet, ScrollRestoration } from "react-router-dom";
 
@@ -16,13 +15,6 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 
 // Stores
 import { getTheme } from "@/theme";
-import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
-import { isLoggedInSelector } from "@/features/account";
-import { getEnrollments } from "@/services/enrollmentService";
-import { setEnrollments } from "@/features/account/accountSlice";
-import { getCart } from "@/services/cartService";
-import { replaceCart } from "@/features/cart";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 
 export default function RootLayout({
@@ -31,39 +23,37 @@ export default function RootLayout({
   children?: React.ReactNode;
 }) {
   const { themeMode } = useTheme();
-  const dispatch = useAppDispatch();
-  const isLoggedIn = useAppSelector(isLoggedInSelector);
 
-  useEffect(() => {
-    if (!isLoggedIn) return;
+  // useEffect(() => {
+  //   if (!isLoggedIn) return;
 
-    async function fetchEnrollmentsAndSyncCart() {
-      try {
-        const res = await getEnrollments();
-        dispatch(setEnrollments(res.data ?? []));
-      } catch (error) {
-        console.error(error);
-      }
-    }
+  //   async function fetchEnrollmentsAndSyncCart() {
+  //     try {
+  //       const res = await getEnrollments();
+  //       dispatch(setEnrollments(res.data ?? []));
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
 
-    fetchEnrollmentsAndSyncCart();
-  }, [isLoggedIn, dispatch]);
+  //   fetchEnrollmentsAndSyncCart();
+  // }, [isLoggedIn, dispatch]);
 
-  useEffect(() => {
-    if (!isLoggedIn) return;
+  // useEffect(() => {
+  //   if (!isLoggedIn) return;
 
-    async function fetchCart() {
-      try {
-        const newCart = (await getCart()).data
-          ?.map((item: any) => item.course?.[0])
-          .filter((item: any) => item !== undefined);
-        dispatch(replaceCart(newCart ?? []));
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchCart();
-  }, [isLoggedIn, dispatch]);
+  //   async function fetchCart() {
+  //     try {
+  //       const newCart = (await getCart()).data
+  //         ?.map((item: any) => item.course?.[0])
+  //         .filter((item: any) => item !== undefined);
+  //       dispatch(replaceCart(newCart ?? []));
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  //   fetchCart();
+  // }, [isLoggedIn, dispatch]);
 
   const isDarkMode = themeMode === "dark";
   const theme = getTheme(themeMode);

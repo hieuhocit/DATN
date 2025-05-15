@@ -172,19 +172,23 @@ const AuthController = {
     }
   },
   verifyToken: async (req: Request, res: Response, next: NextFunction) => {
-    const user = (req as RequestWithUser).user;
+    try {
+      const user = (req as RequestWithUser).user;
 
-    const data = await AuthService.getUserByEmail(user.email);
+      const data = await AuthService.getUserByEmail(user.email);
 
-    res.status(messages.OK.statusCode).json(
-      serverResponse.createSuccess(
-        {
-          ...messages.OK,
-          message: "Token verified successfully!",
-        },
-        data
-      )
-    );
+      res.status(messages.OK.statusCode).json(
+        serverResponse.createSuccess(
+          {
+            ...messages.OK,
+            message: "Token verified successfully!",
+          },
+          data
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
   },
 };
 

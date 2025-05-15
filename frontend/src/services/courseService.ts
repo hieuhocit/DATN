@@ -32,6 +32,18 @@ export interface ICreateCourseResponse {
   data: Course;
 }
 
+export interface ICoursesResponse {
+  statusCode: number;
+  statusText: string;
+  message: string;
+  data: Course[];
+}
+
+export const getRecommendedCourses = async () => {
+  const res = await axios.get("courses/recommended");
+  return res.data as ICoursesResponse;
+};
+
 export const deleteCourse = async (courseId: string) => {
   try {
     const response = await axios.delete(`courses/${courseId}`);

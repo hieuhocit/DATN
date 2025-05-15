@@ -30,6 +30,11 @@ CourseRoutes.get(
 
 CourseRoutes.get("/courses/popular", CourseController.get20PopularCourses);
 CourseRoutes.get("/courses/newest", CourseController.get20NewestCourses);
+CourseRoutes.get(
+  "/courses/recommended",
+  authMiddleware,
+  CourseController.getRecommendedCourses
+);
 
 CourseRoutes.post(
   "/courses",

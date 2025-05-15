@@ -1,6 +1,7 @@
 import {
   getCourseById,
   getCoursesByInstructor,
+  getRecommendedCourses,
 } from "@/services/courseService";
 import { Course, Lesson, Review } from "@/types";
 import { useQuery } from "@tanstack/react-query";
@@ -48,4 +49,11 @@ export const useCourseById = (courseId: string) => {
     error,
     refetch,
   };
+};
+
+export const useRecommendedCourses = () => {
+  return useQuery({
+    queryKey: ["recommendedCourses"],
+    queryFn: getRecommendedCourses,
+  });
 };

@@ -10,6 +10,7 @@ import { useTheme } from "@mui/material/styles";
 import { Lesson } from "@/types";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 
 interface Props {
   currentLessonId: string | undefined;
@@ -26,6 +27,20 @@ export default function Category({
   const isDark = theme.palette.mode === "dark";
 
   const listRef = useRef<HTMLUListElement | null>(null);
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("lesson")) return;
+
+    const uncompletedLessonId = lessons.find(
+      (lesson) => !lesson?.progress?.[0]?.isCompleted
+    )?._id;
+
+    if (uncompletedLessonId) {
+      handleClickJumpToLesson(uncompletedLessonId);
+    }
+  }, []);
 
   useEffect(() => {
     const currentLessonIndex = lessons.findIndex(

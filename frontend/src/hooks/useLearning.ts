@@ -19,27 +19,18 @@ export const useLearning = () => {
     queryFn: () => getCourseBySlug(courseSlug as string),
   });
 
-  const data = res?.data;
-
-  // Get the first uncompleted lesson
   useEffect(() => {
-    if (searchParams.get("lesson")) return;
+    const lessonId = searchParams.get("lesson");
+    const lessonIndex = res?.data?.lessons?.findIndex(
+      (lesson: any) => lesson._id === lessonId
+    );
 
-    const uncompletedLessonId = data?.lessons?.find(
-      (lesson: any) => !lesson?.progress?.[0]?.isCompleted
-    )?._id;
-
-    if (uncompletedLessonId) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("lesson", uncompletedLessonId);
-      setSearchParams(params);
-      setCurrentLessonIndex(
-        data?.lessons?.findIndex(
-          (lesson: any) => lesson._id === uncompletedLessonId
-        )
-      );
+    if (lessonIndex !== undefined && lessonIndex !== -1) {
+      setCurrentLessonIndex(lessonIndex);
+    } else {
+      setCurrentLessonIndex(0);
     }
-  }, []);
+  }, [searchParams, res?.data?.lessons]);
 
   const handleClickNextLesson = () => {
     const nextLesson = data?.lessons[currentLessonIndex + 1];
@@ -74,6 +65,7 @@ export const useLearning = () => {
     }
   };
 
+  const data = res?.data;
   const currentLesson = data?.lessons?.[currentLessonIndex] as
     | Lesson
     | undefined;

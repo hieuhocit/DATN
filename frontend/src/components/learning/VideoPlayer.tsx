@@ -9,18 +9,18 @@ interface IProps {
   publicId: string;
   playerConfig?: Record<string, any>;
   sourceConfig?: Record<string, any>;
-  lastWatchPosition: number;
+  // lastWatchPosition: number;
   handleClickNextLesson: () => void;
   refetch: () => void;
   progressId: string;
-  ref: React.RefObject<HTMLVideoElement | null>;
+  ref: React.RefObject<cloudinary.VideoPlayer | null>;
 }
 
 const VideoPlayer = ({
   publicId,
   playerConfig,
   sourceConfig,
-  lastWatchPosition,
+  // lastWatchPosition,
   handleClickNextLesson,
   progressId,
   refetch,
@@ -38,12 +38,11 @@ const VideoPlayer = ({
 
     cloudinaryRef.current = cloudinary;
 
-    const player: any = cloudinaryRef.current.videoPlayer(
-      playerRef.current as any,
-      {
-        ...playerConfig,
-      }
-    );
+    const player = cloudinaryRef.current.videoPlayer(playerRef.current as any, {
+      ...playerConfig,
+    });
+
+    ref.current = player;
 
     const handleKeyPress = (event: KeyboardEvent) => {
       if (!playerRef.current) return;
@@ -105,7 +104,7 @@ const VideoPlayer = ({
       }
     };
 
-    player.on("keydown", handleKeyPress);
+    (player as any).on("keydown", handleKeyPress);
 
     player.source(publicId, sourceConfig);
   }, []);
@@ -113,20 +112,20 @@ const VideoPlayer = ({
   useEffect(() => {
     const position = searchParams.get("position");
     const videoPlayer = playerRef.current;
-    if (!videoPlayer || !lastWatchPosition) return;
+    // if (!videoPlayer || !lastWatchPosition) return;
+    if (!videoPlayer) return;
 
     if (position) {
       const positionNumber = parseInt(position, 10);
       if (positionNumber > 0) {
         videoPlayer.currentTime = positionNumber;
       } else {
-        videoPlayer.currentTime = lastWatchPosition;
+        // videoPlayer.currentTime = lastWatchPosition;
       }
     } else {
-      videoPlayer.currentTime = lastWatchPosition;
+      // videoPlayer.currentTime = lastWatchPosition;
     }
-    ref.current = videoPlayer;
-  }, [lastWatchPosition, searchParams, ref]);
+  }, [searchParams, ref]);
 
   useEffect(() => {
     const videoPlayer = playerRef.current;
@@ -145,7 +144,7 @@ const VideoPlayer = ({
               lastWatchPosition,
             });
           }
-        }, 5000);
+        }, 1000);
       });
 
       videoPlayer.addEventListener("pause", () => {
@@ -167,12 +166,12 @@ const VideoPlayer = ({
     }
 
     return () => {
-      // if (videoPlayer) {
-      //   clearInterval(idIntervalRef.current as NodeJS.Timeout);
-      //   videoPlayer.removeEventListener("play", () => {});
-      //   videoPlayer.removeEventListener("pause", () => {});
-      //   videoPlayer.removeEventListener("ended", () => {});
-      // }
+      if (videoPlayer) {
+        clearInterval(idIntervalRef.current as NodeJS.Timeout);
+        videoPlayer.removeEventListener("play", () => {});
+        videoPlayer.removeEventListener("pause", () => {});
+        videoPlayer.removeEventListener("ended", () => {});
+      }
     };
   }, []);
 

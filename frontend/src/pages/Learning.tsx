@@ -9,9 +9,10 @@ import Notes from "@components/learning/Notes";
 import { useLearning } from "@/hooks/useLearning";
 import { useRef } from "react";
 import ChatWidget from "@/components/chatbot/ChatWidget";
+import cloudinary from "cloudinary-video-player";
 
 export default function LearningPage() {
-  const playerRef = useRef<HTMLVideoElement | null>(null);
+  const playerRef = useRef<cloudinary.VideoPlayer | null>(null);
 
   const {
     data,
@@ -50,9 +51,9 @@ export default function LearningPage() {
           <Box key={currentLesson?._id} sx={{ flexGrow: 1 }}>
             <VideoPlayer
               handleClickNextLesson={handleClickNextLesson}
-              lastWatchPosition={
-                currentLesson?.progress?.[0]?.lastWatchPosition ?? 0
-              }
+              // lastWatchPosition={
+              //   currentLesson?.progress?.[0]?.lastWatchPosition ?? 0
+              // }
               progressId={currentLesson?.progress?.[0]?._id ?? ""}
               refetch={refetch}
               ref={playerRef}

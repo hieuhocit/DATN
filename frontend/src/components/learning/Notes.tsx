@@ -29,12 +29,13 @@ import TimerIcon from "@mui/icons-material/Timer";
 import { Note } from "@/types";
 import { createNote, deleteNote, updateNote } from "@/services/noteService";
 import { toast } from "react-toastify";
+import cloudinary from "cloudinary-video-player";
 
 interface Props {
   notes: Note[];
   courseId: string;
   lessonId: string;
-  playerRef: React.RefObject<HTMLVideoElement | null>;
+  playerRef: React.RefObject<cloudinary.VideoPlayer | null>;
   refetch: () => void;
   handleClickJumpToLesson: (lessonId: string, position: number) => void;
 }
@@ -90,7 +91,7 @@ export default function Notes({
         lessonId,
         courseId,
         content: noteContent,
-        position: playerRef.current?.currentTime || 0,
+        position: (playerRef.current?.currentTime() as number) || 0,
       });
 
       if (res.statusCode === 201) {
@@ -169,14 +170,14 @@ export default function Notes({
     //   toggleDrawer(false)();
     // }
     handleClickJumpToLesson(lessonId, position);
+    toggleDrawer(false)();
   };
 
   const filteredNotes = notes.filter((note) => {
     if (filteredValue === "course") {
       return true;
-    } else {
-      return note.lessonId === lessonId;
     }
+    return note.lessonId === lessonId;
   });
 
   if (open && playerRef.current) {
@@ -250,7 +251,9 @@ export default function Notes({
               <Typography variant="body2" color="text.secondary">
                 Tại vị trí:{" "}
                 <strong>
-                  {formatTime(playerRef?.current?.currentTime || 0)}
+                  {formatTime(
+                    (playerRef?.current?.currentTime() as number) || 0
+                  )}
                 </strong>
               </Typography>
             </Box>
@@ -324,122 +327,117 @@ export default function Notes({
               </Box>
             ) : (
               <List disablePadding>
-                {filteredNotes
-                  .sort((a, b) => a.position - b.position)
-                  .map((note) => (
-                    <ListItem
-                      key={note._id}
-                      disablePadding
+                {filteredNotes.map((note) => (
+                  <ListItem
+                    key={note._id}
+                    disablePadding
+                    sx={{
+                      mb: 2,
+                      display: "block",
+                      bgcolor: isDark
+                        ? alpha("#fff", 0.03)
+                        : alpha("#000", 0.02),
+                      borderRadius: 2,
+                      p: 2,
+                    }}
+                  >
+                    <Box
                       sx={{
-                        mb: 2,
-                        display: "block",
-                        bgcolor: isDark
-                          ? alpha("#fff", 0.03)
-                          : alpha("#000", 0.02),
-                        borderRadius: 2,
-                        p: 2,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mb: 1,
                       }}
                     >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          mb: 1,
-                        }}
-                      >
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Tooltip title="Nhấn để tìm đến thời điểm này trong video">
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              onClick={() =>
-                                handleSeekToPosition(
-                                  note.lessonId,
-                                  note.position
-                                )
-                              }
-                              startIcon={<TimerIcon />}
-                              sx={{ textTransform: "none", borderRadius: 4 }}
-                            >
-                              {formatTime(note.position)}
-                            </Button>
-                          </Tooltip>
-                          {note?.lesson?.[0]?.title && (
-                            <>
-                              <Typography>-</Typography>
-                              <Typography fontWeight={600}>
-                                {note?.lesson?.[0]?.title}
-                              </Typography>
-                            </>
-                          )}
-                        </Stack>
-
-                        <Stack direction="row" spacing={1}>
-                          <IconButton
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Tooltip title="Nhấn để tìm đến thời điểm này trong video">
+                          <Button
                             size="small"
-                            onClick={() => handleStartEdit(note)}
-                            disabled={editingNote === note._id}
+                            variant="outlined"
+                            onClick={() =>
+                              handleSeekToPosition(note.lessonId, note.position)
+                            }
+                            startIcon={<TimerIcon />}
+                            sx={{ textTransform: "none", borderRadius: 4 }}
                           >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDeleteNote(note._id)}
-                            disabled={editingNote === note._id}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Stack>
-                      </Box>
+                            {formatTime(note.position)}
+                          </Button>
+                        </Tooltip>
+                        {note?.lesson?.[0]?.title && (
+                          <>
+                            <Typography>-</Typography>
+                            <Typography fontWeight={600}>
+                              {note?.lesson?.[0]?.title}
+                            </Typography>
+                          </>
+                        )}
+                      </Stack>
 
-                      {editingNote === note._id ? (
-                        <Box sx={{ mt: 1 }}>
-                          <TextField
-                            fullWidth
-                            multiline
-                            rows={3}
-                            value={editContent}
-                            onChange={(e) => setEditContent(e.target.value)}
-                            sx={{ mb: 1 }}
-                          />
-                          <Box
-                            sx={{
-                              display: "flex",
-                              justifyContent: "flex-end",
-                              gap: 1,
-                            }}
-                          >
-                            <Button
-                              size="small"
-                              onClick={() => setEditingNote(null)}
-                              sx={{ textTransform: "none" }}
-                            >
-                              Hủy
-                            </Button>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              disableElevation
-                              startIcon={<SaveIcon />}
-                              onClick={() => handleSaveEdit(note._id)}
-                              disabled={!editContent.trim()}
-                              sx={{ textTransform: "none" }}
-                            >
-                              Lưu
-                            </Button>
-                          </Box>
-                        </Box>
-                      ) : (
-                        <Typography
-                          variant="body2"
-                          sx={{ whiteSpace: "pre-wrap" }}
+                      <Stack direction="row" spacing={1}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleStartEdit(note)}
+                          disabled={editingNote === note._id}
                         >
-                          {note.content}
-                        </Typography>
-                      )}
-                    </ListItem>
-                  ))}
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteNote(note._id)}
+                          disabled={editingNote === note._id}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    </Box>
+
+                    {editingNote === note._id ? (
+                      <Box sx={{ mt: 1 }}>
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={3}
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          sx={{ mb: 1 }}
+                        />
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            gap: 1,
+                          }}
+                        >
+                          <Button
+                            size="small"
+                            onClick={() => setEditingNote(null)}
+                            sx={{ textTransform: "none" }}
+                          >
+                            Hủy
+                          </Button>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            disableElevation
+                            startIcon={<SaveIcon />}
+                            onClick={() => handleSaveEdit(note._id)}
+                            disabled={!editContent.trim()}
+                            sx={{ textTransform: "none" }}
+                          >
+                            Lưu
+                          </Button>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Typography
+                        variant="body2"
+                        sx={{ whiteSpace: "pre-wrap" }}
+                      >
+                        {note.content}
+                      </Typography>
+                    )}
+                  </ListItem>
+                ))}
               </List>
             )}
           </Box>

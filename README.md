@@ -2,7 +2,7 @@
 
 > **EduGenlus** là hệ thống học trực tuyến hiện đại, kết hợp trí tuệ nhân tạo (Google Gemini) và cổng thanh toán VNPAY.
 
-![EduGenlus Banner](frontend\public\images\banner.jpg)
+![EduGenlus Banner](./frontend/public/images/banner.jpg)
 
 ---
 
@@ -180,4 +180,4 @@ npm run dev
 
 ---
 
-© 2025 EduGenlus – Khoá luận tốt nghiệp, Khoa CNTT, Đại học Duy Tân.
+© 2025 EduGenius – Khoá luận tốt nghiệp, Khoa CNTT, Đại học Duy Tân.

@@ -53,7 +53,6 @@ UserRoutes.put(
   "/users/:id",
   authMiddleware,
   authorizationMiddleware(["admin"]),
-  validateRegister,
   UserController.updateUserById
 );
 

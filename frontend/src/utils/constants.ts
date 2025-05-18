@@ -22,10 +22,16 @@ export const LEVEL_VN = {
   intermediate: "Trung cấp",
   expert: "Nâng cao",
   all: "Tất cả",
-}
+};
 
 export const ROLE_VN = {
-  user: 'Học viên',
-  instructor: 'Giảng viên',
-  admin: 'Quản trị viên',
-}
+  user: "Học viên",
+  instructor: "Giảng viên",
+  admin: "Quản trị viên",
+};
+
+export const PROVIDER = {
+  google: "Google",
+  facebook: "Facebook",
+  local: "Email",
+};

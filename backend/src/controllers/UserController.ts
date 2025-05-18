@@ -12,6 +12,7 @@ import messages from "../configs/messagesConfig.js";
 
 // Types
 import { RequestWithUser } from "../types/types.js";
+import User from "../models/User.js";
 
 const UserController = {
   me: async (req: Request, res: Response, next: NextFunction) => {
@@ -111,7 +112,7 @@ const UserController = {
         serverResponse.createSuccess(
           {
             ...messages.CREATED,
-            message: "Create user successfully!",
+            message: "Tao người dùng thành công!",
           },
           data
         )
@@ -124,16 +125,49 @@ const UserController = {
     const id = req.params.id;
 
     try {
+      const user = (req as RequestWithUser).user;
+
+      const existedUser = await UserService.getUserByEmailWithPasswordHash(
+        user.email
+      );
+
+      if (!existedUser) {
+        throw serverResponse.createError({
+          ...messages.NOT_FOUND,
+          message: "Tài khoản hiện đăng nhập không tồn tại!",
+        });
+      }
+
+      if (existedUser._id.toString() === id) {
+        throw serverResponse.createError({
+          ...messages.FORBIDDEN,
+          message: "Không thể xóa tài khoản của chính mình!",
+        });
+      }
+
+      const deletedUser = await UserService.getUserById(id);
+
+      if (!deletedUser) {
+        throw serverResponse.createError({
+          ...messages.NOT_FOUND,
+          message: "Người dùng không tồn tại!",
+        });
+      }
+
+      if (deletedUser.role === "admin") {
+        throw serverResponse.createError({
+          ...messages.FORBIDDEN,
+          message: "Không thể xóa tài khoản quản trị viên!",
+        });
+      }
+
       await UserService.deleteUserById(id);
 
       res.status(messages.OK.statusCode).json(
-        serverResponse.createSuccess(
-          {
-            ...messages.OK,
-            message: "Delete user successfully!",
-          },
-          null
-        )
+        serverResponse.createSuccess({
+          ...messages.OK,
+          message: "Xoá người dùng thành công!",
+        })
       );
     } catch (error) {
       next(error);
@@ -158,7 +192,7 @@ const UserController = {
         serverResponse.createSuccess(
           {
             ...messages.OK,
-            message: "Update user successfully!",
+            message: "Cập nhật người dùng thành công!",
           },
           data
         )

@@ -468,7 +468,7 @@ const CourseService = {
     if (data.discountPrice !== undefined)
       course.discountPrice = data.discountPrice;
     course.thumbnail = data.thumbnail;
-    course.instructorId = data.instructorId;
+    // course.instructorId = data.instructorId;
     course.categoryId = data.categoryId;
     course.level = data.level;
     course.requirements = data.requirements;

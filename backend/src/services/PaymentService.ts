@@ -9,6 +9,8 @@ import messages from "../configs/messagesConfig.js";
 
 // Services
 import UserService from "./UserService.js";
+import PaymentItem from "../models/PaymentItem.js";
+import Enrollment from "../models/Enrollment.js";
 
 // Types
 type UpdatedPaymentInput = Pick<PaymentType, "amount" | "paymentDetails">;
@@ -39,6 +41,14 @@ const PaymentService = {
     try {
       const result = await Payment.findOneAndDelete({
         _id: id,
+      });
+
+      await PaymentItem.deleteMany({
+        paymentId: id,
+      });
+
+      await Enrollment.deleteMany({
+        paymentId: id,
       });
 
       if (!result) {

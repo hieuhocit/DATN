@@ -65,6 +65,17 @@ export interface Category {
   children?: Category[];
 }
 
+export interface PaymentItem {
+  _id: string;
+  paymentId: string;
+  courseId: string;
+  price: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  course: Course[];
+}
+
 export interface Payment {
   paymentDetails: {
     vnp_Amount: string;
@@ -87,6 +98,8 @@ export interface Payment {
   createdAt: string;
   updatedAt: string;
   __v: number;
+  user: User[];
+  paymentItem: PaymentItem[];
 }
 
 export interface Enrollment {

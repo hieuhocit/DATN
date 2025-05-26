@@ -71,10 +71,12 @@ export const useLearning = () => {
     | undefined;
   const lessonId = currentLesson?._id as string | undefined;
   const comments = currentLesson?.comments as Comment[] | undefined;
+  const course = data?.course;
 
   return {
     isLoading,
     data,
+    course,
     refetch,
     currentLesson,
     lessonId,

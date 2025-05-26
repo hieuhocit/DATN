@@ -13,6 +13,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import { chatWithAI } from "@/services/chatServices";
+import { deleteHistory } from "@/services/aiService";
 
 export interface Message {
   id: string;
@@ -126,7 +127,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     }
   };
 
-  const clearMessages = () => {
+  const clearMessages = async () => {
+    await deleteHistory(courseId);
     setMessages([
       {
         id: "welcome",
@@ -140,7 +142,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   const suggestedQuestions = [
     "Bạn có thể giải thích thêm về khái niệm này?",
     "Làm thế nào để áp dụng kiến thức này?",
-    "Hãy đưa ra một vài ví dụ thực tế",
+    "Hãy đưa ra một vài ví dụ liên quan đến bài học này.",
   ];
 
   return (

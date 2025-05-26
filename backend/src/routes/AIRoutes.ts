@@ -11,5 +11,5 @@ import AIController from "../controllers/AIController.js";
 const AIRoutes = Router();
 
 AIRoutes.post("/chat-with-ai", authMiddleware, AIController.chatWithAI);
-
+AIRoutes.post("/ai/delete-history", authMiddleware, AIController.deleteHistory);
 export default AIRoutes;

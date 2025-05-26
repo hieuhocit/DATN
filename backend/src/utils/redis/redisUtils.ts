@@ -1,4 +1,5 @@
-import { getRedisClient } from '../../db/redisClient.js';
+import { Content } from "@google/genai";
+import { getRedisClient } from "../../db/redisClient.js";
 
 export const saveAccessAndRefreshTokensToRedis = async (
   email: string,
@@ -73,4 +74,35 @@ export const deleteResetCodeFromRedis = async (email: string) => {
   const redisClient = getRedisClient();
 
   await redisClient.del(`RESET_CODE:${email}`);
+};
+
+export const getHistoryFromRedis = async (
+  userId: string,
+  courseId: string
+): Promise<Content[]> => {
+  const redisClient = getRedisClient();
+  const history = await redisClient.get(`HISTORY:${userId}:${courseId}`);
+  try {
+    return history ? JSON.parse(history) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+export const saveHistoryToRedis = async (
+  userId: string,
+  courseId: string,
+  data: Content[]
+) => {
+  const redisClient = getRedisClient();
+  const historyItems = JSON.stringify(data);
+  await redisClient.set(`HISTORY:${userId}:${courseId}`, historyItems);
+};
+
+export const deleteHistoryFromRedis = async (
+  userId: string,
+  courseId: string
+) => {
+  const redisClient = getRedisClient();
+  await redisClient.del(`HISTORY:${userId}:${courseId}`);
 };

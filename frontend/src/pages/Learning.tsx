@@ -7,9 +7,10 @@ import Category from "../components/learning/Category";
 import LessonNavigation from "../components/learning/LessonNavigation";
 import Notes from "@components/learning/Notes";
 import { useLearning } from "@/hooks/useLearning";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import ChatWidget from "@/components/chatbot/ChatWidget";
 import cloudinary from "cloudinary-video-player";
+import { deleteHistory } from "@/services/aiService";
 
 export default function LearningPage() {
   const playerRef = useRef<cloudinary.VideoPlayer | null>(null);
@@ -17,6 +18,7 @@ export default function LearningPage() {
   const {
     data,
     refetch,
+    course,
     currentLesson,
     lessonId,
     comments,
@@ -28,6 +30,14 @@ export default function LearningPage() {
     handleClickPrevLesson,
     handleClickJumpToLesson,
   } = useLearning();
+
+  useEffect(() => {
+    if (!course) return;
+    async function handleDeleteHistory() {
+      await deleteHistory(course._id);
+    }
+    handleDeleteHistory();
+  }, [course]);
 
   if (isLoading || !currentLesson) {
     return (

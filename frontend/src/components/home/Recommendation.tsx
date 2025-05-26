@@ -9,9 +9,11 @@ export default function Recommendation() {
 
   return (
     <>
-      {!isLoading && (
-        <CourseSection title="Đề xuất cho bạn" courses={courses} />
-      )}
+      <CourseSection
+        title="Đề xuất cho bạn"
+        courses={courses}
+        isLoading={isLoading}
+      />
     </>
   );
 }

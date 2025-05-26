@@ -14,11 +14,15 @@ export default function Popular() {
     queryFn: get20PopularCourses,
   });
 
+  const courses = res?.data || [];
+
   return (
     <>
-      {!isLoading && (
-        <CourseSection title="Phổ biến" courses={res.data as Course[]} />
-      )}
+      <CourseSection
+        title="Phổ biến"
+        courses={courses as Course[]}
+        isLoading={isLoading}
+      />
     </>
   );
 }

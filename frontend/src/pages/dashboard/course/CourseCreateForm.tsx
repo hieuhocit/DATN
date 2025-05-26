@@ -553,16 +553,7 @@ export default function CourseCreateForm({
               </label>
               {lesson.videoFile && (
                 <Box sx={{ mt: 2, textAlign: "center" }}>
-                  <video
-                    controls
-                    src={URL.createObjectURL(lesson.videoFile)}
-                    style={{
-                      maxWidth: "100%",
-                      maxHeight: 200,
-                      borderRadius: "8px",
-                      border: `1px solid ${theme.palette.divider}`,
-                    }}
-                  />
+                  <PreviewVideo videoFile={lesson.videoFile} />
                 </Box>
               )}
             </Box>
@@ -642,6 +633,27 @@ export default function CourseCreateForm({
     </Box>
   );
 }
+
+const PreviewVideo = React.memo(function ({
+  videoFile,
+}: {
+  videoFile: File | null;
+}) {
+  if (!videoFile) return null;
+
+  return (
+    <video
+      controls
+      src={URL.createObjectURL(videoFile)}
+      style={{
+        width: "100%",
+        height: "100%",
+        borderRadius: "8px",
+        border: "1px solid #ccc",
+      }}
+    />
+  );
+});
 
 export function flattenCategories(categories: Category[]): Category[] {
   return categories.reduce<Category[]>((acc, cat) => {

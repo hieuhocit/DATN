@@ -2,7 +2,12 @@
 import OpenAI from "openai";
 
 // Google Gen AI
-import { GoogleGenAI, Type } from "@google/genai";
+import {
+  Content,
+  CreateChatParameters,
+  GoogleGenAI,
+  Type,
+} from "@google/genai";
 
 // AI Models
 import { models } from "../utils/enum/ai-models.js";
@@ -23,6 +28,8 @@ const client = new OpenAI({
 });
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY });
+
+const histories: Content[] = [];
 
 const AIService = {
   async chatWithAI({
@@ -64,49 +71,48 @@ const AIService = {
 
     const category = await Category.findById(currentCourse.categoryId);
 
-    const chat = ai.chats.create({
-      model: "gemini-2.0-flash",
-      history: [
+    histories.push({
+      role: "user",
+      parts: [
         {
-          role: "user",
-          parts: [
-            {
-              text: `Thông tin về các khoá học mà người dùng đã tham gia:
+          text: `Thông tin về các khoá học mà người dùng đã tham gia:
                       ${"```json"}
                       ${JSON.stringify(enrollments, null, 2)}
                       ${"```"}
                     `,
-            },
-            {
-              text: `Thông tin về tất cả các bài học trong khoá học này: 
+        },
+        {
+          text: `Thông tin về tất cả các bài học trong khoá học này: 
                       ${"```json"}
                       ${JSON.stringify(lessons, null, 2)}
                       ${"```"}
                     `,
-            },
-            {
-              text: `Thông tin về khoá học người dùng đang học:
+        },
+        {
+          text: `Thông tin về khoá học người dùng đang học:
                       Tiêu đề: ${currentCourse.title}
                       Mô tả: ${currentCourse.description}
                       Danh much: ${category?.name}
                     `,
-            },
-            {
-              text: `Thông tin về bài học người dùng đang học:
+        },
+        {
+          text: `Thông tin về bài học người dùng đang học:
                       Tiêu đề: ${currentLesson.title}
                       Mô tả: ${currentLesson.description}
                     `,
-            },
-
-            {
-              text: `Bạn sẽ dựa vào những thông tin trên để trả lời câu hỏi của người dùng nhé. Nếu như câu hỏi vượt quá phạm vi của khoá học hoặc bài học này, bạn hãy từ chối trả lời. Khi trả lời, hãy render trực tiếp dưới dạng **Markdown**.`,
-            },
-          ],
+        },
+        {
+          text: `Bạn sẽ dựa vào những thông tin trên để trả lời câu hỏi của người dùng nhé. Nếu như câu hỏi vượt quá phạm vi của khoá học hoặc bài học này, bạn hãy từ chối trả lời. Khi trả lời, hãy render trực tiếp dưới dạng **Markdown**.`,
         },
       ],
+    });
+
+    const chat = ai.chats.create({
+      model: "gemini-2.0-flash",
+      history: histories,
       config: {
         systemInstruction: `
-          Bạn là Trợ lý học tập, một trợ lý học tập chuyên về môn ${category?.name} trong khóa học "${currentCourse.title}".
+          Bạn là Trợ lý học tập, một trợ lý học tập đa năng, đa ngôn ngữ chuyên về môn ${category?.name} trong khóa học "${currentCourse.title}".
           Bạn có nhiệm vụ giải đáp các thắc mắc của học viên liên quan đến nội dung bài học "${currentLesson.title}".
 
           Hãy sử dụng thông tin về khóa học và bài học đã được cung cấp trong lịch sử trò chuyện để trả lời câu hỏi của người dùng.
@@ -129,6 +135,15 @@ const AIService = {
       message: message,
     });
 
+    histories.push({
+      role: "user",
+      parts: [
+        {
+          text: message,
+        },
+      ],
+    });
+
     let data: {
       result: string;
     } = {
@@ -136,10 +151,19 @@ const AIService = {
     };
 
     try {
-      data = JSON.parse(response.text ?? "[]");
+      data = JSON.parse(response.text ?? "{}");
     } catch (error) {
       data = { result: "" };
     }
+
+    histories.push({
+      role: "model",
+      parts: [
+        {
+          text: data.result,
+        },
+      ],
+    });
 
     return data.result;
   },

@@ -659,7 +659,7 @@ export default function CourseEditForm({
           Thêm bài học
         </Button>
 
-        {!courseFormData.isPublished && (
+        {
           <FormGroup sx={{ mt: 6 }}>
             <FormControlLabel
               checked={courseFormData.isPublished}
@@ -673,7 +673,7 @@ export default function CourseEditForm({
               label="Xuất bản khoá học"
             />
           </FormGroup>
-        )}
+        }
 
         <Button
           loading={isCreating}

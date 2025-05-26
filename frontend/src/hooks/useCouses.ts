@@ -15,6 +15,7 @@ export const useCoursesByInstructor = () => {
   } = useQuery({
     queryKey: ["coursesByInstructor"],
     queryFn: getCoursesByInstructor,
+    refetchOnWindowFocus: true,
   });
 
   const data = res?.data || [];

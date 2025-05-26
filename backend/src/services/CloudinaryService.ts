@@ -1,14 +1,14 @@
 // Purpose: Service for uploading images to Cloudinary.
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary } from "cloudinary";
 
 // Import the Cloudinary configuration:
-import { cloudinaryConfig } from '../configs/cloudinaryConfig.js';
+import { cloudinaryConfig } from "../configs/cloudinaryConfig.js";
 
 // serverResponse
-import serverResponse from '../utils/helpers/responses.js';
+import serverResponse from "../utils/helpers/responses.js";
 
 // Messages
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
 
 // configure a new instance of Cloudinary:
 cloudinary.config(cloudinaryConfig);
@@ -16,44 +16,45 @@ cloudinary.config(cloudinaryConfig);
 const CloudinaryService = {
   uploadFile: async (
     file: Express.Multer.File,
-    type: 'image' | 'video' | 'subtitles'
+    type: "image" | "video" | "subtitles"
   ) => {
     const opts = {
       image: {
-        resource_type: 'image',
-        folder: 'images',
+        resource_type: "image",
+        folder: "images",
       },
       video: {
-        resource_type: 'video',
-        folder: 'videos',
+        resource_type: "video",
+        folder: "videos",
       },
       subtitles: {
-        resource_type: 'raw',
-        folder: 'subtitles',
+        resource_type: "raw",
+        folder: "subtitles",
       },
     };
     try {
-      const uploadResult = await new Promise((resolve) => {
+      const uploadResult = await new Promise((resolve, reject) => {
         cloudinary.uploader
           .upload_stream(
             {
               resource_type: opts[type].resource_type as
-                | 'image'
-                | 'video'
-                | 'raw',
+                | "image"
+                | "video"
+                | "raw",
               folder: opts[type].folder,
-              format: type === 'subtitles' ? 'vtt' : undefined,
+              format: type === "subtitles" ? "vtt" : undefined,
               // type: "authenticated",
               // access_control: {
               //     access_type: "token"
               // }
             },
             (error, uploadResult) => {
-              console.error(error);
               if (error) {
-                throw serverResponse.createError({
-                  ...messages.UPLOAD_FAILED,
-                });
+                return reject(
+                  serverResponse.createError({
+                    ...messages.UPLOAD_FAILED,
+                  })
+                );
               }
               return resolve(uploadResult);
             }

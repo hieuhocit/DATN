@@ -13,7 +13,11 @@ export default function Newest() {
     queryFn: get20NewestCourses,
   });
 
+  const courses = res?.data || [];
+
   return (
-    <>{!isLoading && <CourseSection title="Mới nhất" courses={res.data} />}</>
+    <>
+      <CourseSection title="Mới nhất" courses={courses} isLoading={isLoading} />
+    </>
   );
 }

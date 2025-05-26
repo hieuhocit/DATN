@@ -39,6 +39,11 @@ export interface ICoursesResponse {
   data: Course[];
 }
 
+export const getCourses = async () => {
+  const res = await axios.get("courses");
+  return res.data as ICoursesResponse;
+};
+
 export const getRecommendedCourses = async () => {
   const res = await axios.get("courses/recommended");
   return res.data as ICoursesResponse;

@@ -149,6 +149,8 @@ export default function CourseDetails() {
 
   const isAuthor = user?._id === course?.instructorId;
 
+  console.log(duration);
+
   return (
     <>
       <Section sx={{ mt: "128px", mb: "128px" }}>
@@ -212,7 +214,7 @@ export default function CourseDetails() {
                 <Stack direction="row" spacing={1} alignItems="center">
                   <AccessTimeIcon fontSize="small" />
                   <Typography variant="body1">
-                    Thời lượng: {(duration / 60 / 60).toFixed(1)} giờ
+                    Thời lượng: {getHours(duration)}
                   </Typography>
                 </Stack>
               </Stack>
@@ -386,7 +388,7 @@ export default function CourseDetails() {
                         <Stack direction="row" spacing={1} alignItems="center">
                           <AccessTimeIcon fontSize="small" />
                           <Typography variant="body2">
-                            {getMinutesFromSeconds(lesson.duration)}
+                            {getHours(lesson.duration)}
                           </Typography>
                         </Stack>
                         <Typography variant="body2" color="text.secondary">
@@ -510,10 +512,10 @@ export default function CourseDetails() {
   );
 }
 
-function getMinutesFromSeconds(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const secondsRemainder = Math.floor(seconds % 60);
-  return `${minutes < 10 ? "0" : ""}${minutes}:${
-    secondsRemainder < 10 ? "0" : ""
-  }${secondsRemainder}`;
+export function getHours(duration: number): string {
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
+  const seconds = Math.floor(duration % 60);
+
+  return `${hours ? `${hours} giờ ` : ""}${minutes} phút ${seconds} giây`;
 }

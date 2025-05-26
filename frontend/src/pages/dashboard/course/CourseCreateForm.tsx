@@ -53,7 +53,7 @@ interface CourseFormData {
 }
 
 interface CourseCreateFormProps {
-  fetchCourses: () => void;
+  fetchCourses: () => Promise<any>;
 }
 
 export default function CourseCreateForm({

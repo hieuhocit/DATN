@@ -14,7 +14,7 @@ import {
   Tab,
 } from "@mui/material";
 import { DataGrid, GridColDef, GridPaginationModel } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Course } from "@/types";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -22,10 +22,10 @@ import { toast } from "react-toastify";
 import { LEVEL_VN } from "@/utils/constants";
 import CourseCreateForm from "./CourseCreateForm";
 import CourseEditForm from "./CourseEditForm";
+import { useQuery } from "@tanstack/react-query";
+import { deleteCourse, getCourses } from "@/services/courseService";
 
 export default function CourseTable() {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 5,
@@ -35,48 +35,34 @@ export default function CourseTable() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
 
-  const fetchCourses = async () => {
-    try {
-      const res = await fetch("http://localhost:3000/api/courses", {
-        credentials: "include",
-      });
-      const data = await res.json();
-      setCourses(data.data || []);
-    } catch (error) {
-      console.error("Lỗi khi tải khóa học:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCourses();
-  }, []);
+  const {
+    data: res,
+    isLoading,
+    refetch: fetchCourses,
+  } = useQuery({
+    queryKey: ["courses"],
+    queryFn: getCourses,
+  });
 
   const handleDeleteCourse = async () => {
     if (!courseToDelete) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/courses/${courseToDelete}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
+      const res = await deleteCourse(courseToDelete);
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Xóa lỗi: ${errorText}`);
+      if (res.statusCode === 200) {
+        toast.success("Xóa khóa học thành công!");
+        setDeleteDialogOpen(false);
+        setCourseToDelete(null);
+        await fetchCourses();
+      } else {
+        toast.error(
+          res.message || "Xóa khóa học thất bại. Vui lòng thử lại sau."
+        );
       }
-
-      toast.success("Xóa khóa học thành công!");
-      setDeleteDialogOpen(false);
-      setCourseToDelete(null);
-      fetchCourses();
     } catch (error) {
       console.error("Lỗi khi xóa khóa học:", error);
-      alert("Đã xảy ra lỗi. Vui lòng thử lại.");
+      toast.error("Xóa khóa học thất bại. Vui lòng thử lại sau.");
     }
   };
 
@@ -159,6 +145,8 @@ export default function CourseTable() {
     },
   ];
 
+  const courses = (res?.data as Course[]) || [];
+
   const rows = courses.map((course) => ({
     ...course, // sao chép tất cả các thuộc tính của course vào đây
     id: course._id,
@@ -218,7 +206,7 @@ export default function CourseTable() {
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           pageSizeOptions={[5]}
-          loading={loading}
+          loading={isLoading}
         />
       </Paper>
 
@@ -229,7 +217,7 @@ export default function CourseTable() {
         fullWidth
         maxWidth="sm"
       >
-        <CourseCreateForm fetchCourses={() => {}} />
+        <CourseCreateForm fetchCourses={fetchCourses} />
       </Dialog>
 
       <Dialog
@@ -240,7 +228,7 @@ export default function CourseTable() {
       >
         <CourseEditForm
           courseId={editingCourseId ?? ""}
-          fetchCourses={() => {}}
+          fetchCourses={fetchCourses}
         />
       </Dialog>
 
@@ -273,8 +261,10 @@ export default function CourseTable() {
   );
 }
 
-export function getHours(duration: number) {
-  const hours = Math.floor(duration / 60);
-  const minutes = Math.floor(duration % 60);
-  return `${hours} giờ ${minutes} phút`;
+export function getHours(duration: number): string {
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
+  const seconds = Math.floor(duration % 60);
+
+  return `${hours ? `${hours} giờ ` : ""}${minutes} phút ${seconds} giây`;
 }

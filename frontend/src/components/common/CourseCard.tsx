@@ -142,7 +142,7 @@ export default function Card({ course }: Props) {
         >
           <Box>
             <Typography sx={{ fontSize: "1rem" }} fontWeight={600}>
-              ₫{course.price}
+              ₫{course.price.toLocaleString("vi-VN")}
             </Typography>
             {/* {course.discountPrice && (
               <Typography

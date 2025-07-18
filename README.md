@@ -79,7 +79,6 @@ EduGenlus cung cấp một trải nghiệm học tập vượt trội với các
 - **JWT** cho xác thực người dùng
 - **Google AI (Gemini)** cho trợ lý ảo
 - **VNPAY Gateway** cho thanh toán
-- **Joi/Yup** để xác thực dữ liệu
 
 ---
 

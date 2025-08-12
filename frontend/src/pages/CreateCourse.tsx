@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -13,11 +14,13 @@ import {
   Divider,
   Card,
   CardContent,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Section from '@/components/common/Section';
-import { useTheme } from '@/hooks/useTheme';
+  FormControlLabel,
+  Checkbox,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Section from "@/components/common/Section";
+import { useTheme } from "@/hooks/useTheme";
 
 // Định nghĩa kiểu dữ liệu
 interface Lesson {
@@ -50,40 +53,42 @@ const CreateCourse: React.FC = () => {
 
   // Dữ liệu giả lập danh mục (sẽ lấy từ API trong thực tế)
   const categories = [
-    { id: 1, name: 'Lập trình' },
-    { id: 2, name: 'Kinh doanh' },
-    { id: 3, name: 'Thiết kế' },
+    { id: 1, name: "Lập trình" },
+    { id: 2, name: "Kinh doanh" },
+    { id: 3, name: "Thiết kế" },
   ];
 
   // Trạng thái form
   const [formData, setFormData] = useState<CourseForm>({
-    title: '',
-    slug: '',
-    description: '',
+    title: "",
+    slug: "",
+    description: "",
     price: 0,
     discountPrice: undefined,
-    thumbnail: '',
+    thumbnail: "",
     categoryId: 0,
-    level: '',
+    level: "",
     duration: undefined,
-    requirements: '',
-    whatYouWillLearn: '',
+    requirements: "",
+    whatYouWillLearn: "",
     isPublished: false,
     lessons: [],
   });
 
   // Xử lý thay đổi input
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => {
       const updatedForm = { ...prev, [name]: value };
 
       // Tự động tạo slug từ title
-      if (name === 'title') {
+      if (name === "title") {
         updatedForm.slug = value
           .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '');
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
       }
 
       return updatedForm;
@@ -103,10 +108,10 @@ const CreateCourse: React.FC = () => {
       lessons: [
         ...prev.lessons,
         {
-          title: '',
-          description: '',
+          title: "",
+          description: "",
           orderIndex: prev.lessons.length + 1,
-          videoUrl: '',
+          videoUrl: "",
           duration: 0,
           isFree: false,
         },
@@ -150,17 +155,22 @@ const CreateCourse: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Kiểm tra các trường bắt buộc
-    if (!formData.title || !formData.price || !formData.categoryId || !formData.level) {
-      alert('Vui lòng điền đầy đủ các trường bắt buộc!');
+    if (
+      !formData.title ||
+      !formData.price ||
+      !formData.categoryId ||
+      !formData.level
+    ) {
+      alert("Vui lòng điền đầy đủ các trường bắt buộc!");
       return;
     }
     if (formData.lessons.length === 0) {
-      alert('Vui lòng thêm ít nhất một bài học!');
+      alert("Vui lòng thêm ít nhất một bài học!");
       return;
     }
     // Log dữ liệu (thay bằng gọi API trong thực tế)
-    console.log('Dữ liệu khóa học:', formData);
-    alert('Khóa học đã được tạo (giả lập)!');
+    console.log("Dữ liệu khóa học:", formData);
+    alert("Khóa học đã được tạo (giả lập)!");
   };
 
   return (
@@ -170,8 +180,8 @@ const CreateCourse: React.FC = () => {
           variant="h4"
           gutterBottom
           sx={{
-            fontWeight: 'bold',
-            color: themeMode === 'dark' ? 'white' : 'text.primary',
+            fontWeight: "bold",
+            color: themeMode === "dark" ? "white" : "text.primary",
           }}
         >
           Tạo Khóa Học Mới
@@ -188,12 +198,12 @@ const CreateCourse: React.FC = () => {
               fullWidth
               variant="outlined"
               sx={{
-                bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                '& .MuiInputBase-input': {
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                bgcolor: themeMode === "dark" ? "grey.800" : "background.paper",
+                "& .MuiInputBase-input": {
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 },
-                '& .MuiInputLabel-root': {
-                  color: themeMode === 'dark' ? 'grey.300' : 'text.secondary',
+                "& .MuiInputLabel-root": {
+                  color: themeMode === "dark" ? "grey.300" : "text.secondary",
                 },
               }}
             />
@@ -205,9 +215,9 @@ const CreateCourse: React.FC = () => {
               fullWidth
               variant="outlined"
               sx={{
-                bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                '& .MuiInputBase-input': {
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                bgcolor: themeMode === "dark" ? "grey.800" : "background.paper",
+                "& .MuiInputBase-input": {
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 },
               }}
             />
@@ -221,9 +231,9 @@ const CreateCourse: React.FC = () => {
               rows={4}
               variant="outlined"
               sx={{
-                bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                '& .MuiInputBase-input': {
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                bgcolor: themeMode === "dark" ? "grey.800" : "background.paper",
+                "& .MuiInputBase-input": {
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 },
               }}
             />
@@ -236,9 +246,9 @@ const CreateCourse: React.FC = () => {
               fullWidth
               variant="outlined"
               sx={{
-                bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                '& .MuiInputBase-input': {
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                bgcolor: themeMode === "dark" ? "grey.800" : "background.paper",
+                "& .MuiInputBase-input": {
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 },
               }}
             />
@@ -246,14 +256,14 @@ const CreateCourse: React.FC = () => {
               label="Giá giảm (VNĐ)"
               name="discountPrice"
               type="number"
-              value={formData.discountPrice || ''}
+              value={formData.discountPrice || ""}
               onChange={handleInputChange}
               fullWidth
               variant="outlined"
               sx={{
-                bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                '& .MuiInputBase-input': {
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                bgcolor: themeMode === "dark" ? "grey.800" : "background.paper",
+                "& .MuiInputBase-input": {
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 },
               }}
             />
@@ -265,16 +275,16 @@ const CreateCourse: React.FC = () => {
               fullWidth
               variant="outlined"
               sx={{
-                bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                '& .MuiInputBase-input': {
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                bgcolor: themeMode === "dark" ? "grey.800" : "background.paper",
+                "& .MuiInputBase-input": {
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 },
               }}
             />
             <FormControl fullWidth variant="outlined">
               <InputLabel
                 sx={{
-                  color: themeMode === 'dark' ? 'grey.300' : 'text.secondary',
+                  color: themeMode === "dark" ? "grey.300" : "text.secondary",
                 }}
               >
                 Danh mục *
@@ -285,8 +295,9 @@ const CreateCourse: React.FC = () => {
                 onChange={handleSelectChange}
                 label="Danh mục *"
                 sx={{
-                  bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                  bgcolor:
+                    themeMode === "dark" ? "grey.800" : "background.paper",
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 }}
               >
                 <MenuItem value={0} disabled>
@@ -302,7 +313,7 @@ const CreateCourse: React.FC = () => {
             <FormControl fullWidth variant="outlined">
               <InputLabel
                 sx={{
-                  color: themeMode === 'dark' ? 'grey.300' : 'text.secondary',
+                  color: themeMode === "dark" ? "grey.300" : "text.secondary",
                 }}
               >
                 Cấp độ *
@@ -313,8 +324,9 @@ const CreateCourse: React.FC = () => {
                 onChange={handleSelectChange}
                 label="Cấp độ *"
                 sx={{
-                  bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                  bgcolor:
+                    themeMode === "dark" ? "grey.800" : "background.paper",
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 }}
               >
                 <MenuItem value="" disabled>
@@ -330,14 +342,14 @@ const CreateCourse: React.FC = () => {
               label="Thời lượng khóa học (phút)"
               name="duration"
               type="number"
-              value={formData.duration || ''}
+              value={formData.duration || ""}
               onChange={handleInputChange}
               fullWidth
               variant="outlined"
               sx={{
-                bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                '& .MuiInputBase-input': {
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                bgcolor: themeMode === "dark" ? "grey.800" : "background.paper",
+                "& .MuiInputBase-input": {
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 },
               }}
             />
@@ -351,9 +363,9 @@ const CreateCourse: React.FC = () => {
               rows={3}
               variant="outlined"
               sx={{
-                bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                '& .MuiInputBase-input': {
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                bgcolor: themeMode === "dark" ? "grey.800" : "background.paper",
+                "& .MuiInputBase-input": {
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 },
               }}
             />
@@ -367,9 +379,9 @@ const CreateCourse: React.FC = () => {
               rows={3}
               variant="outlined"
               sx={{
-                bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                '& .MuiInputBase-input': {
-                  color: themeMode === 'dark' ? 'white' : 'text.primary',
+                bgcolor: themeMode === "dark" ? "grey.800" : "background.paper",
+                "& .MuiInputBase-input": {
+                  color: themeMode === "dark" ? "white" : "text.primary",
                 },
               }}
             />
@@ -381,8 +393,8 @@ const CreateCourse: React.FC = () => {
             variant="h5"
             gutterBottom
             sx={{
-              fontWeight: 'bold',
-              color: themeMode === 'dark' ? 'white' : 'text.primary',
+              fontWeight: "bold",
+              color: themeMode === "dark" ? "white" : "text.primary",
             }}
           >
             Danh Sách Bài Học
@@ -401,17 +413,22 @@ const CreateCourse: React.FC = () => {
               <Card
                 key={index}
                 sx={{
-                  bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
+                  bgcolor:
+                    themeMode === "dark" ? "grey.800" : "background.paper",
                   border: 1,
-                  borderColor: themeMode === 'dark' ? 'grey.600' : 'grey.200',
+                  borderColor: themeMode === "dark" ? "grey.600" : "grey.200",
                 }}
               >
                 <CardContent>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
                     <Typography
                       variant="h6"
                       sx={{
-                        color: themeMode === 'dark' ? 'white' : 'text.primary',
+                        color: themeMode === "dark" ? "white" : "text.primary",
                       }}
                     >
                       Bài học {index + 1}
@@ -419,8 +436,8 @@ const CreateCourse: React.FC = () => {
                     <IconButton
                       onClick={() => handleRemoveLesson(index)}
                       sx={{
-                        color: themeMode === 'dark' ? 'grey.400' : 'grey.500',
-                        '&:hover': { color: 'error.main' },
+                        color: themeMode === "dark" ? "grey.400" : "grey.500",
+                        "&:hover": { color: "error.main" },
                       }}
                     >
                       <DeleteIcon />
@@ -435,9 +452,13 @@ const CreateCourse: React.FC = () => {
                       fullWidth
                       variant="outlined"
                       sx={{
-                        bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                        '& .MuiInputBase-input': {
-                          color: themeMode === 'dark' ? 'white' : 'text.primary',
+                        bgcolor:
+                          themeMode === "dark"
+                            ? "grey.800"
+                            : "background.paper",
+                        "& .MuiInputBase-input": {
+                          color:
+                            themeMode === "dark" ? "white" : "text.primary",
                         },
                       }}
                     />
@@ -451,9 +472,13 @@ const CreateCourse: React.FC = () => {
                       rows={3}
                       variant="outlined"
                       sx={{
-                        bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                        '& .MuiInputBase-input': {
-                          color: themeMode === 'dark' ? 'white' : 'text.primary',
+                        bgcolor:
+                          themeMode === "dark"
+                            ? "grey.800"
+                            : "background.paper",
+                        "& .MuiInputBase-input": {
+                          color:
+                            themeMode === "dark" ? "white" : "text.primary",
                         },
                       }}
                     />
@@ -465,9 +490,13 @@ const CreateCourse: React.FC = () => {
                       fullWidth
                       variant="outlined"
                       sx={{
-                        bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                        '& .MuiInputBase-input': {
-                          color: themeMode === 'dark' ? 'white' : 'text.primary',
+                        bgcolor:
+                          themeMode === "dark"
+                            ? "grey.800"
+                            : "background.paper",
+                        "& .MuiInputBase-input": {
+                          color:
+                            themeMode === "dark" ? "white" : "text.primary",
                         },
                       }}
                     />
@@ -480,9 +509,13 @@ const CreateCourse: React.FC = () => {
                       fullWidth
                       variant="outlined"
                       sx={{
-                        bgcolor: themeMode === 'dark' ? 'grey.800' : 'background.paper',
-                        '& .MuiInputBase-input': {
-                          color: themeMode === 'dark' ? 'white' : 'text.primary',
+                        bgcolor:
+                          themeMode === "dark"
+                            ? "grey.800"
+                            : "background.paper",
+                        "& .MuiInputBase-input": {
+                          color:
+                            themeMode === "dark" ? "white" : "text.primary",
                         },
                       }}
                     />
@@ -493,12 +526,18 @@ const CreateCourse: React.FC = () => {
                           onChange={(e) =>
                             handleLessonCheckboxChange(index, e.target.checked)
                           }
-                          sx={{ color: themeMode === 'dark' ? 'grey.300' : 'text.secondary' }}
+                          sx={{
+                            color:
+                              themeMode === "dark"
+                                ? "grey.300"
+                                : "text.secondary",
+                          }}
                         />
                       }
                       label="Bài học miễn phí"
                       sx={{
-                        color: themeMode === 'dark' ? 'grey.300' : 'text.secondary',
+                        color:
+                          themeMode === "dark" ? "grey.300" : "text.secondary",
                       }}
                     />
                   </Stack>

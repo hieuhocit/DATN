@@ -1,16 +1,16 @@
 // Express
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 // Types
 import {
   ErrorResponseType,
   MessageType,
-  UserCreateInput,
   UserLoginInput,
-} from '../types/types.js';
+} from "../types/types.js";
 
 // Message config
-import messages from '../configs/messagesConfig.js';
+import messages from "../configs/messagesConfig.js";
+import { UserCreateInput } from "../services/UserService.js";
 
 // Validation constants
 const PATTERNS = {
@@ -19,15 +19,15 @@ const PATTERNS = {
 };
 
 enum UserRole {
-  USER = 'user',
-  INSTRUCTOR = 'instructor',
-  ADMIN = 'admin',
+  USER = "user",
+  INSTRUCTOR = "instructor",
+  ADMIN = "admin",
 }
 
 enum UserProvider {
-  LOCAL = 'local',
-  GOOGLE = 'google',
-  FACEBOOK = 'facebook',
+  LOCAL = "local",
+  GOOGLE = "google",
+  FACEBOOK = "facebook",
 }
 
 /**
@@ -48,7 +48,7 @@ export const validateRegister = (
 
   // Validate required fields
   const addErrorIfMissing = (field: string, value?: string) => {
-    if (!value || value.trim() === '') {
+    if (!value || value.trim() === "") {
       errorResponse.errors[field] = {
         field,
         message: `The ${field} field is required.`,
@@ -59,57 +59,57 @@ export const validateRegister = (
   };
 
   // Check required fields
-  ['email', 'name', 'password'].forEach((field) =>
+  ["email", "name", "password"].forEach((field) =>
     addErrorIfMissing(field, data[field as keyof typeof data] as string)
   );
 
   // Validate email format
   if (
     data.email &&
-    !errorResponse.errors['email'] &&
+    !errorResponse.errors["email"] &&
     !PATTERNS.EMAIL.test(data.email)
   ) {
-    errorResponse.errors['email'] = {
-      field: 'email',
-      message: 'Email không hợp lệ.',
+    errorResponse.errors["email"] = {
+      field: "email",
+      message: "Email không hợp lệ.",
     };
   }
 
   // Password validation for local registration
   if (
     data.password &&
-    !errorResponse.errors['password'] &&
+    !errorResponse.errors["password"] &&
     !PATTERNS.PASSWORD.test(data.password!)
   ) {
-    errorResponse.errors['password'] = {
-      field: 'password',
+    errorResponse.errors["password"] = {
+      field: "password",
       message:
-        'Password must be 6-24 characters and include at least 1 lowercase, 1 uppercase, and 1 special character.',
+        "Password must be 6-24 characters and include at least 1 lowercase, 1 uppercase, and 1 special character.",
     };
   }
 
   if (
     data.role !== undefined &&
-    !errorResponse.errors['role'] &&
+    !errorResponse.errors["role"] &&
     UserRole[data.role.toUpperCase() as keyof typeof UserRole] === undefined
   ) {
-    errorResponse.errors['role'] = {
-      field: 'role',
+    errorResponse.errors["role"] = {
+      field: "role",
       message:
-        'Invalid role. Role must be one of the following: user, instructor, admin.',
+        "Invalid role. Role must be one of the following: user, instructor, admin.",
     };
   }
 
   if (
     data.provider !== undefined &&
-    !errorResponse.errors['provider'] &&
+    !errorResponse.errors["provider"] &&
     UserProvider[data.provider.toUpperCase() as keyof typeof UserProvider] ===
       undefined
   ) {
-    errorResponse.errors['provider'] = {
-      field: 'provider',
+    errorResponse.errors["provider"] = {
+      field: "provider",
       message:
-        'Invalid provider. Provider must be one of the following: local, google, facebook.',
+        "Invalid provider. Provider must be one of the following: local, google, facebook.",
     };
   }
 
@@ -146,41 +146,41 @@ export const validateLogin = (
   };
 
   // Validate provider
-  if (!provider || provider.trim() === '') {
-    addError('provider', 'The provider field is required.');
-  } else if (!['local', 'google', 'facebook'].includes(provider)) {
-    addError('provider', 'Login provider is not supported.');
+  if (!provider || provider.trim() === "") {
+    addError("provider", "The provider field is required.");
+  } else if (!["local", "google", "facebook"].includes(provider)) {
+    addError("provider", "Login provider is not supported.");
   } else {
     // Provider-specific validations
     switch (provider) {
-      case 'local': {
-        if (!email || email.trim() === '') {
-          addError('email', 'Vui lòng nhập email.');
+      case "local": {
+        if (!email || email.trim() === "") {
+          addError("email", "Vui lòng nhập email.");
         } else if (!PATTERNS.EMAIL.test(email)) {
-          addError('email', 'Email không hợp lệ.');
+          addError("email", "Email không hợp lệ.");
         }
 
-        if (!password || password.trim() === '') {
-          addError('password', 'Vui lòng nhập mật khẩu.');
+        if (!password || password.trim() === "") {
+          addError("password", "Vui lòng nhập mật khẩu.");
         }
         break;
       }
 
-      case 'facebook': {
-        if (!facebookAccessToken || facebookAccessToken.trim() === '') {
+      case "facebook": {
+        if (!facebookAccessToken || facebookAccessToken.trim() === "") {
           addError(
-            'facebookAccessToken',
-            'The facebookAccessToken field is required.'
+            "facebookAccessToken",
+            "The facebookAccessToken field is required."
           );
         }
         break;
       }
 
-      case 'google': {
-        if (!googleAccessToken || googleAccessToken.trim() === '') {
+      case "google": {
+        if (!googleAccessToken || googleAccessToken.trim() === "") {
           addError(
-            'googleAccessToken',
-            'The googleAccessToken field is required.'
+            "googleAccessToken",
+            "The googleAccessToken field is required."
           );
         }
         break;
@@ -213,30 +213,30 @@ export const validateResetPassword = (
     errors: {},
   };
 
-  if (!data.password || data.password.trim() === '') {
-    errorResponse.errors['password'] = {
-      field: 'password',
-      message: 'The password field is required.',
+  if (!data.password || data.password.trim() === "") {
+    errorResponse.errors["password"] = {
+      field: "password",
+      message: "The password field is required.",
     };
   }
 
-  if (!data.resetToken || data.resetToken.trim() === '') {
-    errorResponse.errors['resetToken'] = {
-      field: 'resetToken',
-      message: 'The resetToken field is required.',
+  if (!data.resetToken || data.resetToken.trim() === "") {
+    errorResponse.errors["resetToken"] = {
+      field: "resetToken",
+      message: "The resetToken field is required.",
     };
   }
 
   // Password validation for local registration
   if (
     data.password &&
-    !errorResponse.errors['password'] &&
+    !errorResponse.errors["password"] &&
     !PATTERNS.PASSWORD.test(data.password!)
   ) {
-    errorResponse.errors['password'] = {
-      field: 'password',
+    errorResponse.errors["password"] = {
+      field: "password",
       message:
-        'Password must be 6-24 characters and include at least 1 lowercase, 1 uppercase, and 1 special character.',
+        "Password must be 6-24 characters and include at least 1 lowercase, 1 uppercase, and 1 special character.",
     };
   }
 
@@ -265,30 +265,30 @@ export const validateChangePassword = (
     errors: {},
   };
 
-  if (!data.oldPassword || data.oldPassword.trim() === '') {
-    errorResponse.errors['oldPassword'] = {
-      field: 'oldPassword',
-      message: 'The oldPassword field is required.',
+  if (!data.oldPassword || data.oldPassword.trim() === "") {
+    errorResponse.errors["oldPassword"] = {
+      field: "oldPassword",
+      message: "The oldPassword field is required.",
     };
   }
 
-  if (!data.newPassword || data.newPassword.trim() === '') {
-    errorResponse.errors['newPassword'] = {
-      field: 'newPassword',
-      message: 'The newPassword field is required.',
+  if (!data.newPassword || data.newPassword.trim() === "") {
+    errorResponse.errors["newPassword"] = {
+      field: "newPassword",
+      message: "The newPassword field is required.",
     };
   }
 
   // Password validation for local registration
   if (
     data.newPassword &&
-    !errorResponse.errors['newPassword'] &&
+    !errorResponse.errors["newPassword"] &&
     !PATTERNS.PASSWORD.test(data.newPassword!)
   ) {
-    errorResponse.errors['newPassword'] = {
-      field: 'newPassword',
+    errorResponse.errors["newPassword"] = {
+      field: "newPassword",
       message:
-        'Password must be 6-24 characters and include at least 1 lowercase, 1 uppercase, and 1 special character.',
+        "Password must be 6-24 characters and include at least 1 lowercase, 1 uppercase, and 1 special character.",
     };
   }
 

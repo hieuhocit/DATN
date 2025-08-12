@@ -1,14 +1,13 @@
-export { UserCreateInput, UserLoginInput } from '../services/AuthService.js';
-export { UserType } from '../models/User.js';
+export { UserLoginInput } from "../services/AuthService.js";
+export { UserType } from "../models/User.js";
 export {
   RequestWithUser,
   JwtPayLoadType,
-} from '../middlewares/authMiddleware.js';
-export { PasswordResetType } from '../models/PasswordReset.js';
+} from "../middlewares/authMiddleware.js";
 
 export type MessageType = {
   statusCode: number;
-  statusText: 'error' | 'success';
+  statusText: "error" | "success";
   message?: string;
 };
 

@@ -30,7 +30,7 @@ export const NotificationProvider = ({
     if (!isLoggedIn || !user) return;
 
     // Connect to the socket server
-    const newSocket = io("http://localhost:3000", {
+    const newSocket = io(import.meta.env.VITE_API_URL, {
       withCredentials: true,
     });
 
